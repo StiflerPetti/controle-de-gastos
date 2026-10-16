@@ -1,22 +1,65 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Finanças MaRa - Controle de Gastos</title>
+  
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Font: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+    /* Smooth transitions for UI feedback */
+    .fade-enter {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+<body class="min-h-screen pb-16 antialiased selection:bg-emerald-500 selection:text-slate-900">
 
-  <!-- Header Personalizado -->
-  <header class="bg-slate-800/90 backdrop-blur border-b border-emerald-500/20 sticky top-0 z-50 shadow-lg">
-    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+  <!-- Header -->
+  <header class="bg-slate-800/90 backdrop-blur-md border-b border-emerald-500/20 sticky top-0 z-50 shadow-lg">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center space-x-3">
         <div class="bg-gradient-to-tr from-emerald-500 to-teal-400 p-2.5 rounded-2xl text-slate-950 shadow-md shadow-emerald-500/20">
           <i class="fa-solid fa-wallet text-xl"></i>
@@ -27,11 +70,11 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <span id="syncStatus" class="text-xs text-emerald-400 bg-emerald-500/10 px-2.5 py-1.5 rounded-lg border border-emerald-500/20 hidden">
-          <i class="fa-solid fa-cloud-arrow-up"></i> Sincronizado
+        <span id="syncStatus" class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/30 hidden flex items-center gap-1.5">
+          <i class="fa-solid fa-cloud-arrow-up text-emerald-400"></i> Sincronizado
         </span>
-        <button onclick="limparDados()" class="text-xs text-slate-400 hover:text-rose-400 transition flex items-center gap-1.5 bg-slate-900/50 px-3 py-2 rounded-lg border border-slate-700">
-          <i class="fa-solid fa-trash-can"></i> Limpar Local
+        <button onclick="limparDadosLocais()" class="text-xs text-slate-400 hover:text-rose-400 transition flex items-center gap-1.5 bg-slate-900/60 px-3 py-2 rounded-lg border border-slate-700/80 active:scale-95">
+          <i class="fa-solid fa-trash-can"></i> Limpar Histórico Local
         </button>
       </div>
     </div>
@@ -39,77 +82,112 @@
 
   <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
 
-    <!-- Resumo de Gastos -->
+    <!-- Global Toast / Alert Banner -->
+    <div id="toastMessage" class="hidden p-4 rounded-xl text-sm font-medium border flex items-center justify-between shadow-lg fade-enter">
+      <div class="flex items-center gap-2.5" id="toastContent">
+        <!-- Message content dynamically injected -->
+      </div>
+      <button onclick="ocultarToast()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- Resumo / Dashboard Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 shadow-sm">
-        <p class="text-xs font-medium text-slate-400 mb-1">Total Gasto (Este Mês)</p>
-        <p class="text-3xl font-extrabold text-white" id="totalGasto">R$ 0,00</p>
+      <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 shadow-sm hover:border-slate-600 transition">
+        <div class="flex justify-between items-start">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Gasto (Este Mês)</p>
+          <i class="fa-solid fa-chart-line text-emerald-400/60 text-sm"></i>
+        </div>
+        <p class="text-3xl font-extrabold text-white mt-2" id="totalGasto">R$ 0,00</p>
         <div class="mt-3 bg-slate-700/50 rounded-full h-2 overflow-hidden">
           <div id="barProgress" class="bg-emerald-500 h-full w-0 transition-all duration-500"></div>
         </div>
-        <p class="text-[11px] text-slate-400 mt-2 flex justify-between">
-          <span>Meta: R$ <span id="metaVal">3.000,00</span></span>
-          <button onclick="alterarMeta()" class="text-emerald-400 hover:underline">Editar Meta</button>
-        </p>
+        <div class="text-[11px] text-slate-400 mt-2.5 flex justify-between items-center">
+          <span>Meta: <strong class="text-slate-300">R$ <span id="metaVal">3.000,00</span></strong></span>
+          <button onclick="alterarMeta()" class="text-emerald-400 hover:text-emerald-300 font-semibold underline decoration-emerald-500/40">Editar Meta</button>
+        </div>
       </div>
 
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 shadow-sm">
-        <p class="text-xs font-medium text-slate-400 mb-1">Maior Categoria</p>
-        <p class="text-2xl font-bold text-white mt-1" id="topCategoria">-</p>
+      <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 shadow-sm hover:border-slate-600 transition">
+        <div class="flex justify-between items-start">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Maior Categoria</p>
+          <i class="fa-solid fa-tag text-emerald-400/60 text-sm"></i>
+        </div>
+        <p class="text-2xl font-bold text-white mt-2 truncate" id="topCategoria">-</p>
         <p class="text-xs text-slate-400 mt-2" id="topCategoriaValor">R$ 0,00 acumulado</p>
       </div>
 
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 shadow-sm">
-        <p class="text-xs font-medium text-slate-400 mb-1">Comprovantes & Prints Lidos</p>
-        <p class="text-2xl font-bold text-emerald-400 mt-1" id="totalLidos">0 notas</p>
-        <p class="text-xs text-slate-400 mt-2">Enviados para a planilha</p>
+      <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-5 shadow-sm hover:border-slate-600 transition">
+        <div class="flex justify-between items-start">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Comprovantes & Prints</p>
+          <i class="fa-solid fa-file-invoice text-emerald-400/60 text-sm"></i>
+        </div>
+        <p class="text-2xl font-bold text-emerald-400 mt-2" id="totalLidos">0 notas</p>
+        <p class="text-xs text-slate-400 mt-2">Enviados para o Google Sheets</p>
       </div>
     </div>
 
-    <!-- Upload de Prints e Câmera sem Restrições -->
+    <!-- Upload/Import Area -->
     <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-6 shadow-xl">
-      <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-        <i class="fa-solid fa-image text-emerald-400"></i> Importar Print, Comprovante ou Papel
+      <h2 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+        <i class="fa-solid fa-images text-emerald-400"></i> Importar Print, Comprovante ou Papel Anotado
       </h2>
-      <p class="text-sm text-slate-400 mb-6">
-        Selecione um print da sua galeria de fotos (compras online) ou tire uma foto nova do comprovante ou papel escrito.
+      <p class="text-sm text-slate-400 mb-5">
+        Selecione qualquer foto ou print da galeria de fotos do seu celular, ou tire uma foto nova.
       </p>
 
-      <!-- Botão Único Aceita Qualquer Imagem -->
-      <div class="border-2 border-dashed border-emerald-500/40 hover:border-emerald-500 rounded-2xl p-8 text-center transition cursor-pointer bg-slate-900/60 flex flex-col items-center justify-center shadow-inner" onclick="document.getElementById('fileInput').click()">
-        <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="processarImagem(event)">
-        <div class="bg-emerald-500/10 p-4 rounded-full text-emerald-400 mb-3 border border-emerald-500/20">
-          <i class="fa-solid fa-images text-3xl"></i>
+      <!-- Dropzone/File Select Button -->
+      <div 
+        id="dropArea"
+        onclick="document.getElementById('fileInput').click()"
+        class="border-2 border-dashed border-emerald-500/40 hover:border-emerald-400/80 hover:bg-slate-800/90 rounded-2xl p-8 text-center transition-all cursor-pointer bg-slate-900/60 flex flex-col items-center justify-center shadow-inner group"
+      >
+        <!-- Notice accept="image/*" without capture attribute so gallery & camera choices work cleanly on both Android & iOS -->
+        <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="aoSelecionarArquivo(event)">
+        
+        <div class="bg-emerald-500/10 group-hover:bg-emerald-500/20 p-4 rounded-full text-emerald-400 mb-3 border border-emerald-500/20 transition-all group-hover:scale-105">
+          <i class="fa-solid fa-cloud-arrow-up text-3xl"></i>
         </div>
-        <p class="text-base font-bold text-slate-100">Escolher da Galeria (Print) ou Tirar Foto</p>
-        <p class="text-xs text-slate-400 mt-1">Toque aqui para abrir a biblioteca do seu celular</p>
+        <p class="text-base font-bold text-slate-100 group-hover:text-emerald-300 transition">Escolher da Galeria (Print) ou Tirar Foto</p>
+        <p class="text-xs text-slate-400 mt-1">Toque aqui para abrir as opções de arquivo do seu celular</p>
       </div>
 
-      <!-- Form Confirmação -->
-      <div id="formConfirmacao" class="hidden mt-6 bg-slate-900/90 border border-emerald-500/30 rounded-xl p-5 animate-fade-in shadow-lg">
-        <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
+      <!-- Confirmation & Input Form -->
+      <div id="formConfirmacao" class="hidden mt-6 bg-slate-900/95 border border-emerald-500/40 rounded-xl p-5 fade-enter shadow-2xl">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
           <p class="text-xs font-bold text-emerald-400 flex items-center gap-2">
-            <i class="fa-solid fa-circle-check text-base"></i> Preencha o valor e a descrição:
+            <i class="fa-solid fa-circle-check text-base"></i> Confirmar Lançamento do Gasto
           </p>
-          <span id="imgStatusPreview" class="text-emerald-400 text-xs bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md">📷 Imagem pronta</span>
+          <span id="imgStatusPreview" class="text-emerald-400 text-xs bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md font-medium flex items-center gap-1.5">
+            <i class="fa-solid fa-check"></i> Imagem Carregada
+          </span>
+        </div>
+
+        <!-- Image Thumbnail Preview -->
+        <div id="previewContainer" class="mb-4 hidden">
+          <div class="relative w-24 h-24 rounded-lg overflow-hidden border border-slate-700 bg-slate-800">
+            <img id="imageThumbnail" src="" alt="Preview" class="w-full h-full object-cover">
+            <button onclick="removerImagem()" type="button" class="absolute top-1 right-1 bg-slate-900/80 text-rose-400 p-1 rounded-full text-xs hover:bg-slate-900">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div>
-            <label class="block text-[11px] text-slate-400 mb-1 font-medium">Estabelecimento / Descrição</label>
-            <input type="text" id="descInput" placeholder="Ex: Mercado Livre / Pix" class="w-full bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
+            <label for="descInput" class="block text-[11px] text-slate-300 mb-1 font-semibold">Estabelecimento / Descrição *</label>
+            <input type="text" id="descInput" placeholder="Ex: Mercado Livre / Pix" class="w-full bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition">
           </div>
           <div>
-            <label class="block text-[11px] text-slate-400 mb-1 font-medium">Valor (R$)</label>
-            <input type="number" step="0.01" id="valorInput" placeholder="0,00" class="w-full bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
+            <label for="valorInput" class="block text-[11px] text-slate-300 mb-1 font-semibold">Valor (R$) *</label>
+            <input type="number" step="0.01" id="valorInput" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition font-semibold text-emerald-400">
           </div>
           <div>
-            <label class="block text-[11px] text-slate-400 mb-1 font-medium">Data</label>
-            <input type="date" id="dataInput" class="w-full bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
+            <label for="dataInput" class="block text-[11px] text-slate-300 mb-1 font-semibold">Data</label>
+            <input type="date" id="dataInput" class="w-full bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition">
           </div>
           <div>
-            <label class="block text-[11px] text-slate-400 mb-1 font-medium">Categoria</label>
-            <select id="categoriaInput" class="w-full bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
+            <label for="categoriaInput" class="block text-[11px] text-slate-300 mb-1 font-semibold">Categoria</label>
+            <select id="categoriaInput" class="w-full bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition">
               <option value="Alimentação">Alimentação</option>
               <option value="Supermercado">Supermercado</option>
               <option value="Transporte">Transporte</option>
@@ -122,85 +200,191 @@
           </div>
         </div>
 
-        <button onclick="salvarGasto()" id="btnSalvar" class="mt-4 w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
+        <button onclick="salvarGasto()" id="btnSalvar" class="mt-4 w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 active:scale-[0.99]">
           <i class="fa-solid fa-cloud-arrow-up"></i> Confirmar e Enviar para a Planilha MaRa
         </button>
       </div>
     </div>
 
-    <!-- Lista de Gastos e Gráfico -->
+    <!-- Expenses Table & Category Chart -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Table -->
       <div class="lg:col-span-2 bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 shadow-sm">
-        <h3 class="text-base font-bold text-white mb-4">Histórico de Gastos do Mês</h3>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-base font-bold text-white">Histórico de Gastos do Mês</h3>
+          <span class="text-xs text-slate-400" id="contadorRegistros">0 registros</span>
+        </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left text-sm text-slate-300">
-            <thead class="text-xs text-slate-400 uppercase bg-slate-900/50 border-b border-slate-700">
+            <thead class="text-xs text-slate-400 uppercase bg-slate-900/60 border-b border-slate-700">
               <tr>
                 <th class="p-3">Data</th>
                 <th class="p-3">Descrição</th>
                 <th class="p-3">Categoria</th>
                 <th class="p-3 text-right">Valor</th>
-                <th class="p-3 text-center">Status</th>
+                <th class="p-3 text-center">Ações</th>
               </tr>
             </thead>
-            <tbody id="tabelaGastos">
-              <!-- Inserido dinamicamente -->
+            <tbody id="tabelaGastos" class="divide-y divide-slate-700/50">
+              <!-- Dynamically populated -->
             </tbody>
           </table>
         </div>
       </div>
 
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 flex flex-col items-center shadow-sm">
+      <!-- Chart -->
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 flex flex-col items-center justify-between shadow-sm">
         <h3 class="text-base font-bold text-white mb-4 text-left w-full">Divisão por Categoria</h3>
-        <div class="w-full max-w-[240px]">
+        <div class="w-full max-w-[240px] my-auto">
           <canvas id="chartCategorias"></canvas>
         </div>
+        <p class="text-[11px] text-slate-400 text-center mt-4">Distribuição percentual das despesas</p>
       </div>
     </div>
 
   </main>
 
   <script>
+    // Webhook URL configured for Google Apps Script Web App
     const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxU7_uGTObenukASrSYgoQ39AJP2pSZ5eZKoAjSYucVPMLhB9sgmkGmHx9ZCQCwWfDW/exec";
 
-    let gastos = JSON.parse(localStorage.getItem('financas_mara_gastos')) || [];
-    let meta = parseFloat(localStorage.getItem('financas_mara_meta')) || 3000;
+    // Global State
+    let gastos = [];
+    let meta = 3000;
     let chartInstance = null;
     let imagemBase64Atual = "";
 
-    document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-    document.getElementById('dataInput').valueAsDate = new Date();
+    // Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      // Load stored expenses and budget target safely
+      try {
+        const storedGastos = localStorage.getItem('financas_mara_gastos');
+        if (storedGastos) gastos = JSON.parse(storedGastos);
+        
+        const storedMeta = localStorage.getItem('financas_mara_meta');
+        if (storedMeta) meta = parseFloat(storedMeta);
+      } catch (e) {
+        console.error("Erro ao carregar dados do localStorage:", e);
+        gastos = [];
+      }
 
-    function salvarStorage() {
-      localStorage.setItem('financas_mara_gastos', JSON.stringify(gastos));
-      localStorage.setItem('financas_mara_meta', meta);
+      document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      
+      // Set default date input to today
+      const hoje = new Date().toISOString().split('T')[0];
+      document.getElementById('dataInput').value = hoje;
+
       atualizarDashboard();
+    });
+
+    // Helper: Display Toast Feedback
+    function exibirToast(mensagem, tipo = 'sucesso') {
+      const toast = document.getElementById('toastMessage');
+      const content = document.getElementById('toastContent');
+
+      if (tipo === 'sucesso') {
+        toast.className = "p-4 rounded-xl text-sm font-medium border bg-emerald-500/10 border-emerald-500/30 text-emerald-300 flex items-center justify-between shadow-lg fade-enter";
+        content.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i> <span>${mensagem}</span>`;
+      } else if (tipo === 'erro') {
+        toast.className = "p-4 rounded-xl text-sm font-medium border bg-rose-500/10 border-rose-500/30 text-rose-300 flex items-center justify-between shadow-lg fade-enter";
+        content.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-400 text-lg"></i> <span>${mensagem}</span>`;
+      } else {
+        toast.className = "p-4 rounded-xl text-sm font-medium border bg-amber-500/10 border-amber-500/30 text-amber-300 flex items-center justify-between shadow-lg fade-enter";
+        content.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400 text-lg"></i> <span>${mensagem}</span>`;
+      }
+
+      toast.classList.remove('hidden');
+      setTimeout(() => ocultarToast(), 4500);
     }
 
-    function processarImagem(e) {
-      const file = e.target.files[0];
-      if (!file) return;
+    function ocultarToast() {
+      document.getElementById('toastMessage').classList.add('hidden');
+    }
+
+    // Handle File Selection (Gallery or Camera)
+    function aoSelecionarArquivo(e) {
+      const input = e.target;
+      if (!input.files || !input.files[0]) return;
+
+      const file = input.files[0];
+
+      // File size safety check (Max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        exibirToast("A imagem selecionada é muito grande. Escolha uma imagem de até 10MB.", "alerta");
+        input.value = "";
+        return;
+      }
 
       const reader = new FileReader();
-      reader.onload = function(uploadEvent) {
-        imagemBase64Atual = uploadEvent.target.result;
 
+      reader.onloadstart = function() {
+        document.getElementById('imgStatusPreview').innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processando...`;
         document.getElementById('formConfirmacao').classList.remove('hidden');
-        document.getElementById('descInput').value = file.name.replace(/\.[^/.]+$/, "").substring(0, 20);
-        document.getElementById('valorInput').value = '';
-        document.getElementById('valorInput').focus();
       };
+
+      reader.onload = function(event) {
+        imagemBase64Atual = event.target.result;
+
+        // Show image thumbnail preview
+        const imgThumb = document.getElementById('imageThumbnail');
+        imgThumb.src = imagemBase64Atual;
+        document.getElementById('previewContainer').classList.remove('hidden');
+
+        // Clean default description from file name
+        let nomeLimpo = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").trim();
+        if (nomeLimpo.length > 25) nomeLimpo = nomeLimpo.substring(0, 25);
+
+        const descField = document.getElementById('descInput');
+        if (!descField.value) {
+          descField.value = nomeLimpo;
+        }
+
+        document.getElementById('imgStatusPreview').innerHTML = `<i class="fa-solid fa-check"></i> Imagem Anexada`;
+        
+        // Focus directly on the Amount input for quick entry
+        setTimeout(() => {
+          document.getElementById('valorInput').focus();
+        }, 150);
+      };
+
+      reader.onerror = function() {
+        exibirToast("Erro ao ler o arquivo selecionado. Tente novamente.", "erro");
+        document.getElementById('formConfirmacao').classList.add('hidden');
+      };
+
       reader.readAsDataURL(file);
     }
 
-    async function salvarGasto() {
-      const desc = document.getElementById('descInput').value;
-      const valor = parseFloat(document.getElementById('valorInput').value);
-      const data = document.getElementById('dataInput').value;
-      const cat = document.getElementById('categoriaInput').value;
+    function removerImagem() {
+      imagemBase64Atual = "";
+      document.getElementById('fileInput').value = "";
+      document.getElementById('previewContainer').classList.add('hidden');
+      document.getElementById('imageThumbnail').src = "";
+      document.getElementById('imgStatusPreview').innerHTML = `<i class="fa-solid fa-info-circle"></i> Sem foto anexada`;
+    }
 
-      if (!desc || isNaN(valor) || valor <= 0) {
-        alert("Preencha a descrição do estabelecimento e um valor válido!");
+    // Save Expense & Trigger Cloud Sync
+    async function salvarGasto() {
+      const descInput = document.getElementById('descInput');
+      const valorInput = document.getElementById('valorInput');
+      const dataInput = document.getElementById('dataInput');
+      const catInput = document.getElementById('categoriaInput');
+
+      const desc = descInput.value.trim();
+      const valor = parseFloat(valorInput.value);
+      const data = dataInput.value || new Date().toISOString().split('T')[0];
+      const cat = catInput.value;
+
+      // Validation
+      if (!desc) {
+        exibirToast("Por favor, informe a descrição do gasto ou estabelecimento.", "alerta");
+        descInput.focus();
+        return;
+      }
+
+      if (isNaN(valor) || valor <= 0) {
+        exibirToast("Informe um valor maior que zero para o lançamento.", "alerta");
+        valorInput.focus();
         return;
       }
 
@@ -216,90 +400,161 @@
         imagemBase64: imagemBase64Atual
       };
 
+      // Send to Google Sheets / Google Drive via Apps Script Webhook
       try {
         await fetch(WEBHOOK_URL, {
           method: "POST",
           mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json"
+          },
           body: JSON.stringify(payload)
         });
       } catch (err) {
-        console.error("Erro ao sincronizar:", err);
+        console.warn("Sincronização enviada via modo no-cors. Verifique na planilha.", err);
       }
 
-      gastos.unshift({ id: Date.now(), desc, valor, data, cat });
+      // Add to local array
+      gastos.unshift({
+        id: Date.now(),
+        desc: desc,
+        valor: valor,
+        data: data,
+        cat: cat,
+        temImagem: !!imagemBase64Atual
+      });
+
       salvarStorage();
 
+      // UI Reset
       btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Confirmar e Enviar para a Planilha MaRa`;
       btn.disabled = false;
       document.getElementById('formConfirmacao').classList.add('hidden');
-      document.getElementById('descInput').value = '';
-      document.getElementById('valorInput').value = '';
-      imagemBase64Atual = "";
+      descInput.value = '';
+      valorInput.value = '';
+      document.getElementById('fileInput').value = '';
+      removerImagem();
 
-      const sync = document.getElementById('syncStatus');
-      sync.classList.remove('hidden');
-      setTimeout(() => sync.classList.add('hidden'), 4000);
+      // Show temporary badge in header
+      const syncBadge = document.getElementById('syncStatus');
+      syncBadge.classList.remove('hidden');
+      setTimeout(() => syncBadge.classList.add('hidden'), 4000);
+
+      exibirToast("Gasto registrado e enviado com sucesso!", "sucesso");
     }
 
     function deletarGasto(id) {
       gastos = gastos.filter(g => g.id !== id);
       salvarStorage();
+      exibirToast("Lançamento removido do histórico local.", "sucesso");
+    }
+
+    function salvarStorage() {
+      try {
+        localStorage.setItem('financas_mara_gastos', JSON.stringify(gastos));
+        localStorage.setItem('financas_mara_meta', meta);
+      } catch (e) {
+        console.error("Erro ao salvar no localStorage:", e);
+      }
+      atualizarDashboard();
     }
 
     function alterarMeta() {
-      const nova = prompt("Digite o novo valor para a meta mensal do casal (R$):", meta);
-      if (nova && !isNaN(nova)) {
-        meta = parseFloat(nova);
-        document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-        salvarStorage();
+      const novaMetaStr = prompt("Digite o novo valor para a meta de orçamento mensal (R$):", meta);
+      if (novaMetaStr !== null) {
+        const novaMeta = parseFloat(novaMetaStr.replace(',', '.'));
+        if (!isNaN(novaMeta) && novaMeta > 0) {
+          meta = novaMeta;
+          document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+          salvarStorage();
+          exibirToast("Meta mensal atualizada!", "sucesso");
+        } else {
+          exibirToast("Valor de meta inválido.", "alerta");
+        }
       }
     }
 
-    function limparDados() {
-      if (confirm("Deseja limpar o histórico local? (Os dados na sua planilha do Google continuam salvos)")) {
+    function limparDadosLocais() {
+      if (confirm("Deseja apagar os dados salvos localmente no navegador? (Obs: Os registros enviados para a sua planilha do Google continuarão salvos lá).")) {
         gastos = [];
         salvarStorage();
+        exibirToast("Histórico local restaurado.", "sucesso");
       }
     }
 
+    // Refresh UI Components & Charts
     function atualizarDashboard() {
       const total = gastos.reduce((acc, g) => acc + g.valor, 0);
       document.getElementById('totalGasto').innerText = 'R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      document.getElementById('totalLidos').innerText = gastos.length + ' notas';
+      document.getElementById('totalLidos').innerText = gastos.length + ' nota' + (gastos.length !== 1 ? 's' : '');
+      document.getElementById('contadorRegistros').innerText = gastos.length + ' registro' + (gastos.length !== 1 ? 's' : '');
 
+      // Budget Progress Bar
       const pct = Math.min((total / meta) * 100, 100);
       const bar = document.getElementById('barProgress');
       bar.style.width = pct + '%';
-      if (pct > 90) bar.className = 'bg-rose-500 h-full w-0 transition-all duration-500';
-      else if (pct > 70) bar.className = 'bg-amber-500 h-full w-0 transition-all duration-500';
-      else bar.className = 'bg-emerald-500 h-full w-0 transition-all duration-500';
 
+      if (pct > 90) {
+        bar.className = 'bg-rose-500 h-full w-0 transition-all duration-500';
+      } else if (pct > 70) {
+        bar.className = 'bg-amber-500 h-full w-0 transition-all duration-500';
+      } else {
+        bar.className = 'bg-emerald-500 h-full w-0 transition-all duration-500';
+      }
+
+      // Top Category Calculation
       const catTotals = {};
-      gastos.forEach(g => catTotals[g.cat] = (catTotals[g.cat] || 0) + g.valor);
+      gastos.forEach(g => {
+        catTotals[g.cat] = (catTotals[g.cat] || 0) + g.valor;
+      });
+
       let maxCat = '-', maxVal = 0;
       for (const [c, v] of Object.entries(catTotals)) {
-        if (v > maxVal) { maxVal = v; maxCat = c; }
+        if (v > maxVal) {
+          maxVal = v;
+          maxCat = c;
+        }
       }
       document.getElementById('topCategoria').innerText = maxCat;
-      document.getElementById('topCategoriaValor').innerText = 'R$ ' + maxVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + ' acumulado';
+      document.getElementById('topCategoriaValor').innerText = maxVal > 0 ? ('R$ ' + maxVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + ' acumulado') : 'R$ 0,00 acumulado';
 
+      // Table Render
       const tbody = document.getElementById('tabelaGastos');
       tbody.innerHTML = '';
+
       if (gastos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum gasto registrado ainda.</td></tr>';
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="p-6 text-center text-slate-500">
+              <i class="fa-solid fa-receipt text-2xl mb-2 block opacity-40"></i>
+              Nenhum gasto registrado localmente neste mês.
+            </td>
+          </tr>`;
       } else {
         gastos.forEach(g => {
           const row = document.createElement('tr');
-          row.className = 'border-b border-slate-700/50 hover:bg-slate-800/30';
+          row.className = 'hover:bg-slate-800/40 transition-colors';
+          
+          // Format date display
+          const partesData = g.data.split('-');
+          const dataFormatada = partesData.length === 3 ? `${partesData[2]}/${partesData[1]}/${partesData[0]}` : g.data;
+
           row.innerHTML = `
-            <td class="p-3 text-slate-400 text-xs">${g.data}</td>
-            <td class="p-3 font-medium text-white">${g.desc}</td>
-            <td class="p-3"><span class="bg-slate-700 text-xs px-2 py-1 rounded-md text-slate-300">${g.cat}</span></td>
-            <td class="p-3 text-right font-bold text-emerald-400">R$ ${g.valor.toFixed(2)}</td>
-            <td class="p-3 text-center flex items-center justify-center gap-2">
-              <span class="text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">Salvo</span>
-              <button onclick="deletarGasto(${g.id})" class="text-slate-500 hover:text-rose-400 transition"><i class="fa-solid fa-trash"></i></button>
+            <td class="p-3 text-slate-400 text-xs font-medium">${dataFormatada}</td>
+            <td class="p-3 font-semibold text-white flex items-center gap-1.5">
+              ${g.temImagem ? '<i class="fa-solid fa-image text-emerald-400 text-xs" title="Com comprovante anexado"></i>' : ''}
+              <span>${escapeHtml(g.desc)}</span>
+            </td>
+            <td class="p-3">
+              <span class="bg-slate-700/80 text-xs px-2.5 py-1 rounded-md text-slate-200 border border-slate-600/50">
+                ${escapeHtml(g.cat)}
+              </span>
+            </td>
+            <td class="p-3 text-right font-extrabold text-emerald-400">R$ ${g.valor.toFixed(2)}</td>
+            <td class="p-3 text-center">
+              <button onclick="deletarGasto(${g.id})" class="text-slate-500 hover:text-rose-400 p-1.5 transition" title="Excluir do histórico local">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
             </td>
           `;
           tbody.appendChild(row);
@@ -314,8 +569,13 @@
       const labels = Object.keys(catTotals);
       const data = Object.values(catTotals);
 
-      if (chartInstance) chartInstance.destroy();
-      if (labels.length === 0) return;
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      if (labels.length === 0) {
+        return;
+      }
 
       chartInstance = new Chart(ctx, {
         type: 'doughnut',
@@ -323,10 +583,55 @@
           labels: labels,
           datasets: [{
             data: data,
-            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4', '#64748b']
+            backgroundColor: [
+              '#10b981', // emerald
+              '#3b82f6', // blue
+              '#f59e0b', // amber
+              '#ec4899', // pink
+              '#8b5cf6', // purple
+              '#06b6d4', // cyan
+              '#f97316', // orange
+              '#64748b'  // slate
+            ],
+            borderWidth: 2,
+            borderColor: '#1e293b'
           }]
         },
         options: {
           responsive: true,
+          maintainAspectRatio: true,
           plugins: {
-            legend: { position: 'bottom', labels: { color: '#94a3b8', font:
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#94a3b8',
+                font: { size: 10, family: 'Plus Jakarta Sans' },
+                padding: 10,
+                usePointStyle: true
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const val = context.raw || 0;
+                  return ` R$ ${val.toFixed(2)}`;
+                }
+              }
+            }
+          },
+          cutout: '68%'
+        }
+      });
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
