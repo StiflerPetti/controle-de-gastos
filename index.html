@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Controle de Gastos com IA & Planilha</title>
+  <title>Finanças MaRa - Controle de Gastos</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -14,16 +14,16 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
 
-  <!-- Header -->
-  <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 sticky top-0 z-50">
+  <!-- Header Personalizado -->
+  <header class="bg-slate-800/90 backdrop-blur border-b border-emerald-500/20 sticky top-0 z-50 shadow-lg">
     <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <div class="bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20 text-emerald-400">
-          <i class="fa-solid fa-brain text-xl"></i>
+        <div class="bg-gradient-to-tr from-emerald-500 to-teal-400 p-2.5 rounded-2xl text-slate-950 shadow-md shadow-emerald-500/20">
+          <i class="fa-solid fa-wallet text-xl"></i>
         </div>
         <div>
-          <h1 class="text-xl font-bold tracking-tight">Finanças IA</h1>
-          <p class="text-xs text-slate-400">Sincronizado com Google Drive & Planilhas</p>
+          <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">Finanças MaRa</h1>
+          <p class="text-xs text-slate-400 font-medium">Mayone & Rafaella • Google Drive & Planilhas</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -41,7 +41,7 @@
 
     <!-- Orçamento / Resumo -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5">
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 shadow-sm">
         <p class="text-xs font-medium text-slate-400 mb-1">Total Gasto (Este Mês)</p>
         <p class="text-3xl font-extrabold text-white" id="totalGasto">R$ 0,00</p>
         <div class="mt-3 bg-slate-700/50 rounded-full h-2 overflow-hidden">
@@ -53,78 +53,77 @@
         </p>
       </div>
 
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5">
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 shadow-sm">
         <p class="text-xs font-medium text-slate-400 mb-1">Maior Categoria</p>
         <p class="text-2xl font-bold text-white mt-1" id="topCategoria">-</p>
         <p class="text-xs text-slate-400 mt-2" id="topCategoriaValor">R$ 0,00 acumulado</p>
       </div>
 
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5">
-        <p class="text-xs font-medium text-slate-400 mb-1">Comprovantes Lidos por IA</p>
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 shadow-sm">
+        <p class="text-xs font-medium text-slate-400 mb-1">Comprovantes Lidos</p>
         <p class="text-2xl font-bold text-emerald-400 mt-1" id="totalLidos">0 notas</p>
-        <p class="text-xs text-slate-400 mt-2">Enviados para o Google Sheets</p>
+        <p class="text-xs text-slate-400 mt-2">Enviados para a planilha</p>
       </div>
     </div>
 
-    <!-- Leitor IA / Upload -->
+    <!-- Leitor por Câmera / Upload Direto -->
     <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-6 shadow-xl">
       <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-        <i class="fa-solid fa-camera text-emerald-400"></i> Escanear Comprovante ou Papel Manuscrito
+        <i class="fa-solid fa-camera text-emerald-400"></i> Adicionar Comprovante ou Nota Manuscrita
       </h2>
-      <p class="text-sm text-slate-400 mb-4">
-        Tire uma foto do cupom do cartão, nota fiscal ou anotação num papel. A foto irá para o seu Drive e os dados para a planilha.
+      <p class="text-sm text-slate-400 mb-6">
+        Tire uma foto direto pelo celular ou selecione o arquivo do comprovante do cartão/papel. A imagem será salva no Drive e os dados na planilha de vocês.
       </p>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Area de Drop/Upload -->
-        <div class="border-2 border-dashed border-slate-600 hover:border-emerald-500/60 rounded-xl p-6 text-center transition cursor-pointer bg-slate-900/40 flex flex-col items-center justify-center min-h-[180px]" onclick="document.getElementById('fileInput').click()">
-          <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="processarImagem(event)">
-          <i class="fa-solid fa-cloud-arrow-up text-3xl text-emerald-400 mb-2"></i>
-          <p class="text-sm font-semibold text-slate-200">Clique para tirar foto ou selecionar imagem</p>
-          <p class="text-xs text-slate-500 mt-1">Comprovantes, cartões ou manuscritos</p>
+      <!-- Botão Único de Câmera/Upload Destacado -->
+      <div class="border-2 border-dashed border-emerald-500/40 hover:border-emerald-500 rounded-2xl p-8 text-center transition cursor-pointer bg-slate-900/60 flex flex-col items-center justify-center shadow-inner" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept="image/*" capture="environment" class="hidden" onchange="processarImagem(event)">
+        <div class="bg-emerald-500/10 p-4 rounded-full text-emerald-400 mb-3 border border-emerald-500/20">
+          <i class="fa-solid fa-camera-retro text-3xl"></i>
         </div>
-
-        <!-- Botões de Exemplo / Teste Rápido -->
-        <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50 space-y-2">
-          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Simular Leitura Instantânea:</p>
-          <button onclick="simularIA('cartao')" class="w-full text-left bg-slate-800 hover:bg-slate-700 border border-slate-700 p-2.5 rounded-lg text-xs flex justify-between items-center transition">
-            <span><i class="fa-solid fa-credit-card text-sky-400 mr-2"></i> Comprovante de Cartão (Alimentação)</span>
-            <span class="text-slate-400">R$ 87,50</span>
-          </button>
-          <button onclick="simularIA('supermercado')" class="w-full text-left bg-slate-800 hover:bg-slate-700 border border-slate-700 p-2.5 rounded-lg text-xs flex justify-between items-center transition">
-            <span><i class="fa-solid fa-cart-shopping text-amber-400 mr-2"></i> Cupom Mercado (Supermercado)</span>
-            <span class="text-slate-400">R$ 342,10</span>
-          </button>
-          <button onclick="simularIA('manuscrito')" class="w-full text-left bg-slate-800 hover:bg-slate-700 border border-slate-700 p-2.5 rounded-lg text-xs flex justify-between items-center transition">
-            <span><i class="fa-solid fa-pen-line text-emerald-400 mr-2"></i> Papel Escrito à Mão (Combustível)</span>
-            <span class="text-slate-400">R$ 150,00</span>
-          </button>
-        </div>
+        <p class="text-base font-bold text-slate-100">Tirar Foto ou Escolher Arquivo</p>
+        <p class="text-xs text-slate-400 mt-1">Comprovantes, cupons fiscais ou anotações à mão</p>
       </div>
 
-      <!-- Form Confirmação (Oculto até ler) -->
-      <div id="formConfirmacao" class="hidden mt-6 bg-slate-900/80 border border-emerald-500/30 rounded-xl p-4 animate-fade-in">
-        <p class="text-xs font-bold text-emerald-400 mb-3 flex items-center justify-between">
-          <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> Dados identificados pela IA (Confirme abaixo):</span>
-          <span id="imgStatusPreview" class="text-slate-400 text-[11px]">Nenhuma foto anexada</span>
-        </p>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <input type="text" id="descInput" placeholder="Estabelecimento / Descrição" class="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
-          <input type="number" step="0.01" id="valorInput" placeholder="Valor (R$)" class="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
-          <input type="date" id="dataInput" class="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
-          <select id="categoriaInput" class="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
-            <option value="Alimentação">Alimentação</option>
-            <option value="Supermercado">Supermercado</option>
-            <option value="Transporte">Transporte</option>
-            <option value="Lazer">Lazer</option>
-            <option value="Saúde">Saúde</option>
-            <option value="Educação">Educação</option>
-            <option value="Moradia">Moradia</option>
-            <option value="Outros">Outros</option>
-          </select>
+      <!-- Form Confirmação (Oculto até anexar foto) -->
+      <div id="formConfirmacao" class="hidden mt-6 bg-slate-900/90 border border-emerald-500/30 rounded-xl p-5 animate-fade-in shadow-lg">
+        <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
+          <p class="text-xs font-bold text-emerald-400 flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-base"></i> Preencha os dados do gasto:
+          </p>
+          <span id="imgStatusPreview" class="text-slate-400 text-xs bg-slate-800 px-2.5 py-1 rounded-md">Foto anexada</span>
         </div>
-        <button onclick="salvarGasto()" id="btnSalvar" class="mt-3 w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2">
-          <span>Confirmar e Enviar para o Google Sheets</span>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1 font-medium">Estabelecimento</label>
+            <input type="text" id="descInput" placeholder="Ex: Supermercado" class="w-full bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1 font-medium">Valor (R$)</label>
+            <input type="number" step="0.01" id="valorInput" placeholder="0,00" class="w-full bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1 font-medium">Data</label>
+            <input type="date" id="dataInput" class="w-full bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1 font-medium">Categoria</label>
+            <select id="categoriaInput" class="w-full bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
+              <option value="Alimentação">Alimentação</option>
+              <option value="Supermercado">Supermercado</option>
+              <option value="Transporte">Transporte</option>
+              <option value="Lazer">Lazer</option>
+              <option value="Saúde">Saúde</option>
+              <option value="Educação">Educação</option>
+              <option value="Moradia">Moradia</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+        </div>
+
+        <button onclick="salvarGasto()" id="btnSalvar" class="mt-4 w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Confirmar e Enviar para a Planilha MaRa
         </button>
       </div>
     </div>
@@ -132,7 +131,7 @@
     <!-- Lista de Gastos e Gráfico -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Tabela -->
-      <div class="lg:col-span-2 bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5">
+      <div class="lg:col-span-2 bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 shadow-sm">
         <h3 class="text-base font-bold text-white mb-4">Histórico de Gastos do Mês</h3>
         <div class="overflow-x-auto">
           <table class="w-full text-left text-sm text-slate-300">
@@ -142,7 +141,7 @@
                 <th class="p-3">Descrição</th>
                 <th class="p-3">Categoria</th>
                 <th class="p-3 text-right">Valor</th>
-                <th class="p-3 text-center">Foto / Ações</th>
+                <th class="p-3 text-center">Status</th>
               </tr>
             </thead>
             <tbody id="tabelaGastos">
@@ -153,7 +152,7 @@
       </div>
 
       <!-- Gráfico Categoria -->
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 flex flex-col items-center">
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 flex flex-col items-center shadow-sm">
         <h3 class="text-base font-bold text-white mb-4 text-left w-full">Divisão por Categoria</h3>
         <div class="w-full max-w-[240px]">
           <canvas id="chartCategorias"></canvas>
@@ -164,217 +163,7 @@
   </main>
 
   <script>
-    // URL DO GOOGLE APPS SCRIPT
     const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxU7_uGTObenukASrSYgoQ39AJP2pSZ5eZKoAjSYucVPMLhB9sgmkGmHx9ZCQCwWfDW/exec";
 
-    let gastos = JSON.parse(localStorage.getItem('financas_gastos')) || [];
-    let meta = parseFloat(localStorage.getItem('financas_meta')) || 3000;
-    let chartInstance = null;
-    let imagemBase64Atual = "";
-
-    document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-    document.getElementById('dataInput').valueAsDate = new Date();
-
-    function salvarStorage() {
-      localStorage.setItem('financas_gastos', JSON.stringify(gastos));
-      localStorage.setItem('financas_meta', meta);
-      atualizarDashboard();
-    }
-
-    function simularIA(tipo) {
-      imagemBase64Atual = "";
-      document.getElementById('imgStatusPreview').innerText = "Sem imagem (teste rápido)";
-      const form = document.getElementById('formConfirmacao');
-      form.classList.remove('hidden');
-
-      if (tipo === 'cartao') {
-        document.getElementById('descInput').value = 'Restaurante OutBack';
-        document.getElementById('valorInput').value = '87.50';
-        document.getElementById('categoriaInput').value = 'Alimentação';
-      } else if (tipo === 'supermercado') {
-        document.getElementById('descInput').value = 'Supermercado Carrefour';
-        document.getElementById('valorInput').value = '342.10';
-        document.getElementById('categoriaInput').value = 'Supermercado';
-      } else if (tipo === 'manuscrito') {
-        document.getElementById('descInput').value = 'Posto Shell (Papel Manuscrito)';
-        document.getElementById('valorInput').value = '150.00';
-        document.getElementById('categoriaInput').value = 'Transporte';
-      }
-    }
-
-    function processarImagem(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(uploadEvent) {
-        imagemBase64Atual = uploadEvent.target.result;
-        document.getElementById('imgStatusPreview').innerText = "Foto anexada com sucesso! 📷";
-        
-        document.getElementById('formConfirmacao').classList.remove('hidden');
-        document.getElementById('descInput').value = 'Comprovante (' + file.name.substring(0, 12) + ')';
-        document.getElementById('valorInput').value = (Math.random() * 120 + 15).toFixed(2);
-        document.getElementById('categoriaInput').value = 'Outros';
-      };
-      reader.readAsDataURL(file);
-    }
-
-    async function salvarGasto() {
-      const desc = document.getElementById('descInput').value;
-      const valor = parseFloat(document.getElementById('valorInput').value);
-      const data = document.getElementById('dataInput').value;
-      const cat = document.getElementById('categoriaInput').value;
-
-      if (!desc || isNaN(valor) || valor <= 0) {
-        alert("Preencha a descrição e um valor válido!");
-        return;
-      }
-
-      const btn = document.getElementById('btnSalvar');
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Enviando para o Google Sheets e Drive...`;
-      btn.disabled = true;
-
-      const payload = {
-        data: data,
-        desc: desc,
-        cat: cat,
-        valor: valor,
-        imagemBase64: imagemBase64Atual
-      };
-
-      let linkDrive = "";
-
-      try {
-        const response = await fetch(WEBHOOK_URL, {
-          method: "POST",
-          mode: "no-cors", // Necessário para Google Apps Script
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        linkDrive = "Salvo no Drive";
-      } catch (err) {
-        console.error("Erro ao sincronizar:", err);
-      }
-
-      gastos.unshift({ 
-        id: Date.now(), 
-        desc, 
-        valor, 
-        data, 
-        cat, 
-        linkDrive: linkDrive 
-      });
-
-      salvarStorage();
-
-      btn.innerHTML = `Confirmar e Enviar para o Google Sheets`;
-      btn.disabled = false;
-      document.getElementById('formConfirmacao').classList.add('hidden');
-      document.getElementById('descInput').value = '';
-      document.getElementById('valorInput').value = '';
-      imagemBase64Atual = "";
-
-      const sync = document.getElementById('syncStatus');
-      sync.classList.remove('hidden');
-      setTimeout(() => sync.classList.add('hidden'), 4000);
-    }
-
-    function deletarGasto(id) {
-      gastos = gastos.filter(g => g.id !== id);
-      salvarStorage();
-    }
-
-    function alterarMeta() {
-      const nova = prompt("Digite o novo valor para a meta mensal (R$):", meta);
-      if (nova && !isNaN(nova)) {
-        meta = parseFloat(nova);
-        document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-        salvarStorage();
-      }
-    }
-
-    function limparDados() {
-      if (confirm("Deseja apagar o histórico local? (Os dados enviados para a planilha continuam salvos no Google Drive)")) {
-        gastos = [];
-        salvarStorage();
-      }
-    }
-
-    function atualizarDashboard() {
-      const total = gastos.reduce((acc, g) => acc + g.valor, 0);
-      document.getElementById('totalGasto').innerText = 'R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      document.getElementById('totalLidos').innerText = gastos.length + ' notas';
-
-      const pct = Math.min((total / meta) * 100, 100);
-      const bar = document.getElementById('barProgress');
-      bar.style.width = pct + '%';
-      if (pct > 90) bar.className = 'bg-rose-500 h-full w-0 transition-all duration-500';
-      else if (pct > 70) bar.className = 'bg-amber-500 h-full w-0 transition-all duration-500';
-      else bar.className = 'bg-emerald-500 h-full w-0 transition-all duration-500';
-
-      // Maior Categoria
-      const catTotals = {};
-      gastos.forEach(g => catTotals[g.cat] = (catTotals[g.cat] || 0) + g.valor);
-      let maxCat = '-', maxVal = 0;
-      for (const [c, v] of Object.entries(catTotals)) {
-        if (v > maxVal) { maxVal = v; maxCat = c; }
-      }
-      document.getElementById('topCategoria').innerText = maxCat;
-      document.getElementById('topCategoriaValor').innerText = 'R$ ' + maxVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + ' acumulado';
-
-      // Tabela
-      const tbody = document.getElementById('tabelaGastos');
-      tbody.innerHTML = '';
-      if (gastos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum gasto registrado ainda.</td></tr>';
-      } else {
-        gastos.forEach(g => {
-          const row = document.createElement('tr');
-          row.className = 'border-b border-slate-700/50 hover:bg-slate-800/30';
-          row.innerHTML = `
-            <td class="p-3 text-slate-400 text-xs">${g.data}</td>
-            <td class="p-3 font-medium text-white">${g.desc}</td>
-            <td class="p-3"><span class="bg-slate-700 text-xs px-2 py-1 rounded-md text-slate-300">${g.cat}</span></td>
-            <td class="p-3 text-right font-bold text-emerald-400">R$ ${g.valor.toFixed(2)}</td>
-            <td class="p-3 text-center flex items-center justify-center gap-2">
-              <span class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded" title="Enviado ao Sheets">Drive OK</span>
-              <button onclick="deletarGasto(${g.id})" class="text-slate-500 hover:text-rose-400 transition"><i class="fa-solid fa-trash"></i></button>
-            </td>
-          `;
-          tbody.appendChild(row);
-        });
-      }
-
-      renderGrafico(catTotals);
-    }
-
-    function renderGrafico(catTotals) {
-      const ctx = document.getElementById('chartCategorias').getContext('2d');
-      const labels = Object.keys(catTotals);
-      const data = Object.values(catTotals);
-
-      if (chartInstance) chartInstance.destroy();
-      if (labels.length === 0) return;
-
-      chartInstance = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: labels,
-          datasets: [{
-            data: data,
-            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4', '#64748b']
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } }
-          }
-        }
-      });
-    }
-
-    atualizarDashboard();
-  </script>
-</body>
-</html>
+    let gastos = JSON.parse(localStorage.getItem('financas_mara_gastos')) || [];
+    let meta = parseFloat(localStorage
