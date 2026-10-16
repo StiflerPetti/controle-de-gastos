@@ -66,13 +66,13 @@
       </div>
     </div>
 
-    <!-- Area de Importação de Fotos/Prints -->
+    <!-- Área de Importação de Fotos/Prints -->
     <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-6 shadow-xl">
       <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
         <i class="fa-solid fa-image text-emerald-400"></i> Importar Print ou Comprovante
       </h2>
       <p class="text-sm text-slate-400 mb-6">
-        Selecione um print da sua galeria de fotos ou tire uma foto do comprovante. O app otimiza a imagem para não travar o celular.
+        Selecione um print da sua galeria de fotos ou tire uma foto do comprovante.
       </p>
 
       <div class="border-2 border-dashed border-emerald-500/40 hover:border-emerald-500 rounded-2xl p-8 text-center transition cursor-pointer bg-slate-900/60 flex flex-col items-center justify-center shadow-inner" onclick="document.getElementById('fileInput').click()">
@@ -81,7 +81,7 @@
           <i class="fa-solid fa-images text-3xl"></i>
         </div>
         <p class="text-base font-bold text-slate-100">Escolher da Galeria (Print) ou Tirar Foto</p>
-        <p class="text-xs text-slate-400 mt-1">Clique para selecionar</p>
+        <p class="text-xs text-slate-400 mt-1">Clique para abrir a biblioteca do celular</p>
       </div>
 
       <!-- Form Confirmação -->
@@ -179,54 +179,28 @@
       atualizarDashboard();
     }
 
-    // COMPACTADOR AUTOMÁTICO DE IMAGEM PARA CELULAR (Evita travamentos)
+    // PROCESSAMENTO DIRETO E COMPATÍVEL COM NAVEGADORES MOBILE
     function processarImagem(e) {
       const file = e.target.files[0];
       if (!file) return;
 
+      // Exibe a área de formulário IMEDIATAMENTE (sem esperar compilar imagem)
+      const formConfirm = document.getElementById('formConfirmacao');
+      formConfirm.classList.remove('hidden');
+
+      const descInput = document.getElementById('descInput');
+      descInput.value = file.name.replace(/\.[^/.]+$/, "").substring(0, 20);
+
+      // Lê a imagem em formato Base64 direto
       const reader = new FileReader();
       reader.onload = function(uploadEvent) {
-        const img = new Image();
-        img.onload = function() {
-          // Redimensiona para no máximo 800px mantendo proporção
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-          const maxDim = 800;
+        imagemBase64Atual = uploadEvent.target.result;
 
-          if (width > height) {
-            if (width > maxDim) {
-              height = Math.round((height * maxDim) / width);
-              width = maxDim;
-            }
-          } else {
-            if (height > maxDim) {
-              width = Math.round((width * maxDim) / height);
-              height = maxDim;
-            }
-          }
+        const imgPreview = document.getElementById('imgPreview');
+        imgPreview.src = imagemBase64Atual;
+        imgPreview.classList.remove('hidden');
 
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // Converte para JPG leve (qualidade 0.7)
-          imagemBase64Atual = canvas.toDataURL('image/jpeg', 0.7);
-
-          // Atualiza Interface
-          const imgPreview = document.getElementById('imgPreview');
-          imgPreview.src = imagemBase64Atual;
-          imgPreview.classList.remove('hidden');
-
-          document.getElementById('formConfirmacao').classList.remove('hidden');
-          document.getElementById('descInput').value = file.name.replace(/\.[^/.]+$/, "").substring(0, 20);
-          document.getElementById('valorInput').value = '';
-          
-          // Libera o campo de valor para digitação rápida
-          setTimeout(() => document.getElementById('valorInput').focus(), 300);
-        };
-        img.src = uploadEvent.target.result;
+        document.getElementById('valorInput').focus();
       };
       reader.readAsDataURL(file);
     }
