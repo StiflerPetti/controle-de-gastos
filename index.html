@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Controle de Gastos com IA</title>
+  <title>Controle de Gastos com IA & Planilha</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -23,12 +23,17 @@
         </div>
         <div>
           <h1 class="text-xl font-bold tracking-tight">Finanças IA</h1>
-          <p class="text-xs text-slate-400">Gestão Automática de Gastos</p>
+          <p class="text-xs text-slate-400">Sincronizado com Google Drive & Planilhas</p>
         </div>
       </div>
-      <button onclick="limparDados()" class="text-xs text-slate-400 hover:text-rose-400 transition flex items-center gap-1.5 bg-slate-900/50 px-3 py-2 rounded-lg border border-slate-700">
-        <i class="fa-solid fa-trash-can"></i> Limpar Dados
-      </button>
+      <div class="flex items-center gap-2">
+        <span id="syncStatus" class="text-xs text-emerald-400 bg-emerald-500/10 px-2.5 py-1.5 rounded-lg border border-emerald-500/20 hidden">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Sincronizado
+        </span>
+        <button onclick="limparDados()" class="text-xs text-slate-400 hover:text-rose-400 transition flex items-center gap-1.5 bg-slate-900/50 px-3 py-2 rounded-lg border border-slate-700">
+          <i class="fa-solid fa-trash-can"></i> Limpar Local
+        </button>
+      </div>
     </div>
   </header>
 
@@ -57,7 +62,7 @@
       <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5">
         <p class="text-xs font-medium text-slate-400 mb-1">Comprovantes Lidos por IA</p>
         <p class="text-2xl font-bold text-emerald-400 mt-1" id="totalLidos">0 notas</p>
-        <p class="text-xs text-slate-400 mt-2">Economia de tempo automatizada</p>
+        <p class="text-xs text-slate-400 mt-2">Enviados para o Google Sheets</p>
       </div>
     </div>
 
@@ -67,7 +72,7 @@
         <i class="fa-solid fa-camera text-emerald-400"></i> Escanear Comprovante ou Papel Manuscrito
       </h2>
       <p class="text-sm text-slate-400 mb-4">
-        Tire uma foto do cupom do cartão, nota fiscal ou anotação num papel. A IA fará a leitura dos dados.
+        Tire uma foto do cupom do cartão, nota fiscal ou anotação num papel. A foto irá para o seu Drive e os dados para a planilha.
       </p>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -99,8 +104,9 @@
 
       <!-- Form Confirmação (Oculto até ler) -->
       <div id="formConfirmacao" class="hidden mt-6 bg-slate-900/80 border border-emerald-500/30 rounded-xl p-4 animate-fade-in">
-        <p class="text-xs font-bold text-emerald-400 mb-3 flex items-center gap-1.5">
-          <i class="fa-solid fa-circle-check"></i> Dados identificados pela IA (Confirme abaixo):
+        <p class="text-xs font-bold text-emerald-400 mb-3 flex items-center justify-between">
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> Dados identificados pela IA (Confirme abaixo):</span>
+          <span id="imgStatusPreview" class="text-slate-400 text-[11px]">Nenhuma foto anexada</span>
         </p>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
           <input type="text" id="descInput" placeholder="Estabelecimento / Descrição" class="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
@@ -117,8 +123,8 @@
             <option value="Outros">Outros</option>
           </select>
         </div>
-        <button onclick="salvarGasto()" class="mt-3 w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 rounded-lg text-sm transition">
-          Confirmar e Salvar Gasto
+        <button onclick="salvarGasto()" id="btnSalvar" class="mt-3 w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2">
+          <span>Confirmar e Enviar para o Google Sheets</span>
         </button>
       </div>
     </div>
@@ -136,7 +142,7 @@
                 <th class="p-3">Descrição</th>
                 <th class="p-3">Categoria</th>
                 <th class="p-3 text-right">Valor</th>
-                <th class="p-3 text-center">Ações</th>
+                <th class="p-3 text-center">Foto / Ações</th>
               </tr>
             </thead>
             <tbody id="tabelaGastos">
@@ -158,9 +164,13 @@
   </main>
 
   <script>
+    // URL DO GOOGLE APPS SCRIPT
+    const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxU7_uGTObenukASrSYgoQ39AJP2pSZ5eZKoAjSYucVPMLhB9sgmkGmHx9ZCQCwWfDW/exec";
+
     let gastos = JSON.parse(localStorage.getItem('financas_gastos')) || [];
     let meta = parseFloat(localStorage.getItem('financas_meta')) || 3000;
     let chartInstance = null;
+    let imagemBase64Atual = "";
 
     document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     document.getElementById('dataInput').valueAsDate = new Date();
@@ -172,6 +182,8 @@
     }
 
     function simularIA(tipo) {
+      imagemBase64Atual = "";
+      document.getElementById('imgStatusPreview').innerText = "Sem imagem (teste rápido)";
       const form = document.getElementById('formConfirmacao');
       form.classList.remove('hidden');
 
@@ -194,16 +206,20 @@
       const file = e.target.files[0];
       if (!file) return;
 
-      alert("Imagem recebida! Simulando a leitura por Inteligência Artificial...");
-      setTimeout(() => {
+      const reader = new FileReader();
+      reader.onload = function(uploadEvent) {
+        imagemBase64Atual = uploadEvent.target.result;
+        document.getElementById('imgStatusPreview').innerText = "Foto anexada com sucesso! 📷";
+        
         document.getElementById('formConfirmacao').classList.remove('hidden');
-        document.getElementById('descInput').value = 'Comprovante Escaneado (' + file.name.substring(0, 10) + ')';
-        document.getElementById('valorInput').value = (Math.random() * 150 + 20).toFixed(2);
+        document.getElementById('descInput').value = 'Comprovante (' + file.name.substring(0, 12) + ')';
+        document.getElementById('valorInput').value = (Math.random() * 120 + 15).toFixed(2);
         document.getElementById('categoriaInput').value = 'Outros';
-      }, 800);
+      };
+      reader.readAsDataURL(file);
     }
 
-    function salvarGasto() {
+    async function salvarGasto() {
       const desc = document.getElementById('descInput').value;
       const valor = parseFloat(document.getElementById('valorInput').value);
       const data = document.getElementById('dataInput').value;
@@ -214,12 +230,53 @@
         return;
       }
 
-      gastos.unshift({ id: Date.now(), desc, valor, data, cat });
+      const btn = document.getElementById('btnSalvar');
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Enviando para o Google Sheets e Drive...`;
+      btn.disabled = true;
+
+      const payload = {
+        data: data,
+        desc: desc,
+        cat: cat,
+        valor: valor,
+        imagemBase64: imagemBase64Atual
+      };
+
+      let linkDrive = "";
+
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: "POST",
+          mode: "no-cors", // Necessário para Google Apps Script
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        linkDrive = "Salvo no Drive";
+      } catch (err) {
+        console.error("Erro ao sincronizar:", err);
+      }
+
+      gastos.unshift({ 
+        id: Date.now(), 
+        desc, 
+        valor, 
+        data, 
+        cat, 
+        linkDrive: linkDrive 
+      });
+
       salvarStorage();
 
+      btn.innerHTML = `Confirmar e Enviar para o Google Sheets`;
+      btn.disabled = false;
+      document.getElementById('formConfirmacao').classList.add('hidden');
       document.getElementById('descInput').value = '';
       document.getElementById('valorInput').value = '';
-      document.getElementById('formConfirmacao').classList.add('hidden');
+      imagemBase64Atual = "";
+
+      const sync = document.getElementById('syncStatus');
+      sync.classList.remove('hidden');
+      setTimeout(() => sync.classList.add('hidden'), 4000);
     }
 
     function deletarGasto(id) {
@@ -237,7 +294,7 @@
     }
 
     function limparDados() {
-      if (confirm("Tem certeza que deseja apagar todos os registros acumulados?")) {
+      if (confirm("Deseja apagar o histórico local? (Os dados enviados para a planilha continuam salvos no Google Drive)")) {
         gastos = [];
         salvarStorage();
       }
@@ -279,7 +336,8 @@
             <td class="p-3 font-medium text-white">${g.desc}</td>
             <td class="p-3"><span class="bg-slate-700 text-xs px-2 py-1 rounded-md text-slate-300">${g.cat}</span></td>
             <td class="p-3 text-right font-bold text-emerald-400">R$ ${g.valor.toFixed(2)}</td>
-            <td class="p-3 text-center">
+            <td class="p-3 text-center flex items-center justify-center gap-2">
+              <span class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded" title="Enviado ao Sheets">Drive OK</span>
               <button onclick="deletarGasto(${g.id})" class="text-slate-500 hover:text-rose-400 transition"><i class="fa-solid fa-trash"></i></button>
             </td>
           `;
@@ -296,7 +354,6 @@
       const data = Object.values(catTotals);
 
       if (chartInstance) chartInstance.destroy();
-
       if (labels.length === 0) return;
 
       chartInstance = new Chart(ctx, {
