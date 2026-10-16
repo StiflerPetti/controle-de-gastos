@@ -1,1004 +1,323 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="h-full">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinAI - Controle de Gastos Inteligente</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome para ícones -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        primary: {
-                            50: '#eef2ff',
-                            100: '#e0e7ff',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Gastos com IA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-800 h-full flex flex-col font-sans antialiased">
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
 
-    <!-- Header / Navbar -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-200">
-                    <i class="fa-solid fa-receipt text-lg"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg text-slate-900 tracking-tight">FinAI <span class="text-xs px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full font-semibold border border-indigo-100">IA Scanner</span></h1>
-                    <p class="text-xs text-slate-500">Controle Inteligente de Gastos</p>
-                </div>
-            </div>
-            
-            <div class="flex items-center space-x-3">
-                <button onclick="openModal('manual')" class="inline-flex items-center space-x-2 bg-white hover:bg-slate-50 text-slate-700 text-sm font-medium py-2 px-3 sm:px-4 rounded-xl border border-slate-200 transition shadow-xs">
-                    <i class="fa-solid fa-plus text-slate-500"></i>
-                    <span class="hidden sm:inline">Novo Gasto</span>
-                </button>
-                <button onclick="openModal('ai')" class="inline-flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 px-4 rounded-xl shadow-md shadow-indigo-100 transition">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <span>Escanear Comprovante</span>
-                </button>
-            </div>
+  <!-- Header -->
+  <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20 text-emerald-400">
+          <i class="fa-solid fa-brain text-xl"></i>
         </div>
-    </header>
-
-    <!-- Conteúdo Principal -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-
-        <!-- Barra de Mês e Resumo Rápido -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs">
-            <div class="flex items-center space-x-4">
-                <div class="p-2 bg-slate-100 rounded-lg text-slate-600">
-                    <i class="fa-regular fa-calendar text-lg"></i>
-                </div>
-                <div>
-                    <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Período de Referência</span>
-                    <div class="flex items-center space-x-2">
-                        <select id="filterMonth" onchange="updateDashboard()" class="font-semibold text-slate-800 bg-transparent border-none focus:ring-0 cursor-pointer pr-8 text-base">
-                            <option value="2026-10">Outubro 2026</option>
-                            <option value="2026-09">Setembro 2026</option>
-                            <option value="2026-08">Agosto 2026</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex items-center space-x-2 sm:space-x-4">
-                <button onclick="exportData()" class="text-slate-600 hover:text-indigo-600 text-xs font-medium bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-100 px-3 py-2 rounded-lg transition flex items-center space-x-1.5">
-                    <i class="fa-solid fa-download"></i>
-                    <span>Exportar JSON</span>
-                </button>
-                <button onclick="confirmResetData()" class="text-rose-600 hover:text-rose-700 text-xs font-medium bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-2 rounded-lg transition flex items-center space-x-1.5">
-                    <i class="fa-solid fa-trash-can"></i>
-                    <span>Limpar Dados</span>
-                </button>
-            </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">Finanças IA</h1>
+          <p class="text-xs text-slate-400">Gestão Automática de Gastos</p>
         </div>
+      </div>
+      <button onclick="limparDados()" class="text-xs text-slate-400 hover:text-rose-400 transition flex items-center gap-1.5 bg-slate-900/50 px-3 py-2 rounded-lg border border-slate-700">
+        <i class="fa-solid fa-trash-can"></i> Limpar Dados
+      </button>
+    </div>
+  </header>
 
-        <!-- Dashboard Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <!-- Total Gasto -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs relative overflow-hidden">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Gasto</p>
-                        <h3 id="cardTotalSpent" class="text-2xl font-bold text-slate-900 mt-1">R$ 0,00</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-wallet"></i>
-                    </div>
-                </div>
-                <div class="mt-4 flex items-center text-xs text-slate-500">
-                    <span id="cardSpentCount" class="font-medium text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded mr-1.5">0 transações</span> neste mês
-                </div>
-            </div>
+  <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
 
-            <!-- Orçamento Mensal -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs relative overflow-hidden">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Orçamento Limite</p>
-                        <div class="flex items-center space-x-2 mt-1">
-                            <h3 id="cardBudget" class="text-2xl font-bold text-slate-900">R$ 3.500,00</h3>
-                            <button onclick="editBudget()" class="text-slate-400 hover:text-indigo-600 text-xs" title="Editar Orçamento"><i class="fa-solid fa-pen"></i></button>
-                        </div>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-bullseye"></i>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <div class="flex justify-between text-xs font-medium text-slate-500 mb-1">
-                        <span id="budgetPercentText">0% utilizado</span>
-                        <span id="cardRemaining">R$ 3.500,00 restantes</span>
-                    </div>
-                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div id="budgetProgressBar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Maior Categoria -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs relative overflow-hidden">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Maior Categoria</p>
-                        <h3 id="cardTopCategory" class="text-xl font-bold text-slate-900 mt-1">-</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-chart-pie"></i>
-                    </div>
-                </div>
-                <div class="mt-4 flex items-center text-xs text-slate-500">
-                    <span id="cardTopCategoryValue" class="font-medium text-slate-700">R$ 0,00</span> gasto principal
-                </div>
-            </div>
-
-            <!-- Escaneamentos por IA -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs relative overflow-hidden">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Leituras por IA</p>
-                        <h3 id="cardAiCount" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-brain"></i>
-                    </div>
-                </div>
-                <div class="mt-4 flex items-center text-xs text-slate-500">
-                    <span class="font-medium text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded mr-1.5">OCR Ativo</span> Cupons & Notas
-                </div>
-            </div>
+    <!-- Orçamento / Resumo -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5">
+        <p class="text-xs font-medium text-slate-400 mb-1">Total Gasto (Este Mês)</p>
+        <p class="text-3xl font-extrabold text-white" id="totalGasto">R$ 0,00</p>
+        <div class="mt-3 bg-slate-700/50 rounded-full h-2 overflow-hidden">
+          <div id="barProgress" class="bg-emerald-500 h-full w-0 transition-all duration-500"></div>
         </div>
+        <p class="text-[11px] text-slate-400 mt-2 flex justify-between">
+          <span>Meta: R$ <span id="metaVal">3.000,00</span></span>
+          <button onclick="alterarMeta()" class="text-emerald-400 hover:underline">Editar Meta</button>
+        </p>
+      </div>
 
-        <!-- Grid Principal: Gráficos de Categoria e Histórico -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- Gastos por Categoria (Barras de progresso) -->
-            <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs lg:col-span-1 flex flex-col">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="font-bold text-slate-800 text-base">Gastos por Categoria</h2>
-                    <span class="text-xs text-slate-400">Este mês</span>
-                </div>
-                <div id="categoryBreakdownList" class="space-y-4 flex-1 overflow-y-auto max-h-[340px] pr-1">
-                    <!-- Preenchido via JS -->
-                </div>
-            </div>
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5">
+        <p class="text-xs font-medium text-slate-400 mb-1">Maior Categoria</p>
+        <p class="text-2xl font-bold text-white mt-1" id="topCategoria">-</p>
+        <p class="text-xs text-slate-400 mt-2" id="topCategoriaValor">R$ 0,00 acumulado</p>
+      </div>
 
-            <!-- Lista de Transações Recentes -->
-            <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs lg:col-span-2 flex flex-col">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                    <h2 class="font-bold text-slate-800 text-base">Histórico de Gastos</h2>
-                    <div class="flex items-center space-x-2">
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                                <i class="fa-solid fa-search text-xs"></i>
-                            </span>
-                            <input type="text" id="searchFilter" oninput="renderTransactions()" placeholder="Buscar estabelecimento..." class="w-full sm:w-48 pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <select id="filterCategory" onchange="renderTransactions()" class="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">Todas Categorias</option>
-                            <option value="Alimentação">Alimentação</option>
-                            <option value="Supermercado">Supermercado</option>
-                            <option value="Transporte">Transporte</option>
-                            <option value="Lazer">Lazer</option>
-                            <option value="Saúde">Saúde</option>
-                            <option value="Educação">Educação</option>
-                            <option value="Moradia">Moradia</option>
-                            <option value="Outros">Outros</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto flex-1">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-slate-100 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                <th class="pb-3 pl-2">Estabelecimento</th>
-                                <th class="pb-3">Categoria</th>
-                                <th class="pb-3">Data</th>
-                                <th class="pb-3 text-right">Valor</th>
-                                <th class="pb-3 text-center">Origem</th>
-                                <th class="pb-3 text-right pr-2">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactionsTableBody" class="divide-y divide-slate-100 text-sm">
-                            <!-- Preenchido via JS -->
-                        </tbody>
-                    </table>
-                </div>
-                <div id="emptyTransactionsState" class="hidden py-12 text-center">
-                    <div class="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i class="fa-solid fa-receipt text-lg"></i>
-                    </div>
-                    <p class="text-slate-600 font-medium text-sm">Nenhum gasto encontrado neste mês</p>
-                    <p class="text-slate-400 text-xs mt-1">Adicione manualmente ou escaneie um comprovante com IA.</p>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <!-- Modal de Cadastro Manual -->
-    <div id="manualModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
-            <div class="flex items-center justify-between mb-4">
-                <h3 id="manualModalTitle" class="font-bold text-lg text-slate-900">Novo Gasto Manual</h3>
-                <button onclick="closeModal('manual')" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <form id="manualForm" onsubmit="saveTransaction(event)" class="space-y-4">
-                <input type="hidden" id="editIndex" value="">
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Estabelecimento / Descrição</label>
-                    <input type="text" id="txMerchant" required placeholder="Ex: Supermercado Extra, Uber, Padaria..." class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">Valor (R$)</label>
-                        <input type="number" step="0.01" min="0.01" id="txAmount" required placeholder="0,00" class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">Data</label>
-                        <input type="date" id="txDate" required class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Categoria</label>
-                    <select id="txCategory" required class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="Alimentação">Alimentação</option>
-                        <option value="Supermercado">Supermercado</option>
-                        <option value="Transporte">Transporte</option>
-                        <option value="Lazer">Lazer</option>
-                        <option value="Saúde">Saúde</option>
-                        <option value="Educação">Educação</option>
-                        <option value="Moradia">Moradia</option>
-                        <option value="Outros">Outros</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Observações ou Anotação (Opcional)</label>
-                    <textarea id="txNotes" rows="2" placeholder="Ex: Almoço com equipe de trabalho..." class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                </div>
-                <div class="pt-2 flex items-center justify-end space-x-3">
-                    <button type="button" onclick="closeModal('manual')" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition">Cancelar</button>
-                    <button type="submit" class="px-5 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md shadow-indigo-100 transition">Salvar Gasto</button>
-                </div>
-            </form>
-        </div>
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5">
+        <p class="text-xs font-medium text-slate-400 mb-1">Comprovantes Lidos por IA</p>
+        <p class="text-2xl font-bold text-emerald-400 mt-1" id="totalLidos">0 notas</p>
+        <p class="text-xs text-slate-400 mt-2">Economia de tempo automatizada</p>
+      </div>
     </div>
 
-    <!-- Modal de Leitura por IA (Comprovante / Foto / Manuscrito) -->
-    <div id="aiModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    </div>
-                    <h3 class="font-bold text-lg text-slate-900">Escanear Comprovante com IA</h3>
-                </div>
-                <button onclick="closeModal('ai')" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
+    <!-- Leitor IA / Upload -->
+    <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-6 shadow-xl">
+      <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-camera text-emerald-400"></i> Escanear Comprovante ou Papel Manuscrito
+      </h2>
+      <p class="text-sm text-slate-400 mb-4">
+        Tire uma foto do cupom do cartão, nota fiscal ou anotação num papel. A IA fará a leitura dos dados.
+      </p>
 
-            <!-- Etapa 1: Upload / Escolha de Amostra -->
-            <div id="aiStepUpload" class="space-y-4">
-                <p class="text-xs text-slate-500">Envie a foto de um comprovante de cartão, cupom fiscal ou nota manuscrita. Nossa inteligência artificial extrairá os dados automaticamente.</p>
-                
-                <!-- Área de Drop / Upload -->
-                <div id="dropZone" class="border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl p-6 text-center cursor-pointer transition bg-slate-50/50 relative overflow-hidden group">
-                    <input type="file" id="receiptFileInput" accept="image/*" onchange="handleImageUpload(event)" class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                    <div id="uploadPromptContent" class="space-y-2">
-                        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition">
-                            <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
-                        </div>
-                        <p class="text-sm font-medium text-slate-700">Clique para enviar ou arraste a imagem aqui</p>
-                        <p class="text-xs text-slate-400">PNG, JPG, WEBP (Comprovantes ou manuscritos)</p>
-                    </div>
-                    <img id="imagePreview" class="max-h-48 mx-auto rounded-lg hidden object-contain shadow-xs">
-                </div>
-
-                <!-- Botões de Exemplo Rápido (Simulador) -->
-                <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Ou teste com exemplos simulados de IA:</p>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button type="button" onclick="loadSampleReceipt('card')" class="p-2.5 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl text-left transition group">
-                            <div class="text-xs font-bold text-slate-800 group-hover:text-indigo-600"><i class="fa-solid fa-credit-card mr-1"></i> Cartão</div>
-                            <div class="text-[10px] text-slate-400 truncate">Comprovante Cielo R$ 142,50</div>
-                        </button>
-                        <button type="button" onclick="loadSampleReceipt('market')" class="p-2.5 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl text-left transition group">
-                            <div class="text-xs font-bold text-slate-800 group-hover:text-indigo-600"><i class="fa-solid fa-cart-shopping mr-1"></i> Supermercado</div>
-                            <div class="text-[10px] text-slate-400 truncate">Cupom Fiscal R$ 289,90</div>
-                        </button>
-                        <button type="button" onclick="loadSampleReceipt('handwritten')" class="p-2.5 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl text-left transition group">
-                            <div class="text-xs font-bold text-slate-800 group-hover:text-indigo-600"><i class="fa-solid fa-pen-nib mr-1"></i> Manuscrito</div>
-                            <div class="text-[10px] text-slate-400 truncate">Nota papel pão R$ 45,00</div>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="pt-2 flex justify-end">
-                    <button type="button" onclick="processAiScan()" id="btnStartAi" disabled class="px-5 py-2.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white rounded-xl shadow-md shadow-indigo-100 transition flex items-center space-x-2">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                        <span>Processar com IA</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Etapa 2: Loading State (IA Processando) -->
-            <div id="aiStepLoading" class="py-12 text-center space-y-4 hidden">
-                <div class="relative w-16 h-16 mx-auto">
-                    <div class="absolute inset-0 rounded-full border-4 border-indigo-100 animate-pulse"></div>
-                    <div class="absolute inset-0 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
-                    <div class="absolute inset-0 flex items-center justify-center text-indigo-600 text-xl">
-                        <i class="fa-solid fa-brain"></i>
-                    </div>
-                </div>
-                <div>
-                    <h4 class="font-bold text-slate-800 text-base">Analisando imagem com IA...</h4>
-                    <p id="aiLoadingStatus" class="text-xs text-slate-500 mt-1">Lendo caracteres, valores e classificando categoria...</p>
-                </div>
-            </div>
-
-            <!-- Etapa 3: Revisão e Confirmação dos Dados Extraídos -->
-            <div id="aiStepReview" class="space-y-4 hidden">
-                <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center space-x-3 text-emerald-800 text-xs">
-                    <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
-                    <div>
-                        <span class="font-bold">IA Concluída com sucesso!</span> Verifique os dados extraídos abaixo antes de salvar na central.
-                    </div>
-                </div>
-
-                <form id="aiReviewForm" onsubmit="saveAiTransaction(event)" class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">Estabelecimento Identificado</label>
-                        <input type="text" id="aiMerchant" required class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Valor Extraído (R$)</label>
-                            <input type="number" step="0.01" id="aiAmount" required class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Data Detectada</label>
-                            <input type="date" id="aiDate" required class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">Categoria Sugerida pela IA</label>
-                        <select id="aiCategory" required class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="Alimentação">Alimentação</option>
-                            <option value="Supermercado">Supermercado</option>
-                            <option value="Transporte">Transporte</option>
-                            <option value="Lazer">Lazer</option>
-                            <option value="Saúde">Saúde</option>
-                            <option value="Educação">Educação</option>
-                            <option value="Moradia">Moradia</option>
-                            <option value="Outros">Outros</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">Resumo / Notas Extraídas</label>
-                        <input type="text" id="aiNotes" class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-
-                    <div class="pt-2 flex items-center justify-between">
-                        <button type="button" onclick="resetAiModal()" class="text-xs text-slate-500 hover:text-slate-800 underline"><i class="fa-solid fa-rotate-left mr-1"></i> Enviar outra foto</button>
-                        <div class="flex space-x-2">
-                            <button type="button" onclick="closeModal('ai')" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition">Cancelar</button>
-                            <button type="submit" class="px-5 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md shadow-indigo-100 transition">Confirmar e Salvar</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Area de Drop/Upload -->
+        <div class="border-2 border-dashed border-slate-600 hover:border-emerald-500/60 rounded-xl p-6 text-center transition cursor-pointer bg-slate-900/40 flex flex-col items-center justify-center min-h-[180px]" onclick="document.getElementById('fileInput').click()">
+          <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="processarImagem(event)">
+          <i class="fa-solid fa-cloud-arrow-up text-3xl text-emerald-400 mb-2"></i>
+          <p class="text-sm font-semibold text-slate-200">Clique para tirar foto ou selecionar imagem</p>
+          <p class="text-xs text-slate-500 mt-1">Comprovantes, cartões ou manuscritos</p>
         </div>
-    </div>
 
-    <!-- Modal Editar Orçamento -->
-    <div id="budgetModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-100">
-            <h3 class="font-bold text-lg text-slate-900 mb-3">Definir Orçamento Mensal</h3>
-            <form onsubmit="saveBudget(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Novo Valor Limite (R$)</label>
-                    <input type="number" step="10" min="10" id="inputNewBudget" required class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="flex justify-end space-x-2 pt-2">
-                    <button type="button" onclick="closeModal('budget')" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-xl">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl">Salvar</button>
-                </div>
-            </form>
+        <!-- Botões de Exemplo / Teste Rápido -->
+        <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50 space-y-2">
+          <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Simular Leitura Instantânea:</p>
+          <button onclick="simularIA('cartao')" class="w-full text-left bg-slate-800 hover:bg-slate-700 border border-slate-700 p-2.5 rounded-lg text-xs flex justify-between items-center transition">
+            <span><i class="fa-solid fa-credit-card text-sky-400 mr-2"></i> Comprovante de Cartão (Alimentação)</span>
+            <span class="text-slate-400">R$ 87,50</span>
+          </button>
+          <button onclick="simularIA('supermercado')" class="w-full text-left bg-slate-800 hover:bg-slate-700 border border-slate-700 p-2.5 rounded-lg text-xs flex justify-between items-center transition">
+            <span><i class="fa-solid fa-cart-shopping text-amber-400 mr-2"></i> Cupom Mercado (Supermercado)</span>
+            <span class="text-slate-400">R$ 342,10</span>
+          </button>
+          <button onclick="simularIA('manuscrito')" class="w-full text-left bg-slate-800 hover:bg-slate-700 border border-slate-700 p-2.5 rounded-lg text-xs flex justify-between items-center transition">
+            <span><i class="fa-solid fa-pen-line text-emerald-400 mr-2"></i> Papel Escrito à Mão (Combustível)</span>
+            <span class="text-slate-400">R$ 150,00</span>
+          </button>
         </div>
+      </div>
+
+      <!-- Form Confirmação (Oculto até ler) -->
+      <div id="formConfirmacao" class="hidden mt-6 bg-slate-900/80 border border-emerald-500/30 rounded-xl p-4 animate-fade-in">
+        <p class="text-xs font-bold text-emerald-400 mb-3 flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-check"></i> Dados identificados pela IA (Confirme abaixo):
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <input type="text" id="descInput" placeholder="Estabelecimento / Descrição" class="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
+          <input type="number" step="0.01" id="valorInput" placeholder="Valor (R$)" class="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
+          <input type="date" id="dataInput" class="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
+          <select id="categoriaInput" class="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
+            <option value="Alimentação">Alimentação</option>
+            <option value="Supermercado">Supermercado</option>
+            <option value="Transporte">Transporte</option>
+            <option value="Lazer">Lazer</option>
+            <option value="Saúde">Saúde</option>
+            <option value="Educação">Educação</option>
+            <option value="Moradia">Moradia</option>
+            <option value="Outros">Outros</option>
+          </select>
+        </div>
+        <button onclick="salvarGasto()" class="mt-3 w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 rounded-lg text-sm transition">
+          Confirmar e Salvar Gasto
+        </button>
+      </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center space-x-3 text-sm">
-        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
-        <span id="toastMessage">Operação realizada com sucesso!</span>
+    <!-- Lista de Gastos e Gráfico -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Tabela -->
+      <div class="lg:col-span-2 bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5">
+        <h3 class="text-base font-bold text-white mb-4">Histórico de Gastos do Mês</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-300">
+            <thead class="text-xs text-slate-400 uppercase bg-slate-900/50 border-b border-slate-700">
+              <tr>
+                <th class="p-3">Data</th>
+                <th class="p-3">Descrição</th>
+                <th class="p-3">Categoria</th>
+                <th class="p-3 text-right">Valor</th>
+                <th class="p-3 text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaGastos">
+              <!-- Inserido dinamicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Gráfico Categoria -->
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-5 flex flex-col items-center">
+        <h3 class="text-base font-bold text-white mb-4 text-left w-full">Divisão por Categoria</h3>
+        <div class="w-full max-w-[240px]">
+          <canvas id="chartCategorias"></canvas>
+        </div>
+      </div>
     </div>
 
-    <!-- Script de Lógica -->
-    <script>
-        // Estado Global da Aplicação
-        let appData = {
-            monthlyBudget: 3500.00,
-            transactions: [
-                {
-                    id: "tx-1",
-                    merchant: "Supermercado Pão de Açúcar",
-                    amount: 342.80,
-                    date: "2026-10-12",
-                    category: "Supermercado",
-                    notes: "Compras semanais",
-                    source: "ia",
-                    createdAt: "2026-10-12T10:30:00.000Z"
-                },
-                {
-                    id: "tx-2",
-                    merchant: "Posto Shell Avenida",
-                    amount: 150.00,
-                    date: "2026-10-10",
-                    category: "Transporte",
-                    notes: "Abastecimento gasolina",
-                    source: "ia",
-                    createdAt: "2026-10-10T14:20:00.000Z"
-                },
-                {
-                    id: "tx-3",
-                    merchant: "Restaurante Tempero Caseiro",
-                    amount: 68.50,
-                    date: "2026-10-08",
-                    category: "Alimentação",
-                    notes: "Almoço com recibo manuscrito",
-                    source: "ia",
-                    createdAt: "2026-10-08T12:45:00.000Z"
-                },
-                {
-                    id: "tx-4",
-                    merchant: "Netflix",
-                    amount: 55.90,
-                    date: "2026-10-05",
-                    category: "Lazer",
-                    notes: "Assinatura mensal",
-                    source: "manual",
-                    createdAt: "2026-10-05T08:00:00.000Z"
-                },
-                {
-                    id: "tx-5",
-                    merchant: "Farmácia Droga Raia",
-                    amount: 92.40,
-                    date: "2026-09-28",
-                    category: "Saúde",
-                    notes: "Vitaminas e remédios",
-                    source: "manual",
-                    createdAt: "2026-09-28T16:10:00.000Z"
-                }
-            ]
-        };
+  </main>
 
-        const categoryIcons = {
-            "Alimentação": { icon: "fa-utensils", bg: "bg-amber-50 text-amber-600" },
-            "Supermercado": { icon: "fa-cart-shopping", bg: "bg-emerald-50 text-emerald-600" },
-            "Transporte": { icon: "fa-car", bg: "bg-blue-50 text-blue-600" },
-            "Lazer": { icon: "fa-film", bg: "bg-purple-50 text-purple-600" },
-            "Saúde": { icon: "fa-kit-medical", bg: "bg-rose-50 text-rose-600" },
-            "Educação": { icon: "fa-graduation-cap", bg: "bg-indigo-50 text-indigo-600" },
-            "Moradia": { icon: "fa-house", bg: "bg-cyan-50 text-cyan-600" },
-            "Outros": { icon: "fa-tag", bg: "bg-slate-100 text-slate-600" }
-        };
+  <script>
+    let gastos = JSON.parse(localStorage.getItem('financas_gastos')) || [];
+    let meta = parseFloat(localStorage.getItem('financas_meta')) || 3000;
+    let chartInstance = null;
 
-        // Inicialização
-        window.addEventListener('DOMContentLoaded', () => {
-            loadFromLocalStorage();
-            
-            // Definir mês padrão atual no select se não estiver configurado
-            const now = new Date();
-            const yearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-            const monthSelect = document.getElementById('filterMonth');
-            
-            // Se o mês atual existe nas opções, selecione-o
-            let exists = false;
-            for(let opt of monthSelect.options) {
-                if(opt.value === yearMonth) exists = true;
-            }
-            if(!exists) {
-                const opt = document.createElement('option');
-                opt.value = yearMonth;
-                opt.textContent = formatMonthName(yearMonth);
-                monthSelect.insertBefore(opt, monthSelect.firstChild);
-            }
-            monthSelect.value = yearMonth;
+    document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    document.getElementById('dataInput').valueAsDate = new Date();
 
-            // Definir data padrão de hoje nos formulários
-            const todayStr = now.toISOString().split('T')[0];
-            document.getElementById('txDate').value = todayStr;
+    function salvarStorage() {
+      localStorage.setItem('financas_gastos', JSON.stringify(gastos));
+      localStorage.setItem('financas_meta', meta);
+      atualizarDashboard();
+    }
 
-            updateDashboard();
+    function simularIA(tipo) {
+      const form = document.getElementById('formConfirmacao');
+      form.classList.remove('hidden');
+
+      if (tipo === 'cartao') {
+        document.getElementById('descInput').value = 'Restaurante OutBack';
+        document.getElementById('valorInput').value = '87.50';
+        document.getElementById('categoriaInput').value = 'Alimentação';
+      } else if (tipo === 'supermercado') {
+        document.getElementById('descInput').value = 'Supermercado Carrefour';
+        document.getElementById('valorInput').value = '342.10';
+        document.getElementById('categoriaInput').value = 'Supermercado';
+      } else if (tipo === 'manuscrito') {
+        document.getElementById('descInput').value = 'Posto Shell (Papel Manuscrito)';
+        document.getElementById('valorInput').value = '150.00';
+        document.getElementById('categoriaInput').value = 'Transporte';
+      }
+    }
+
+    function processarImagem(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      alert("Imagem recebida! Simulando a leitura por Inteligência Artificial...");
+      setTimeout(() => {
+        document.getElementById('formConfirmacao').classList.remove('hidden');
+        document.getElementById('descInput').value = 'Comprovante Escaneado (' + file.name.substring(0, 10) + ')';
+        document.getElementById('valorInput').value = (Math.random() * 150 + 20).toFixed(2);
+        document.getElementById('categoriaInput').value = 'Outros';
+      }, 800);
+    }
+
+    function salvarGasto() {
+      const desc = document.getElementById('descInput').value;
+      const valor = parseFloat(document.getElementById('valorInput').value);
+      const data = document.getElementById('dataInput').value;
+      const cat = document.getElementById('categoriaInput').value;
+
+      if (!desc || isNaN(valor) || valor <= 0) {
+        alert("Preencha a descrição e um valor válido!");
+        return;
+      }
+
+      gastos.unshift({ id: Date.now(), desc, valor, data, cat });
+      salvarStorage();
+
+      document.getElementById('descInput').value = '';
+      document.getElementById('valorInput').value = '';
+      document.getElementById('formConfirmacao').classList.add('hidden');
+    }
+
+    function deletarGasto(id) {
+      gastos = gastos.filter(g => g.id !== id);
+      salvarStorage();
+    }
+
+    function alterarMeta() {
+      const nova = prompt("Digite o novo valor para a meta mensal (R$):", meta);
+      if (nova && !isNaN(nova)) {
+        meta = parseFloat(nova);
+        document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        salvarStorage();
+      }
+    }
+
+    function limparDados() {
+      if (confirm("Tem certeza que deseja apagar todos os registros acumulados?")) {
+        gastos = [];
+        salvarStorage();
+      }
+    }
+
+    function atualizarDashboard() {
+      const total = gastos.reduce((acc, g) => acc + g.valor, 0);
+      document.getElementById('totalGasto').innerText = 'R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      document.getElementById('totalLidos').innerText = gastos.length + ' notas';
+
+      const pct = Math.min((total / meta) * 100, 100);
+      const bar = document.getElementById('barProgress');
+      bar.style.width = pct + '%';
+      if (pct > 90) bar.className = 'bg-rose-500 h-full w-0 transition-all duration-500';
+      else if (pct > 70) bar.className = 'bg-amber-500 h-full w-0 transition-all duration-500';
+      else bar.className = 'bg-emerald-500 h-full w-0 transition-all duration-500';
+
+      // Maior Categoria
+      const catTotals = {};
+      gastos.forEach(g => catTotals[g.cat] = (catTotals[g.cat] || 0) + g.valor);
+      let maxCat = '-', maxVal = 0;
+      for (const [c, v] of Object.entries(catTotals)) {
+        if (v > maxVal) { maxVal = v; maxCat = c; }
+      }
+      document.getElementById('topCategoria').innerText = maxCat;
+      document.getElementById('topCategoriaValor').innerText = 'R$ ' + maxVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + ' acumulado';
+
+      // Tabela
+      const tbody = document.getElementById('tabelaGastos');
+      tbody.innerHTML = '';
+      if (gastos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum gasto registrado ainda.</td></tr>';
+      } else {
+        gastos.forEach(g => {
+          const row = document.createElement('tr');
+          row.className = 'border-b border-slate-700/50 hover:bg-slate-800/30';
+          row.innerHTML = `
+            <td class="p-3 text-slate-400 text-xs">${g.data}</td>
+            <td class="p-3 font-medium text-white">${g.desc}</td>
+            <td class="p-3"><span class="bg-slate-700 text-xs px-2 py-1 rounded-md text-slate-300">${g.cat}</span></td>
+            <td class="p-3 text-right font-bold text-emerald-400">R$ ${g.valor.toFixed(2)}</td>
+            <td class="p-3 text-center">
+              <button onclick="deletarGasto(${g.id})" class="text-slate-500 hover:text-rose-400 transition"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          `;
+          tbody.appendChild(row);
         });
+      }
 
-        function formatMonthName(ym) {
-            const [year, month] = ym.split('-');
-            const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-            return `${months[parseInt(month)-1]} ${year}`;
+      renderGrafico(catTotals);
+    }
+
+    function renderGrafico(catTotals) {
+      const ctx = document.getElementById('chartCategorias').getContext('2d');
+      const labels = Object.keys(catTotals);
+      const data = Object.values(catTotals);
+
+      if (chartInstance) chartInstance.destroy();
+
+      if (labels.length === 0) return;
+
+      chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4', '#64748b']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } }
+          }
         }
+      });
+    }
 
-        // Persistência localStorage
-        function saveToLocalStorage() {
-            localStorage.setItem('finai_data', JSON.stringify(appData));
-        }
-
-        function loadFromLocalStorage() {
-            const saved = localStorage.getItem('finai_data');
-            if (saved) {
-                try {
-                    appData = JSON.parse(saved);
-                } catch(e) {
-                    console.error("Erro ao carregar localStorage", e);
-                }
-            }
-        }
-
-        function confirmResetData() {
-            if (confirm("Tem certeza que deseja apagar todas as transações e restaurar os dados padrão?")) {
-                localStorage.removeItem('finai_data');
-                location.reload();
-            }
-        }
-
-        function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
-            const dlAnchor = document.createElement('a');
-            dlAnchor.setAttribute("href", dataStr);
-            dlAnchor.setAttribute("download", "finai_gastos.json");
-            document.body.appendChild(dlAnchor);
-            dlAnchor.click();
-            dlAnchor.remove();
-            showToast("Dados exportados com sucesso!");
-        }
-
-        // Dashboard e Cálculos
-        function updateDashboard() {
-            const selectedMonth = document.getElementById('filterMonth').value;
-            
-            // Filtrar transações do mês
-            const monthTransactions = appData.transactions.filter(t => t.date.startsWith(selectedMonth));
-            
-            // Total Gasto
-            const totalSpent = monthTransactions.reduce((acc, t) => acc + Number(t.amount), 0);
-            document.getElementById('cardTotalSpent').textContent = formatCurrency(totalSpent);
-            document.getElementById('cardSpentCount').textContent = `${monthTransactions.length} transações`;
-
-            // Orçamento
-            const budget = appData.monthlyBudget;
-            document.getElementById('cardBudget').textContent = formatCurrency(budget);
-            const remaining = budget - totalSpent;
-            document.getElementById('cardRemaining').textContent = `${formatCurrency(remaining)} restantes`;
-            
-            const percent = budget > 0 ? Math.min(Math.round((totalSpent / budget) * 100), 100) : 0;
-            document.getElementById('budgetPercentText').textContent = `${percent}% utilizado`;
-            const progressBar = document.getElementById('budgetProgressBar');
-            progressBar.style.width = `${percent}%`;
-            
-            if (percent > 90) {
-                progressBar.className = "bg-rose-500 h-full rounded-full transition-all duration-500";
-            } else if (percent > 75) {
-                progressBar.className = "bg-amber-500 h-full rounded-full transition-all duration-500";
-            } else {
-                progressBar.className = "bg-emerald-500 h-full rounded-full transition-all duration-500";
-            }
-
-            // Maior Categoria
-            const catTotals = {};
-            monthTransactions.forEach(t => {
-                catTotals[t.category] = (catTotals[t.category] || 0) + Number(t.amount);
-            });
-
-            let topCat = "-";
-            let topCatVal = 0;
-            for (let cat in catTotals) {
-                if (catTotals[cat] > topCatVal) {
-                    topCatVal = catTotals[cat];
-                    topCat = cat;
-                }
-            }
-            document.getElementById('cardTopCategory').textContent = topCat;
-            document.getElementById('cardTopCategoryValue').textContent = formatCurrency(topCatVal);
-
-            // Contador de IA
-            const aiCount = monthTransactions.filter(t => t.source === 'ia').length;
-            document.getElementById('cardAiCount').textContent = aiCount;
-
-            // Renderizar Categorias detalhadas
-            renderCategoryBreakdown(catTotals, totalSpent);
-
-            // Renderizar Tabela
-            renderTransactions();
-        }
-
-        function renderCategoryBreakdown(catTotals, totalSpent) {
-            const container = document.getElementById('categoryBreakdownList');
-            container.innerHTML = "";
-
-            const categories = ["Alimentação", "Supermercado", "Transporte", "Lazer", "Saúde", "Educação", "Moradia", "Outros"];
-            
-            categories.forEach(cat => {
-                const amount = catTotals[cat] || 0;
-                const percentage = totalSpent > 0 ? Math.round((amount / totalSpent) * 100) : 0;
-                const cfg = categoryIcons[cat] || categoryIcons["Outros"];
-
-                const html = `
-                    <div>
-                        <div class="flex justify-between items-center text-xs mb-1">
-                            <span class="font-medium text-slate-700 flex items-center">
-                                <span class="w-6 h-6 rounded-lg ${cfg.bg} flex items-center justify-center mr-2 text-xs"><i class="fa-solid ${cfg.icon}"></i></span>
-                                ${cat}
-                            </span>
-                            <span class="font-semibold text-slate-900">${formatCurrency(amount)} <span class="text-slate-400 font-normal">(${percentage}%)</span></span>
-                        </div>
-                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                            <div class="bg-indigo-600 h-full rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
-                        </div>
-                    </div>
-                `;
-                container.insertAdjacentHTML('beforeend', html);
-            });
-        }
-
-        function renderTransactions() {
-            const selectedMonth = document.getElementById('filterMonth').value;
-            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
-            const categoryFilter = document.getElementById('filterCategory').value;
-
-            let filtered = appData.transactions.filter(t => t.date.startsWith(selectedMonth));
-
-            if (searchFilter) {
-                filtered = filtered.filter(t => t.merchant.toLowerCase().includes(searchFilter) || (t.notes && t.notes.toLowerCase().includes(searchFilter)));
-            }
-
-            if (categoryFilter) {
-                filtered = filtered.filter(t => t.category === categoryFilter);
-            }
-
-            // Ordenar por data mais recente
-            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            const tbody = document.getElementById('transactionsTableBody');
-            const emptyState = document.getElementById('emptyTransactionsState');
-            tbody.innerHTML = "";
-
-            if (filtered.length === 0) {
-                emptyState.classList.remove('hidden');
-                return;
-            } else {
-                emptyState.classList.add('hidden');
-            }
-
-            filtered.forEach(t => {
-                const cfg = categoryIcons[t.category] || categoryIcons["Outros"];
-                const formattedDate = new Date(t.date + 'T00:00:00').toLocaleDateString('pt-BR');
-                const isAi = t.source === 'ia';
-
-                const row = document.createElement('tr');
-                row.className = "hover:bg-slate-50/80 transition border-b border-slate-100 last:border-none";
-                row.innerHTML = `
-                    <td class="py-3.5 pl-2">
-                        <div class="font-medium text-slate-900 text-sm">${escapeHtml(t.merchant)}</div>
-                        ${t.notes ? `<div class="text-xs text-slate-400 truncate max-w-xs">${escapeHtml(t.notes)}</div>` : ''}
-                    </td>
-                    <td class="py-3.5">
-                        <span class="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-lg ${cfg.bg}">
-                            <i class="fa-solid ${cfg.icon} mr-1.5 text-[10px]"></i>
-                            ${t.category}
-                        </span>
-                    </td>
-                    <td class="py-3.5 text-xs text-slate-600">${formattedDate}</td>
-                    <td class="py-3.5 text-right font-semibold text-slate-900">${formatCurrency(t.amount)}</td>
-                    <td class="py-3.5 text-center">
-                        ${isAi 
-                            ? '<span title="Escaneado por IA / OCR" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-violet-50 text-violet-700 border border-violet-100"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> IA</span>' 
-                            : '<span title="Cadastro Manual" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600">Manual</span>'}
-                    </td>
-                    <td class="py-3.5 text-right pr-2">
-                        <div class="flex items-center justify-end space-x-1">
-                            <button onclick="editTransaction('${t.id}')" class="p-1.5 text-slate-400 hover:text-indigo-600 transition rounded-lg" title="Editar"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button onclick="deleteTransaction('${t.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 transition rounded-lg" title="Excluir"><i class="fa-solid fa-trash text-xs"></i></button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // CRUD Transações
-        function saveTransaction(e) {
-            e.preventDefault();
-            const editIndex = document.getElementById('editIndex').value;
-            const merchant = document.getElementById('txMerchant').value;
-            const amount = parseFloat(document.getElementById('txAmount').value);
-            const date = document.getElementById('txDate').value;
-            const category = document.getElementById('txCategory').value;
-            const notes = document.getElementById('txNotes').value;
-
-            if (editIndex !== "") {
-                // Editar existente
-                const tx = appData.transactions.find(t => t.id === editIndex);
-                if (tx) {
-                    tx.merchant = merchant;
-                    tx.amount = amount;
-                    tx.date = date;
-                    tx.category = category;
-                    tx.notes = notes;
-                }
-                showToast("Gasto atualizado com sucesso!");
-            } else {
-                // Criar novo
-                const newTx = {
-                    id: 'tx-' + Date.now(),
-                    merchant,
-                    amount,
-                    date,
-                    category,
-                    notes,
-                    source: 'manual',
-                    createdAt: new Date().toISOString()
-                };
-                appData.transactions.unshift(newTx);
-                showToast("Gasto adicionado com sucesso!");
-            }
-
-            saveToLocalStorage();
-            closeModal('manual');
-            updateDashboard();
-        }
-
-        function editTransaction(id) {
-            const tx = appData.transactions.find(t => t.id === id);
-            if (!tx) return;
-
-            document.getElementById('editIndex').value = tx.id;
-            document.getElementById('manualModalTitle').textContent = "Editar Gasto";
-            document.getElementById('txMerchant').value = tx.merchant;
-            document.getElementById('txAmount').value = tx.amount;
-            document.getElementById('txDate').value = tx.date;
-            document.getElementById('txCategory').value = tx.category;
-            document.getElementById('txNotes').value = tx.notes || "";
-
-            openModal('manual');
-        }
-
-        function deleteTransaction(id) {
-            if (confirm("Deseja realmente excluir este gasto?")) {
-                appData.transactions = appData.transactions.filter(t => t.id !== id);
-                saveToLocalStorage();
-                updateDashboard();
-                showToast("Gasto excluído com sucesso!");
-            }
-        }
-
-        // Orçamento Modal
-        function editBudget() {
-            document.getElementById('inputNewBudget').value = appData.monthlyBudget;
-            openModal('budget');
-        }
-
-        function saveBudget(e) {
-            e.preventDefault();
-            const val = parseFloat(document.getElementById('inputNewBudget').value);
-            if (val > 0) {
-                appData.monthlyBudget = val;
-                saveToLocalStorage();
-                updateDashboard();
-                closeModal('budget');
-                showToast("Orçamento atualizado!");
-            }
-        }
-
-        // Simulação de IA / Upload de Comprovante
-        let currentAiSampleData = null;
-
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const preview = document.getElementById('imagePreview');
-                preview.src = e.target.result;
-                preview.classList.remove('hidden');
-                document.getElementById('uploadPromptContent').classList.add('hidden');
-                
-                // Gerar dados simulados baseados no upload real
-                currentAiSampleData = {
-                    merchant: "Comprovante " + file.name.replace(/\.[^/.]+$/, ""),
-                    amount: (Math.random() * 150 + 25).toFixed(2),
-                    date: new Date().toISOString().split('T')[0],
-                    category: "Alimentação",
-                    notes: "Extraído automaticamente de imagem enviada"
-                };
-                document.getElementById('btnStartAi').removeAttribute('disabled');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function loadSampleReceipt(type) {
-            const nowStr = new Date().toISOString().split('T')[0];
-            
-            if (type === 'card') {
-                currentAiSampleData = {
-                    merchant: "Posto Ipiranga Express",
-                    amount: 142.50,
-                    date: nowStr,
-                    category: "Transporte",
-                    notes: "Comprovante Cartão de Crédito - Aproximação"
-                };
-            } else if (type === 'market') {
-                currentAiSampleData = {
-                    merchant: "Supermercado Extra Hiper",
-                    amount: 289.90,
-                    date: nowStr,
-                    category: "Supermercado",
-                    notes: "Cupom fiscal eletrônico - NFC-e"
-                };
-            } else if (type === 'handwritten') {
-                currentAiSampleData = {
-                    merchant: "Padaria e Confeitaria Sabor",
-                    amount: 45.00,
-                    date: nowStr,
-                    category: "Alimentação",
-                    notes: "Anotação manuscrita em papel"
-                };
-            }
-
-            // Exibir imagem de amostra simulada
-            const preview = document.getElementById('imagePreview');
-            preview.src = "https://placehold.co/400x250/e0e7ff/4f46e5?text=Comprovante+Lido+pela+IA";
-            preview.classList.remove('hidden');
-            document.getElementById('uploadPromptContent').classList.add('hidden');
-            document.getElementById('btnStartAi').removeAttribute('disabled');
-            showToast("Comprovante carregado para escaneamento!");
-        }
-
-        function processAiScan() {
-            if (!currentAiSampleData) return;
-
-            // Alternar para tela de loading
-            document.getElementById('aiStepUpload').classList.add('hidden');
-            document.getElementById('aiStepLoading').classList.remove('hidden');
-
-            // Simular passos do OCR da IA
-            const steps = [
-                "Lendo caracteres e manuscritos...",
-                "Identificando CNPJ e Estabelecimento...",
-                "Extraindo valor total da compra...",
-                "Classificando categoria inteligente..."
-            ];
-            
-            let i = 0;
-            const statusEl = document.getElementById('aiLoadingStatus');
-            const interval = setInterval(() => {
-                i++;
-                if (i < steps.length) {
-                    statusEl.textContent = steps[i];
-                } else {
-                    clearInterval(interval);
-                    // Ir para revisão
-                    document.getElementById('aiStepLoading').classList.add('hidden');
-                    document.getElementById('aiStepReview').classList.remove('hidden');
-
-                    // Preencher formulário de revisão
-                    document.getElementById('aiMerchant').value = currentAiSampleData.merchant;
-                    document.getElementById('aiAmount').value = currentAiSampleData.amount;
-                    document.getElementById('aiDate').value = currentAiSampleData.date;
-                    document.getElementById('aiCategory').value = currentAiSampleData.category;
-                    document.getElementById('aiNotes').value = currentAiSampleData.notes;
-                }
-            }, 600);
-        }
-
-        function resetAiModal() {
-            currentAiSampleData = null;
-            document.getElementById('receiptFileInput').value = "";
-            document.getElementById('imagePreview').classList.add('hidden');
-            document.getElementById('uploadPromptContent').classList.remove('hidden');
-            document.getElementById('btnStartAi').setAttribute('disabled', 'true');
-            
-            document.getElementById('aiStepReview').classList.add('hidden');
-            document.getElementById('aiStepUpload').classList.remove('hidden');
-        }
-
-        function saveAiTransaction(e) {
-            e.preventDefault();
-            const merchant = document.getElementById('aiMerchant').value;
-            const amount = parseFloat(document.getElementById('aiAmount').value);
-            const date = document.getElementById('aiDate').value;
-            const category = document.getElementById('aiCategory').value;
-            const notes = document.getElementById('aiNotes').value;
-
-            const newTx = {
-                id: 'tx-' + Date.now(),
-                merchant,
-                amount,
-                date,
-                category,
-                notes: notes + " (IA Scanner)",
-                source: 'ia',
-                createdAt: new Date().toISOString()
-            };
-
-            appData.transactions.unshift(newTx);
-            saveToLocalStorage();
-            closeModal('ai');
-            updateDashboard();
-            showToast("Gasto extraído por IA adicionado com sucesso!");
-        }
-
-        // Utilitários de Modais e UI
-        function openModal(type) {
-            if (type === 'manual') {
-                document.getElementById('editIndex').value = "";
-                document.getElementById('manualModalTitle').textContent = "Novo Gasto Manual";
-                document.getElementById('manualForm').reset();
-                document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('manualModal').classList.remove('hidden');
-            } else if (type === 'ai') {
-                resetAiModal();
-                document.getElementById('aiModal').classList.remove('hidden');
-            } else if (type === 'budget') {
-                document.getElementById('budgetModal').classList.remove('hidden');
-            }
-        }
-
-        function closeModal(type) {
-            if (type === 'manual') document.getElementById('manualModal').classList.add('hidden');
-            if (type === 'ai') document.getElementById('aiModal').classList.add('hidden');
-            if (type === 'budget') document.getElementById('budgetModal').classList.add('hidden');
-        }
-
-        function formatCurrency(val) {
-            return Number(val).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>'"]/g, 
-                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-            );
-        }
-
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            const msgEl = document.getElementById('toastMessage');
-            const iconEl = document.getElementById('toastIcon');
-
-            msgEl.textContent = message;
-            if (isError) {
-                iconEl.className = "fa-solid fa-circle-exclamation text-rose-400";
-            } else {
-                iconEl.className = "fa-solid fa-circle-check text-emerald-400";
-            }
-
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3500);
-        }
-    </script>
+    atualizarDashboard();
+  </script>
 </body>
 </html>
