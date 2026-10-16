@@ -6,8 +6,6 @@
   <title>Finanças MaRa - Controle de Gastos</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Biblioteca Gratuita de OCR / Leitura de Texto Real em Imagens -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -68,45 +66,37 @@
       </div>
     </div>
 
-    <!-- Leitor por Câmera / Galeria de Fotos / Prints -->
+    <!-- Upload de Prints e Câmera sem Restrições -->
     <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-6 shadow-xl">
       <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-        <i class="fa-solid fa-file-image text-emerald-400"></i> Importar Comprovante, Print ou Anotação
+        <i class="fa-solid fa-image text-emerald-400"></i> Importar Print, Comprovante ou Papel
       </h2>
       <p class="text-sm text-slate-400 mb-6">
-        Escolha uma foto da galeria (prints de compras online) ou tire uma foto nova do comprovante ou papel escrito.
+        Selecione um print da sua galeria de fotos (compras online) ou tire uma foto nova do comprovante ou papel escrito.
       </p>
 
-      <!-- Botão Único Sem Câmera Forçada (Permite Galeria e Câmera) -->
+      <!-- Botão Único Aceita Qualquer Imagem -->
       <div class="border-2 border-dashed border-emerald-500/40 hover:border-emerald-500 rounded-2xl p-8 text-center transition cursor-pointer bg-slate-900/60 flex flex-col items-center justify-center shadow-inner" onclick="document.getElementById('fileInput').click()">
-        <!-- Removido o parâmetro capture="environment" para reativar a Biblioteca do iOS/Android -->
         <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="processarImagem(event)">
         <div class="bg-emerald-500/10 p-4 rounded-full text-emerald-400 mb-3 border border-emerald-500/20">
-          <i class="fa-solid fa-photo-film text-3xl"></i>
+          <i class="fa-solid fa-images text-3xl"></i>
         </div>
         <p class="text-base font-bold text-slate-100">Escolher da Galeria (Print) ou Tirar Foto</p>
-        <p class="text-xs text-slate-400 mt-1">Comprovantes, prints de telas de compras ou papéis anotados</p>
-      </div>
-
-      <!-- Status de Leitura de OCR -->
-      <div id="ocrStatus" class="hidden mt-4 bg-slate-900/90 border border-slate-700 rounded-xl p-4 text-center">
-        <p class="text-xs text-emerald-400 font-semibold flex items-center justify-center gap-2" id="ocrTextStatus">
-          <i class="fa-solid fa-spinner fa-spin"></i> Lendo imagem com OCR...
-        </p>
+        <p class="text-xs text-slate-400 mt-1">Toque aqui para abrir a biblioteca do seu celular</p>
       </div>
 
       <!-- Form Confirmação -->
       <div id="formConfirmacao" class="hidden mt-6 bg-slate-900/90 border border-emerald-500/30 rounded-xl p-5 animate-fade-in shadow-lg">
         <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
           <p class="text-xs font-bold text-emerald-400 flex items-center gap-2">
-            <i class="fa-solid fa-circle-check text-base"></i> Confira os dados extraídos:
+            <i class="fa-solid fa-circle-check text-base"></i> Preencha o valor e a descrição:
           </p>
-          <span id="imgStatusPreview" class="text-slate-400 text-xs bg-slate-800 px-2.5 py-1 rounded-md">Foto Anexada</span>
+          <span id="imgStatusPreview" class="text-emerald-400 text-xs bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md">📷 Imagem pronta</span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div>
-            <label class="block text-[11px] text-slate-400 mb-1 font-medium">Estabelecimento / Nome</label>
+            <label class="block text-[11px] text-slate-400 mb-1 font-medium">Estabelecimento / Descrição</label>
             <input type="text" id="descInput" placeholder="Ex: Mercado Livre / Pix" class="w-full bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-lg p-2.5 focus:border-emerald-500 outline-none">
           </div>
           <div>
@@ -187,50 +177,156 @@
       atualizarDashboard();
     }
 
-    // Leitura Real de Texto via Tesseract OCR (Navegador)
-    async function processarImagem(e) {
+    function processarImagem(e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      const ocrStatus = document.getElementById('ocrStatus');
-      const ocrTextStatus = document.getElementById('ocrTextStatus');
-      ocrStatus.classList.remove('hidden');
-      ocrTextStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Lendo imagem/print e extraindo valores...`;
-
       const reader = new FileReader();
-      reader.onload = async function(uploadEvent) {
+      reader.onload = function(uploadEvent) {
         imagemBase64Atual = uploadEvent.target.result;
 
-        try {
-          // Executa OCR na imagem importada da galeria ou câmera
-          const worker = await Tesseract.createWorker('por');
-          const ret = await worker.recognize(imagemBase64Atual);
-          await worker.terminate();
+        document.getElementById('formConfirmacao').classList.remove('hidden');
+        document.getElementById('descInput').value = file.name.replace(/\.[^/.]+$/, "").substring(0, 20);
+        document.getElementById('valorInput').value = '';
+        document.getElementById('valorInput').focus();
+      };
+      reader.readAsDataURL(file);
+    }
 
-          const textoLido = ret.data.text;
-          console.log("Texto extraído:", textoLido);
+    async function salvarGasto() {
+      const desc = document.getElementById('descInput').value;
+      const valor = parseFloat(document.getElementById('valorInput').value);
+      const data = document.getElementById('dataInput').value;
+      const cat = document.getElementById('categoriaInput').value;
 
-          // Tenta encontrar valores em formato R$ (ex: 150,00 ou 150.00)
-          const regexValor = /(?:R\$\s*|R\$\s*)([0-9]+[.,][0-9]{2})/i;
-          const matchValor = textoLido.match(regexValor);
+      if (!desc || isNaN(valor) || valor <= 0) {
+        alert("Preencha a descrição do estabelecimento e um valor válido!");
+        return;
+      }
 
-          let valorDetectado = "";
-          if (matchValor) {
-            valorDetectado = matchValor[1].replace(',', '.');
-          }
+      const btn = document.getElementById('btnSalvar');
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Enviando para o Google Drive e Planilha...`;
+      btn.disabled = true;
 
-          document.getElementById('formConfirmacao').classList.remove('hidden');
-          document.getElementById('descInput').value = file.name.replace(/\.[^/.]+$/, "").substring(0, 25);
-          if (valorDetectado) {
-            document.getElementById('valorInput').value = valorDetectado;
-          } else {
-            document.getElementById('valorInput').value = '';
-          }
+      const payload = {
+        data: data,
+        desc: desc,
+        cat: cat,
+        valor: valor,
+        imagemBase64: imagemBase64Atual
+      };
 
-          ocrStatus.classList.add('hidden');
-          document.getElementById('imgStatusPreview').innerText = "📷 Imagem lida com sucesso!";
-        } catch (err) {
-          console.error("Erro OCR:", err);
-          ocrStatus.classList.add('hidden');
-          document.getElementById('formConfirmacao').classList.remove('hidden');
-          document.getElementById('descInput').value = file.name.replace
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.error("Erro ao sincronizar:", err);
+      }
+
+      gastos.unshift({ id: Date.now(), desc, valor, data, cat });
+      salvarStorage();
+
+      btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Confirmar e Enviar para a Planilha MaRa`;
+      btn.disabled = false;
+      document.getElementById('formConfirmacao').classList.add('hidden');
+      document.getElementById('descInput').value = '';
+      document.getElementById('valorInput').value = '';
+      imagemBase64Atual = "";
+
+      const sync = document.getElementById('syncStatus');
+      sync.classList.remove('hidden');
+      setTimeout(() => sync.classList.add('hidden'), 4000);
+    }
+
+    function deletarGasto(id) {
+      gastos = gastos.filter(g => g.id !== id);
+      salvarStorage();
+    }
+
+    function alterarMeta() {
+      const nova = prompt("Digite o novo valor para a meta mensal do casal (R$):", meta);
+      if (nova && !isNaN(nova)) {
+        meta = parseFloat(nova);
+        document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        salvarStorage();
+      }
+    }
+
+    function limparDados() {
+      if (confirm("Deseja limpar o histórico local? (Os dados na sua planilha do Google continuam salvos)")) {
+        gastos = [];
+        salvarStorage();
+      }
+    }
+
+    function atualizarDashboard() {
+      const total = gastos.reduce((acc, g) => acc + g.valor, 0);
+      document.getElementById('totalGasto').innerText = 'R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      document.getElementById('totalLidos').innerText = gastos.length + ' notas';
+
+      const pct = Math.min((total / meta) * 100, 100);
+      const bar = document.getElementById('barProgress');
+      bar.style.width = pct + '%';
+      if (pct > 90) bar.className = 'bg-rose-500 h-full w-0 transition-all duration-500';
+      else if (pct > 70) bar.className = 'bg-amber-500 h-full w-0 transition-all duration-500';
+      else bar.className = 'bg-emerald-500 h-full w-0 transition-all duration-500';
+
+      const catTotals = {};
+      gastos.forEach(g => catTotals[g.cat] = (catTotals[g.cat] || 0) + g.valor);
+      let maxCat = '-', maxVal = 0;
+      for (const [c, v] of Object.entries(catTotals)) {
+        if (v > maxVal) { maxVal = v; maxCat = c; }
+      }
+      document.getElementById('topCategoria').innerText = maxCat;
+      document.getElementById('topCategoriaValor').innerText = 'R$ ' + maxVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) + ' acumulado';
+
+      const tbody = document.getElementById('tabelaGastos');
+      tbody.innerHTML = '';
+      if (gastos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum gasto registrado ainda.</td></tr>';
+      } else {
+        gastos.forEach(g => {
+          const row = document.createElement('tr');
+          row.className = 'border-b border-slate-700/50 hover:bg-slate-800/30';
+          row.innerHTML = `
+            <td class="p-3 text-slate-400 text-xs">${g.data}</td>
+            <td class="p-3 font-medium text-white">${g.desc}</td>
+            <td class="p-3"><span class="bg-slate-700 text-xs px-2 py-1 rounded-md text-slate-300">${g.cat}</span></td>
+            <td class="p-3 text-right font-bold text-emerald-400">R$ ${g.valor.toFixed(2)}</td>
+            <td class="p-3 text-center flex items-center justify-center gap-2">
+              <span class="text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">Salvo</span>
+              <button onclick="deletarGasto(${g.id})" class="text-slate-500 hover:text-rose-400 transition"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      renderGrafico(catTotals);
+    }
+
+    function renderGrafico(catTotals) {
+      const ctx = document.getElementById('chartCategorias').getContext('2d');
+      const labels = Object.keys(catTotals);
+      const data = Object.values(catTotals);
+
+      if (chartInstance) chartInstance.destroy();
+      if (labels.length === 0) return;
+
+      chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4', '#64748b']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94a3b8', font:
