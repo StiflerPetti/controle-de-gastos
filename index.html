@@ -80,7 +80,7 @@
           </div>
           <p class="text-[11px] text-slate-400 mt-2 flex justify-between font-medium">
             <span>Meta: <span class="text-emerald-400 font-semibold">R$ <span id="metaVal">3.000,00</span></span></span>
-            <button onclick="alterarMeta()" class="text-indigo-400 hover:text-indigo-300 underline font-semibold">Editar Meta</button>
+            <button onclick="abrirModalMeta()" class="text-indigo-400 hover:text-indigo-300 underline font-semibold">Editar Meta</button>
           </p>
         </div>
       </div>
@@ -216,6 +216,35 @@
 
   </main>
 
+  <!-- MODAL DE EDIÇÃO DA META MENSAL -->
+  <div id="modalMeta" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl">
+      <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-bold text-indigo-300 flex items-center gap-2">
+          <i class="fa-solid fa-bullseye text-indigo-400"></i> Definir Meta Mensal
+        </h3>
+        <button onclick="fecharModalMeta()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1 font-semibold">Valor da Meta (R$)</label>
+          <input type="number" step="0.01" id="novaMetaInput" placeholder="3000,00" class="w-full bg-black border border-slate-700 text-emerald-400 font-extrabold text-base rounded-xl p-3 focus:border-indigo-500 outline-none">
+          <p class="text-[11px] text-slate-500 mt-1">Este valor será sincronizado nos celulares de Mayone e Rafaella.</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 justify-end mt-6">
+        <button onclick="fecharModalMeta()" class="px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-white rounded-xl transition">
+          Cancelar
+        </button>
+        <button id="btnSalvarMeta" onclick="salvarNovaMeta()" class="px-5 py-2.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Salvar Meta na Nuvem
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL DE EDIÇÃO DE GASTO -->
   <div id="modalEditar" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-lg w-full shadow-2xl">
@@ -332,25 +361,48 @@
       }
     }
 
-    async function alterarMeta() {
-      const nova = prompt("Digite a nova meta mensal do casal (R$):", meta);
-      if (nova && !isNaN(nova) && parseFloat(nova) > 0) {
-        const novaMetaVal = parseFloat(nova);
-        meta = novaMetaVal;
-        document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-        atualizarDashboard();
+    function abrirModalMeta() {
+      document.getElementById('novaMetaInput').value = meta;
+      document.getElementById('modalMeta').classList.remove('hidden');
+    }
 
-        try {
-          await fetch(WEBHOOK_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "updateMeta", meta: novaMetaVal })
-          });
-        } catch (err) {
-          console.error("Erro ao atualizar meta:", err);
-        }
+    function fecharModalMeta() {
+      document.getElementById('modalMeta').classList.add('hidden');
+    }
+
+    async function salvarNovaMeta() {
+      const novaMetaInput = document.getElementById('novaMetaInput').value;
+      if (!novaMetaInput || isNaN(novaMetaInput) || parseFloat(novaMetaInput) <= 0) {
+        alert("Por favor, insira um valor válido para a meta!");
+        return;
       }
+
+      const novaMetaVal = parseFloat(novaMetaInput);
+      const btn = document.getElementById('btnSalvarMeta');
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sincronizando...`;
+      btn.disabled = true;
+
+      // Atualiza na tela imediatamente
+      meta = novaMetaVal;
+      document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      atualizarDashboard();
+
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "updateMeta", meta: novaMetaVal })
+        });
+      } catch (err) {
+        console.error("Erro ao atualizar meta:", err);
+      }
+
+      btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Salvar Meta na Nuvem`;
+      btn.disabled = false;
+      fecharModalMeta();
+
+      setTimeout(carregarDadosPlanilha, 1500);
     }
 
     function processarImagem(e) {
