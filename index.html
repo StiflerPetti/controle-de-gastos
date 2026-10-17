@@ -246,13 +246,12 @@
     const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxU7_uGTObenukASrSYgoQ39AJP2pSZ5eZKoAjSYucVPMLhB9sgmkGmHx9ZCQCwWfDW/exec";
 
     let gastos = [];
-    let meta = parseFloat(localStorage.getItem('financas_mara_meta')) || 3000;
+    let meta = 3000;
     let chartInstance = null;
     let imagemBase64Atual = "";
     let itemParaExcluir = null;
     let rowIdEdicaoAtual = null;
 
-    document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     document.getElementById('dataInput').valueAsDate = new Date();
 
     async function carregarDadosPlanilha() {
@@ -261,14 +260,50 @@
       try {
         const res = await fetch(WEBHOOK_URL);
         const data = await res.json();
-        if (Array.isArray(data)) {
-          gastos = data.reverse();
+        
+        if (data) {
+          if (Array.isArray(data.gastos)) {
+            gastos = data.gastos.reverse();
+          } else if (Array.isArray(data)) {
+            gastos = data.reverse();
+          }
+          if (data.meta) {
+            meta = parseFloat(data.meta);
+          }
+          document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
           atualizarDashboard();
         }
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
       } finally {
         loading.classList.add('hidden');
+      }
+    }
+
+    async function alterarMeta() {
+      const nova = prompt("Digite a nova meta mensal do casal (R$):", meta);
+      if (nova && !isNaN(nova) && parseFloat(nova) > 0) {
+        const novaMetaVal = parseFloat(nova);
+        
+        // Atualiza na tela na hora
+        meta = novaMetaVal;
+        document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        atualizarDashboard();
+
+        // Envia para a nuvem
+        try {
+          await fetch(WEBHOOK_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "updateMeta",
+              meta: novaMetaVal
+            })
+          });
+        } catch (err) {
+          console.error("Erro ao atualizar meta:", err);
+        }
       }
     }
 
@@ -431,16 +466,6 @@
 
       setTimeout(carregarDadosPlanilha, 1500);
     };
-
-    function alterarMeta() {
-      const nova = prompt("Digite a meta mensal do casal (R$):", meta);
-      if (nova && !isNaN(nova)) {
-        meta = parseFloat(nova);
-        localStorage.setItem('financas_mara_meta', meta);
-        document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-        atualizarDashboard();
-      }
-    }
 
     function atualizarDashboard() {
       const total = gastos.reduce((acc, g) => acc + g.valor, 0);
