@@ -177,7 +177,7 @@
       </div>
     </div>
 
-    <!-- Tabela & Gráfico -->
+    <!-- Tabela & Gráfico de Barras -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="lg:col-span-2 bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg">
         <div class="flex justify-between items-center mb-4">
@@ -204,10 +204,13 @@
         </div>
       </div>
 
-      <!-- Gráfico de Categoria -->
-      <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 flex flex-col items-center justify-between shadow-lg">
-        <h3 class="text-base font-bold text-indigo-300 mb-3 text-left w-full">Divisão por Categoria</h3>
-        <div class="w-full max-w-[260px] my-auto">
+      <!-- Gráfico de Ranking (Barras Horizontais) -->
+      <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 flex flex-col justify-between shadow-lg">
+        <div class="mb-3">
+          <h3 class="text-base font-bold text-indigo-300 text-left">Ranking de Gastos</h3>
+          <p class="text-xs text-slate-400">Valores acumulados por categoria</p>
+        </div>
+        <div class="w-full my-auto relative min-h-[260px]">
           <canvas id="chartCategorias"></canvas>
         </div>
         <p class="text-[11px] text-slate-500 mt-3 text-center">Atualizado em tempo real</p>
@@ -382,7 +385,6 @@
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sincronizando...`;
       btn.disabled = true;
 
-      // Atualiza na tela imediatamente
       meta = novaMetaVal;
       document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
       atualizarDashboard();
@@ -653,29 +655,73 @@
 
     function renderGrafico(catTotals) {
       const ctx = document.getElementById('chartCategorias').getContext('2d');
-      const labels = Object.keys(catTotals);
-      const data = Object.values(catTotals);
+      
+      // Ordena as categorias do maior para o menor valor
+      const sortedEntries = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+      const labels = sortedEntries.map(e => e[0]);
+      const data = sortedEntries.map(e => e[1]);
 
       if (chartInstance) chartInstance.destroy();
       if (labels.length === 0) return;
 
       chartInstance = new Chart(ctx, {
-        type: 'doughnut',
+        type: 'bar',
         data: {
           labels: labels,
           datasets: [{
+            label: 'Total Gasto (R$)',
             data: data,
-            backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4', '#38bdf8', '#ef4444', '#64748b', '#a855f7'],
-            borderWidth: 2,
-            borderColor: '#111827'
+            backgroundColor: [
+              'rgba(99, 102, 241, 0.85)',
+              'rgba(16, 185, 129, 0.85)',
+              'rgba(245, 158, 11, 0.85)',
+              'rgba(236, 72, 153, 0.85)',
+              'rgba(139, 92, 246, 0.85)',
+              'rgba(6, 182, 212, 0.85)',
+              'rgba(56, 189, 248, 0.85)',
+              'rgba(239, 68, 68, 0.85)',
+              'rgba(100, 116, 139, 0.85)',
+              'rgba(168, 85, 247, 0.85)'
+            ],
+            borderColor: [
+              '#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6',
+              '#06b6d4', '#38bdf8', '#ef4444', '#64748b', '#a855f7'
+            ],
+            borderWidth: 1.5,
+            borderRadius: 8
           }]
         },
         options: {
+          indexAxis: 'y', // Define o gráfico como barras horizontais
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
-            legend: { 
-              position: 'bottom', 
-              labels: { color: '#94a3b8', font: { size: 11, weight: '600' }, boxWidth: 12 } 
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return ' R$ ' + context.parsed.x.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: {
+                color: '#94a3b8',
+                font: { size: 10, weight: '600' },
+                callback: function(value) {
+                  return 'R$ ' + value;
+                }
+              }
+            },
+            y: {
+              grid: { display: false },
+              ticks: {
+                color: '#e2e8f0',
+                font: { size: 11, weight: '700' }
+              }
             }
           }
         }
