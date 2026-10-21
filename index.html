@@ -6,9 +6,6 @@
   <title>Finanças & Saúde MaRa</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Leitor e Extrator Automático de PDF e OCR -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -105,20 +102,19 @@
       </div>
     </div>
 
-    <!-- MÓDULO SAÚDE AUTOMATIZADO -->
+    <!-- MÓDULO SAÚDE -->
     <div id="moduloSaude" class="space-y-6 hidden">
       <div class="bg-[#111827]/90 backdrop-blur border border-teal-500/20 rounded-2xl p-6 shadow-xl space-y-4">
         <h2 class="text-lg font-bold text-teal-300 flex items-center gap-2">
-          <i class="fa-solid fa-wand-magic-sparkles text-teal-400"></i> Importar Exame com Leitura Automática
+          <i class="fa-solid fa-cloud-arrow-up text-teal-400"></i> Arquivar Exame & Alimentar Gráficos
         </h2>
-        <p class="text-xs text-slate-400">Suba o laudo em PDF ou foto. O aplicativo lerá o arquivo e preencherá as taxas para o gráfico automaticamente!</p>
+        <p class="text-xs text-slate-400">Selecione o PDF ou Foto do exame. O arquivo será salvo na pasta do Google Drive e as taxas alimentarão o histórico visual.</p>
 
         <!-- Dropzone de Exame -->
-        <div class="border-2 border-dashed border-teal-500/40 hover:border-teal-400 rounded-2xl p-8 text-center transition cursor-pointer bg-black/60 flex flex-col items-center justify-center" onclick="document.getElementById('saudeFileInput').click()">
-          <input type="file" id="saudeFileInput" accept="image/*,.pdf" class="hidden" onchange="processarArquivoSaudeAuto(event)">
+        <div class="border-2 border-dashed border-teal-500/40 hover:border-teal-400 rounded-2xl p-6 text-center transition cursor-pointer bg-black/60 flex flex-col items-center justify-center" onclick="document.getElementById('saudeFileInput').click()">
+          <input type="file" id="saudeFileInput" accept="image/*,.pdf" class="hidden" onchange="selecionarArquivoSaude(event)">
           <i class="fa-solid fa-file-medical text-3xl text-teal-400 mb-2"></i>
-          <p class="text-sm font-bold text-teal-300" id="saudeDropLabel">Clique para Selecionar o Laudo / Exame (PDF ou Foto)</p>
-          <span id="saudeOcrStatus" class="text-xs text-amber-400 mt-2 font-semibold hidden"><i class="fa-solid fa-spinner fa-spin"></i> Lendo e analisando dados do laudo automaticamente...</span>
+          <p class="text-sm font-bold text-teal-300" id="saudeDropLabel">Clique para Selecionar Laudo / Exame (PDF ou Foto)</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -133,30 +129,30 @@
         </div>
 
         <div>
-          <label class="block text-[11px] text-slate-400 mb-1 font-semibold">Resumo Extraído do Laudo</label>
-          <textarea id="saudeResumo" rows="2" placeholder="O texto e conclusão do exame serão lidos e inseridos aqui..." class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none text-xs"></textarea>
+          <label class="block text-[11px] text-slate-400 mb-1 font-semibold">Resumo do Laudo / Conclusão</label>
+          <textarea id="saudeResumo" rows="2" placeholder="Resumo do diagnóstico ou observações do médico..." class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none text-xs"></textarea>
         </div>
 
-        <!-- Marcadores Identificados Automaticamente -->
+        <!-- Marcadores Numéricos do Gráfico -->
         <div class="bg-black/60 p-4 rounded-xl border border-slate-800 space-y-2">
-          <p class="text-xs font-bold text-teal-400 flex items-center gap-1"><i class="fa-solid fa-check-double"></i> Marcadores Identificados para os Gráficos:</p>
+          <p class="text-xs font-bold text-teal-400 flex items-center gap-1"><i class="fa-solid fa-chart-line"></i> Taxas do Exame (Alimentam os Gráficos):</p>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-            <div><label class="text-[10px] text-slate-400">Glicemia (mg/dL)</label><input type="number" id="mGlicemia" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-teal-300 font-bold"></div>
-            <div><label class="text-[10px] text-slate-400">Colesterol Total</label><input type="number" id="mColesterol" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-teal-300 font-bold"></div>
-            <div><label class="text-[10px] text-slate-400">Triglicerídeos</label><input type="number" id="mTriglicerideos" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-teal-300 font-bold"></div>
-            <div><label class="text-[10px] text-slate-400">Peso (% Gordura / kg)</label><input type="number" step="0.1" id="mPeso" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-teal-300 font-bold"></div>
+            <div><label class="text-[10px] text-slate-400">Glicemia (mg/dL)</label><input type="number" id="mGlicemia" placeholder="Ex: 88" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-teal-300 font-bold"></div>
+            <div><label class="text-[10px] text-slate-400">Colesterol Total</label><input type="number" id="mColesterol" placeholder="Ex: 175" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-teal-300 font-bold"></div>
+            <div><label class="text-[10px] text-slate-400">Triglicerídeos</label><input type="number" id="mTriglicerideos" placeholder="Ex: 110" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-teal-300 font-bold"></div>
+            <div><label class="text-[10px] text-slate-400">Peso / Medidas</label><input type="number" step="0.1" id="mPeso" placeholder="Ex: 78.5" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-teal-300 font-bold"></div>
           </div>
         </div>
 
         <button onclick="salvarExameSaude()" id="btnSalvarSaude" class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
-          <i class="fa-solid fa-cloud-arrow-up"></i> Salvar Exame no Google Drive & Atualizar Gráfico
+          <i class="fa-solid fa-cloud-arrow-up"></i> Arquivar no Google Drive & Desenhar Gráfico
         </button>
       </div>
 
       <!-- Gráfico de Evolução -->
       <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
         <div class="flex items-center justify-between">
-          <div><h3 class="text-base font-bold text-teal-300">Evolução Histórica das Taxas</h3><p class="text-xs text-slate-400">Gráfico gerado automaticamente a partir dos exames importados</p></div>
+          <div><h3 class="text-base font-bold text-teal-300">Evolução Histórica das Taxas</h3><p class="text-xs text-slate-400">Selecione o indicador para comparar seus exames ao longo dos meses/anos</p></div>
           <select id="selectMetricaGrafico" onchange="renderGraficoSaude()" class="bg-black border border-slate-700 text-xs text-teal-300 font-bold p-2 rounded-lg">
             <option value="Glicemia">Glicemia</option><option value="Colesterol">Colesterol Total</option><option value="Triglicerídeos">Triglicerídeos</option><option value="Peso">Peso / Medidas</option>
           </select>
@@ -185,7 +181,6 @@
 
   <script>
     const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxU7_uGTObenukASrSYgoQ39AJP2pSZ5eZKoAjSYucVPMLhB9sgmkGmHx9ZCQCwWfDW/exec";
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
     let gastos = [], exames = [], meta = 3000;
     let chartFinancasInstance = null, chartSaudeInstance = null;
@@ -215,73 +210,18 @@
       } catch (err) {}
     }
 
-    // LEITURA E PARSER AUTOMÁTICO DE EXAMES (PDF E IMAGEM)
-    async function processarArquivoSaudeAuto(e) {
+    function selecionarArquivoSaude(e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      document.getElementById('saudeDropLabel').innerText = "Arquivo selecionado: " + file.name;
-      const statusEl = document.getElementById('saudeOcrStatus');
-      statusEl.classList.remove('hidden');
+      document.getElementById('saudeDropLabel').innerText = "Laudo selecionado: " + file.name;
+      if (!document.getElementById('saudeTitulo').value) {
+        document.getElementById('saudeTitulo').value = file.name.replace(/\.[^/.]+$/, "");
+      }
 
       const reader = new FileReader();
-      reader.onload = async function(evt) {
-        arquivoBase64Saude = evt.target.result;
-        
-        let textoExtraido = "";
-        try {
-          if (file.type.indexOf('pdf') !== -1 || file.name.endsWith('.pdf')) {
-            textoExtraido = await extrairTextoPDF(evt.target.result);
-          } else {
-            const result = await Tesseract.recognize(evt.target.result, 'por');
-            textoExtraido = result.data.text;
-          }
-        } catch(err) { console.error("Erro OCR:", err); }
-
-        statusEl.classList.add('hidden');
-        
-        if (textoExtraido) {
-          document.getElementById('saudeResumo').value = textoExtraido.substring(0, 300) + "...";
-          if (!document.getElementById('saudeTitulo').value) {
-            document.getElementById('saudeTitulo').value = file.name.replace(/\.[^/.]+$/, "");
-          }
-          analisarEPreencherTaxas(textoExtraido);
-        }
-      };
+      reader.onload = function(evt) { arquivoBase64Saude = evt.target.result; };
       reader.readAsDataURL(file);
-    }
-
-    async function extrairTextoPDF(base64Data) {
-      const loadingTask = pdfjsLib.getDocument(base64Data);
-      const pdf = await loadingTask.promise;
-      let fullText = "";
-      for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        fullText += textContent.items.map(item => item.str).join(" ") + " ";
-      }
-      return fullText;
-    }
-
-    // EXTRAÇÃO INTELIGENTE DE MARCADORES NUMÉRICOS
-    function analisarEPreencherTaxas(text) {
-      const t = text.toLowerCase().replace(/,/g, '.');
-
-      // Glicemia
-      const mGlic = t.match(/glicemia[^\d]*(\d{2,3}(\.\d+)?)/);
-      if (mGlic && mGlic[1]) document.getElementById('mGlicemia').value = parseFloat(mGlic[1]);
-
-      // Colesterol Total
-      const mCol = t.match(/colesterol\s+total[^\d]*(\d{2,3}(\.\d+)?)/);
-      if (mCol && mCol[1]) document.getElementById('mColesterol').value = parseFloat(mCol[1]);
-
-      // Triglicerídeos
-      const mTrig = t.match(/trigli[^\d]*(\d{2,3}(\.\d+)?)/);
-      if (mTrig && mTrig[1]) document.getElementById('mTriglicerideos').value = parseFloat(mTrig[1]);
-
-      // Peso / Composição
-      const mPeso = t.match(/peso[^\d]*(\d{2,3}(\.\d+)?)/) || t.match(/gordura[^\d]*(\d{1,2}(\.\d+)?)/);
-      if (mPeso && mPeso[1]) document.getElementById('mPeso').value = parseFloat(mPeso[1]);
     }
 
     async function salvarExameSaude() {
@@ -301,7 +241,7 @@
       if (document.getElementById('mPeso').value) indicadores["Peso"] = parseFloat(document.getElementById('mPeso').value);
 
       const btn = document.getElementById('btnSalvarSaude');
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Salvando no Drive...`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sincronizando com Google Drive...`;
       btn.disabled = true;
 
       try {
@@ -311,10 +251,14 @@
         });
       } catch (err) {}
 
-      btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Salvar Exame no Google Drive & Atualizar Gráfico`;
+      btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Arquivar no Google Drive & Desenhar Gráfico`;
       btn.disabled = false;
       document.getElementById('saudeTitulo').value = '';
       document.getElementById('saudeResumo').value = '';
+      document.getElementById('mGlicemia').value = '';
+      document.getElementById('mColesterol').value = '';
+      document.getElementById('mTriglicerideos').value = '';
+      document.getElementById('mPeso').value = '';
       arquivoBase64Saude = "";
       setTimeout(carregarDadosPlanilha, 2000);
     }
@@ -333,7 +277,7 @@
             <td class="p-3 font-semibold text-slate-200">${e.titulo}</td>
             <td class="p-3 text-xs text-indigo-300 font-bold">${e.paciente}</td>
             <td class="p-3"><span class="bg-black border border-slate-700 text-xs px-2 py-1 rounded text-teal-300">${e.tipo}</span></td>
-            <td class="p-3 text-xs text-slate-400">${(e.resumo || '-').substring(0, 60)}...</td>
+            <td class="p-3 text-xs text-slate-400">${(e.resumo || '-').substring(0, 60)}</td>
             <td class="p-3 text-center">${e.arquivoUrl ? `<a href="${e.arquivoUrl}" target="_blank" class="text-teal-400 font-bold hover:underline text-xs"><i class="fa-solid fa-file-pdf"></i> Abrir Laudo</a>` : '-'}</td>
           `;
           tbody.appendChild(row);
@@ -369,7 +313,7 @@
       });
     }
 
-    // LOGIC FINANÇAS
+    // FINANÇAS LOGIC
     function processarImagemFinancas(e) {
       const file = e.target.files[0];
       if (!file) return;
