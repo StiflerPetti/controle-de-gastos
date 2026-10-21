@@ -6,6 +6,9 @@
   <title>Finanças & Saúde MaRa</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Leitor e Extrator Automático de PDF e OCR -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -20,10 +23,9 @@
 </head>
 <body class="bg-water-union text-slate-100 min-h-screen pb-12">
 
-  <!-- Header com Seletor de Módulos -->
+  <!-- Header -->
   <header class="bg-black/85 backdrop-blur-md border-b border-indigo-500/20 sticky top-0 z-50 shadow-xl">
     <div class="max-w-5xl mx-auto px-4 py-3 flex flex-col items-center justify-center text-center space-y-3 relative">
-      
       <div class="flex items-center space-x-2">
         <div class="bg-gradient-to-tr from-indigo-600 to-violet-500 p-2 rounded-xl text-white shadow-md shadow-indigo-500/30">
           <i class="fa-solid fa-heart-pulse text-lg" id="appHeaderIcon"></i>
@@ -31,7 +33,6 @@
         <h1 class="text-xl font-extrabold tracking-tight text-indigo-400" id="appHeaderTitle">Controle MaRa</h1>
       </div>
 
-      <!-- Navegação de Abas Principal -->
       <div class="flex items-center gap-2 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
         <button id="tabBtnFinancas" onclick="trocarMódulo('financas')" class="px-4 py-2 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow-md flex items-center gap-2">
           <i class="fa-solid fa-wallet"></i> Finanças
@@ -40,125 +41,62 @@
           <i class="fa-solid fa-notes-medical"></i> Painel de Saúde
         </button>
       </div>
-
-      <div class="absolute right-4 top-3 hidden md:block">
-        <button onclick="carregarDadosPlanilha()" class="text-xs text-indigo-300 bg-indigo-950/80 border border-indigo-500/30 px-3 py-2 rounded-xl hover:bg-indigo-900/50 transition flex items-center gap-1.5 font-bold">
-          <i class="fa-solid fa-rotate text-xs"></i> Atualizar
-        </button>
-      </div>
     </div>
   </header>
 
   <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
 
-    <!-- =================================================== -->
-    <!-- MÓDULO 1: FINANÇAS                                  -->
-    <!-- =================================================== -->
+    <!-- MÓDULO FINANÇAS -->
     <div id="moduloFinancas" class="space-y-6">
-      
-      <!-- Alerta Dinâmico do Orçamento -->
       <div id="budgetAlertBox" class="hidden rounded-2xl p-4 border transition-all duration-300">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div id="alertIconBg" class="p-2.5 rounded-xl text-lg flex items-center justify-center">
-              <i id="alertIcon" class="fa-solid"></i>
-            </div>
-            <div>
-              <h4 id="alertTitle" class="text-sm font-bold tracking-wide"></h4>
-              <p id="alertSubtitle" class="text-xs opacity-90 font-medium"></p>
-            </div>
+            <div id="alertIconBg" class="p-2.5 rounded-xl text-lg flex items-center justify-center"><i id="alertIcon" class="fa-solid"></i></div>
+            <div><h4 id="alertTitle" class="text-sm font-bold tracking-wide"></h4><p id="alertSubtitle" class="text-xs opacity-90 font-medium"></p></div>
           </div>
           <span id="alertBadge" class="text-xs font-extrabold px-3 py-1.5 rounded-lg uppercase tracking-wider"></span>
         </div>
       </div>
 
-      <!-- Indicadores Finanças -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
-          <div>
-            <p class="text-xs font-semibold text-slate-400 mb-1">Total Gasto (Este Mês)</p>
-            <p class="text-3xl font-extrabold text-red-500" id="totalGasto">R$ 0,00</p>
-          </div>
-          <div class="mt-4">
-            <div class="bg-black rounded-full h-2 overflow-hidden border border-slate-800">
-              <div id="barProgress" class="bg-indigo-500 h-full w-0 transition-all duration-500"></div>
-            </div>
-            <p class="text-[11px] text-slate-400 mt-2 flex justify-between font-medium">
-              <span>Meta: <span class="text-emerald-400 font-semibold">R$ <span id="metaVal">3.000,00</span></span></span>
-              <button onclick="abrirModalMeta()" class="text-indigo-400 hover:text-indigo-300 underline font-semibold">Editar Meta</button>
-            </p>
-          </div>
+          <div><p class="text-xs font-semibold text-slate-400 mb-1">Total Gasto (Este Mês)</p><p class="text-3xl font-extrabold text-red-500" id="totalGasto">R$ 0,00</p></div>
+          <div class="mt-4"><div class="bg-black rounded-full h-2 overflow-hidden border border-slate-800"><div id="barProgress" class="bg-indigo-500 h-full w-0 transition-all duration-500"></div></div><p class="text-[11px] text-slate-400 mt-2 flex justify-between font-medium"><span>Meta: <span class="text-emerald-400 font-semibold">R$ <span id="metaVal">3.000,00</span></span></span><button onclick="abrirModalMeta()" class="text-indigo-400 hover:text-indigo-300 underline font-semibold">Editar Meta</button></p></div>
         </div>
-
         <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
-          <div>
-            <p class="text-xs font-semibold text-slate-400 mb-1">Maior Categoria de Gasto</p>
-            <p class="text-xs font-bold text-indigo-400 uppercase tracking-wide" id="topCategoriaName">-</p>
-            <p class="text-3xl font-extrabold text-amber-400 mt-1" id="topCategoriaValor">R$ 0,00</p>
-          </div>
-          <p class="text-[11px] text-slate-400 mt-4 font-medium" id="topCategoriaPercent">
-            Representa <span class="text-indigo-300 font-bold">0%</span> do total deste mês
-          </p>
+          <div><p class="text-xs font-semibold text-slate-400 mb-1">Maior Categoria de Gasto</p><p class="text-xs font-bold text-indigo-400 uppercase tracking-wide" id="topCategoriaName">-</p><p class="text-3xl font-extrabold text-amber-400 mt-1" id="topCategoriaValor">R$ 0,00</p></div>
+          <p class="text-[11px] text-slate-400 mt-4 font-medium" id="topCategoriaPercent">Representa <span class="text-indigo-300 font-bold">0%</span> do total</p>
         </div>
-
         <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
-          <div>
-            <p class="text-xs font-semibold text-slate-400 mb-1">Comprovantes & Registros</p>
-            <p class="text-3xl font-extrabold text-emerald-400" id="totalLidos">0</p>
-          </div>
-          <p class="text-[11px] text-slate-400 mt-4 font-medium flex items-center gap-1.5">
-            <i class="fa-solid fa-cloud-check text-emerald-400"></i> Sincronizados na nuvem MaRa
-          </p>
+          <div><p class="text-xs font-semibold text-slate-400 mb-1">Comprovantes & Registros</p><p class="text-3xl font-extrabold text-emerald-400" id="totalLidos">0</p></div>
+          <p class="text-[11px] text-slate-400 mt-4 font-medium flex items-center gap-1.5"><i class="fa-solid fa-cloud-check text-emerald-400"></i> Sincronizados na nuvem MaRa</p>
         </div>
       </div>
 
-      <!-- Formulário Finanças -->
       <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl">
-        <h2 class="text-lg font-bold text-indigo-300 mb-2 flex items-center gap-2">
-          <i class="fa-solid fa-file-invoice-dollar text-indigo-400"></i> Importar Comprovante / Print
-        </h2>
+        <h2 class="text-lg font-bold text-indigo-300 mb-2 flex items-center gap-2"><i class="fa-solid fa-file-invoice-dollar text-indigo-400"></i> Importar Comprovante / Print</h2>
         <div class="border-2 border-dashed border-indigo-500/40 hover:border-indigo-400 rounded-2xl p-6 text-center transition cursor-pointer bg-black/60 flex flex-col items-center justify-center" onclick="document.getElementById('fileInput').click()">
-          <input type="file" id="fileInput" accept="image/*,.pdf" class="hidden" onchange="processarImagem(event)">
+          <input type="file" id="fileInput" accept="image/*,.pdf" class="hidden" onchange="processarImagemFinancas(event)">
           <i class="fa-solid fa-file-arrow-up text-3xl text-indigo-400 mb-2"></i>
           <p class="text-sm font-bold text-indigo-300">Escolher Imagem ou Arquivo PDF</p>
         </div>
-
         <div id="formConfirmacao" class="hidden mt-6 bg-black/80 border border-indigo-500/30 rounded-2xl p-5 shadow-lg space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
             <input type="text" id="descInput" placeholder="Descrição / Loja" class="bg-[#111827] border border-slate-700 text-slate-100 rounded-xl p-3">
             <input type="number" step="0.01" id="valorInput" placeholder="Valor (R$)" class="bg-[#111827] border border-slate-700 text-red-400 font-bold rounded-xl p-3">
             <input type="date" id="dataInput" class="bg-[#111827] border border-slate-700 text-slate-200 rounded-xl p-3">
             <select id="categoriaInput" class="bg-[#111827] border border-slate-700 text-slate-200 rounded-xl p-3">
-              <option value="Alimentação">Alimentação</option>
-              <option value="Supermercado">Supermercado</option>
-              <option value="Transporte">Transporte</option>
-              <option value="Lazer">Lazer</option>
-              <option value="Saúde">Saúde</option>
-              <option value="Farmácia">Farmácia</option>
-              <option value="Cartão de Crédito">Cartão de Crédito</option>
-              <option value="Educação">Educação</option>
-              <option value="Moradia">Moradia</option>
-              <option value="Outros">Outros</option>
+              <option value="Alimentação">Alimentação</option><option value="Supermercado">Supermercado</option><option value="Transporte">Transporte</option><option value="Lazer">Lazer</option><option value="Saúde">Saúde</option><option value="Farmácia">Farmácia</option><option value="Cartão de Crédito">Cartão de Crédito</option><option value="Educação">Educação</option><option value="Moradia">Moradia</option><option value="Outros">Outros</option>
             </select>
           </div>
-          <button onclick="salvarGasto()" id="btnSalvar" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
-            <i class="fa-solid fa-cloud-arrow-up"></i> Confirmar e Salvar no Finanças
-          </button>
+          <button onclick="salvarGasto()" id="btnSalvar" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> Confirmar e Salvar no Finanças</button>
         </div>
       </div>
 
-      <!-- Tabela & Gráfico Finanças -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg">
           <h3 class="text-base font-bold text-indigo-300 mb-4">Histórico do Mês</h3>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-slate-300">
-              <thead class="text-xs uppercase bg-black/60 border-b border-slate-800 text-slate-400">
-                <tr><th class="p-3">Data</th><th class="p-3">Descrição</th><th class="p-3">Categoria</th><th class="p-3 text-right">Valor</th><th class="p-3 text-center">Ações</th></tr>
-              </thead>
-              <tbody id="tabelaGastos"><tr><td colspan="5" class="p-4 text-center text-slate-500">Carregando...</td></tr></tbody>
-            </table>
-          </div>
+          <div class="overflow-x-auto"><table class="w-full text-left text-sm text-slate-300"><thead class="text-xs uppercase bg-black/60 border-b border-slate-800 text-slate-400"><tr><th class="p-3">Data</th><th class="p-3">Descrição</th><th class="p-3">Categoria</th><th class="p-3 text-right">Valor</th><th class="p-3 text-center">Ações</th></tr></thead><tbody id="tabelaGastos"></tbody></table></div>
         </div>
         <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
           <h3 class="text-base font-bold text-indigo-300">Ranking de Gastos</h3>
@@ -167,152 +105,73 @@
       </div>
     </div>
 
-
-    <!-- =================================================== -->
-    <!-- MÓDULO 2: HISTÓRICO DE SAÚDE                        -->
-    <!-- =================================================== -->
+    <!-- MÓDULO SAÚDE AUTOMATIZADO -->
     <div id="moduloSaude" class="space-y-6 hidden">
-      
-      <!-- Cadastro de Exames -->
       <div class="bg-[#111827]/90 backdrop-blur border border-teal-500/20 rounded-2xl p-6 shadow-xl space-y-4">
         <h2 class="text-lg font-bold text-teal-300 flex items-center gap-2">
-          <i class="fa-solid fa-file-medical text-teal-400"></i> Registrar Novo Exame / Laudo
+          <i class="fa-solid fa-wand-magic-sparkles text-teal-400"></i> Importar Exame com Leitura Automática
         </h2>
-        <p class="text-xs text-slate-400">Suba o laudo/PDF completo e preencha as informações para arquivamento e histórico.</p>
+        <p class="text-xs text-slate-400">Suba o laudo em PDF ou foto. O aplicativo lerá o arquivo e preencherá as taxas para o gráfico automaticamente!</p>
+
+        <!-- Dropzone de Exame -->
+        <div class="border-2 border-dashed border-teal-500/40 hover:border-teal-400 rounded-2xl p-8 text-center transition cursor-pointer bg-black/60 flex flex-col items-center justify-center" onclick="document.getElementById('saudeFileInput').click()">
+          <input type="file" id="saudeFileInput" accept="image/*,.pdf" class="hidden" onchange="processarArquivoSaudeAuto(event)">
+          <i class="fa-solid fa-file-medical text-3xl text-teal-400 mb-2"></i>
+          <p class="text-sm font-bold text-teal-300" id="saudeDropLabel">Clique para Selecionar o Laudo / Exame (PDF ou Foto)</p>
+          <span id="saudeOcrStatus" class="text-xs text-amber-400 mt-2 font-semibold hidden"><i class="fa-solid fa-spinner fa-spin"></i> Lendo e analisando dados do laudo automaticamente...</span>
+        </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div>
-            <label class="block text-[11px] text-slate-400 mb-1 font-semibold">Nome / Título do Exame</label>
-            <input type="text" id="saudeTitulo" placeholder="Ex: Hemograma / Ultrassom Abdominal" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 focus:border-teal-500 outline-none">
-          </div>
-          <div>
-            <label class="block text-[11px] text-slate-400 mb-1 font-semibold">Tipo de Exame</label>
-            <select id="saudeTipo" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 focus:border-teal-500 outline-none">
-              <option value="Exame de Sangue">Exame de Sangue / Laboratorial</option>
-              <option value="Imagem / Raio-X">Imagem (Ultrassom, RM, Raio-X, Tomografia)</option>
-              <option value="Cardiologia">Cardiologia (ECG, Ergométrico)</option>
-              <option value="Composição Corporal">Composição Corporal / Bioimpedância</option>
-              <option value="Outros">Outros Exames / Consultas</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-[11px] text-slate-400 mb-1 font-semibold">Paciente</label>
-            <select id="saudePaciente" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 focus:border-teal-500 outline-none">
-              <option value="Mayone">Mayone</option>
-              <option value="Rafaella">Rafaella</option>
-            </select>
-          </div>
+          <div><label class="block text-[11px] text-slate-400 mb-1 font-semibold">Nome / Título do Exame</label><input type="text" id="saudeTitulo" placeholder="Ex: Hemograma / Ultrassom" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none"></div>
+          <div><label class="block text-[11px] text-slate-400 mb-1 font-semibold">Tipo de Exame</label><select id="saudeTipo" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none"><option value="Exame de Sangue">Exame de Sangue / Laboratorial</option><option value="Imagem / Raio-X">Imagem (Ultrassom, RM, Raio-X)</option><option value="Cardiologia">Cardiologia (ECG)</option><option value="Composição Corporal">Composição Corporal</option><option value="Outros">Outros</option></select></div>
+          <div><label class="block text-[11px] text-slate-400 mb-1 font-semibold">Paciente</label><select id="saudePaciente" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none"><option value="Mayone">Mayone</option><option value="Rafaella">Rafaella</option></select></div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div>
-            <label class="block text-[11px] text-slate-400 mb-1 font-semibold">Data do Exame</label>
-            <input type="date" id="saudeData" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 focus:border-teal-500 outline-none">
-          </div>
-          <div>
-            <label class="block text-[11px] text-slate-400 mb-1 font-semibold">Laboratório / Clínica / Médico</label>
-            <input type="text" id="saudeLab" placeholder="Ex: Fleury / Sabin" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 focus:border-teal-500 outline-none">
-          </div>
+          <div><label class="block text-[11px] text-slate-400 mb-1 font-semibold">Data do Exame</label><input type="date" id="saudeData" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none"></div>
+          <div><label class="block text-[11px] text-slate-400 mb-1 font-semibold">Laboratório / Clínica</label><input type="text" id="saudeLab" placeholder="Ex: Fleury / Sabin" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none"></div>
         </div>
 
         <div>
-          <label class="block text-[11px] text-slate-400 mb-1 font-semibold">Resumo do Laudo / Conclusão Médica</label>
-          <textarea id="saudeResumo" rows="2" placeholder="Ex: Tiras dentro dos limites. Sem alterações anatômicas. Colesterol LDL em 95 mg/dL." class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 focus:border-teal-500 outline-none text-sm"></textarea>
+          <label class="block text-[11px] text-slate-400 mb-1 font-semibold">Resumo Extraído do Laudo</label>
+          <textarea id="saudeResumo" rows="2" placeholder="O texto e conclusão do exame serão lidos e inseridos aqui..." class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none text-xs"></textarea>
         </div>
 
-        <!-- Anexo de Exame -->
-        <div class="border border-dashed border-teal-500/30 rounded-xl p-4 bg-black/40 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <i class="fa-solid fa-paperclip text-teal-400 text-xl"></i>
-            <div>
-              <p class="text-xs font-bold text-teal-300" id="saudeFileName">Anexar PDF ou Imagem do Laudo</p>
-              <p class="text-[10px] text-slate-500">Salva automaticamente na pasta Saude_MaRa no Google Drive</p>
-            </div>
-          </div>
-          <button type="button" onclick="document.getElementById('saudeFileInput').click()" class="text-xs bg-teal-950 border border-teal-500/40 text-teal-300 font-bold px-3 py-2 rounded-lg hover:bg-teal-900 transition">
-            Selecionar Arquivo
-          </button>
-          <input type="file" id="saudeFileInput" accept="image/*,.pdf" class="hidden" onchange="processarArquivoSaude(event)">
-        </div>
-
-        <!-- Inserir Marcadores para Gráficos -->
-        <div class="bg-black/60 p-4 rounded-xl border border-slate-800 space-y-3">
-          <div class="flex items-center justify-between">
-            <p class="text-xs font-bold text-teal-400"><i class="fa-solid fa-chart-line"></i> Métricas & Marcadores Numéricos (Para alimentar o gráfico temporal)</p>
-            <span class="text-[10px] text-slate-500">Opcional para gráficos</span>
-          </div>
-          
+        <!-- Marcadores Identificados Automaticamente -->
+        <div class="bg-black/60 p-4 rounded-xl border border-slate-800 space-y-2">
+          <p class="text-xs font-bold text-teal-400 flex items-center gap-1"><i class="fa-solid fa-check-double"></i> Marcadores Identificados para os Gráficos:</p>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-            <div>
-              <label class="text-[10px] text-slate-400">Glicemia (mg/dL)</label>
-              <input type="number" id="mGlicemia" placeholder="Ex: 88" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-slate-100">
-            </div>
-            <div>
-              <label class="text-[10px] text-slate-400">Colesterol Total</label>
-              <input type="number" id="mColesterol" placeholder="Ex: 175" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-slate-100">
-            </div>
-            <div>
-              <label class="text-[10px] text-slate-400">Triglicerídeos</label>
-              <input type="number" id="mTriglicerideos" placeholder="Ex: 110" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-slate-100">
-            </div>
-            <div>
-              <label class="text-[10px] text-slate-400">Peso (% Gordura / kg)</label>
-              <input type="number" step="0.1" id="mPeso" placeholder="Ex: 78.5" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-slate-100">
-            </div>
+            <div><label class="text-[10px] text-slate-400">Glicemia (mg/dL)</label><input type="number" id="mGlicemia" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-teal-300 font-bold"></div>
+            <div><label class="text-[10px] text-slate-400">Colesterol Total</label><input type="number" id="mColesterol" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-teal-300 font-bold"></div>
+            <div><label class="text-[10px] text-slate-400">Triglicerídeos</label><input type="number" id="mTriglicerideos" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-teal-300 font-bold"></div>
+            <div><label class="text-[10px] text-slate-400">Peso (% Gordura / kg)</label><input type="number" step="0.1" id="mPeso" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-teal-300 font-bold"></div>
           </div>
         </div>
 
-        <button onclick="salvarExameSaude()" id="btnSalvarSaude" class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg shadow-teal-600/20 flex items-center justify-center gap-2">
-          <i class="fa-solid fa-cloud-arrow-up"></i> Arquivar Exame & Atualizar Histórico
+        <button onclick="salvarExameSaude()" id="btnSalvarSaude" class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Salvar Exame no Google Drive & Atualizar Gráfico
         </button>
       </div>
 
-      <!-- Gráfico de Evolução de Saúde -->
+      <!-- Gráfico de Evolução -->
       <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
         <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-base font-bold text-teal-300">Evolução Histórica das Taxas</h3>
-            <p class="text-xs text-slate-400">Acompanhamento dos valores numéricos gravados nos exames ao longo do tempo</p>
-          </div>
+          <div><h3 class="text-base font-bold text-teal-300">Evolução Histórica das Taxas</h3><p class="text-xs text-slate-400">Gráfico gerado automaticamente a partir dos exames importados</p></div>
           <select id="selectMetricaGrafico" onchange="renderGraficoSaude()" class="bg-black border border-slate-700 text-xs text-teal-300 font-bold p-2 rounded-lg">
-            <option value="Glicemia">Glicemia</option>
-            <option value="Colesterol">Colesterol Total</option>
-            <option value="Triglicerídeos">Triglicerídeos</option>
-            <option value="Peso">Peso / Medidas</option>
+            <option value="Glicemia">Glicemia</option><option value="Colesterol">Colesterol Total</option><option value="Triglicerídeos">Triglicerídeos</option><option value="Peso">Peso / Medidas</option>
           </select>
         </div>
-        <div class="w-full h-[250px] relative">
-          <canvas id="chartEvolucaoSaude"></canvas>
-        </div>
+        <div class="w-full h-[250px] relative"><canvas id="chartEvolucaoSaude"></canvas></div>
       </div>
 
-      <!-- Histórico e Arquivo de Exames -->
       <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg">
         <h3 class="text-base font-bold text-teal-300 mb-4">Histórico Completo de Exames</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm text-slate-300">
-            <thead class="text-xs uppercase bg-black/60 border-b border-slate-800 text-slate-400">
-              <tr>
-                <th class="p-3">Data</th>
-                <th class="p-3">Exame / Título</th>
-                <th class="p-3">Paciente</th>
-                <th class="p-3">Tipo</th>
-                <th class="p-3">Resumo / Laudo</th>
-                <th class="p-3 text-center">Arquivo</th>
-              </tr>
-            </thead>
-            <tbody id="tabelaExames">
-              <tr><td colspan="6" class="p-4 text-center text-slate-500">Nenhum exame arquivado ainda.</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <div class="overflow-x-auto"><table class="w-full text-left text-sm text-slate-300"><thead class="text-xs uppercase bg-black/60 border-b border-slate-800 text-slate-400"><tr><th class="p-3">Data</th><th class="p-3">Exame / Título</th><th class="p-3">Paciente</th><th class="p-3">Tipo</th><th class="p-3">Resumo / Laudo</th><th class="p-3 text-center">Arquivo</th></tr></thead><tbody id="tabelaExames"></tbody></table></div>
       </div>
-
     </div>
 
   </main>
 
-  <!-- MODAL DE META FINANCEIRA -->
   <div id="modalMeta" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
       <h3 class="text-lg font-bold text-indigo-300"><i class="fa-solid fa-bullseye"></i> Definir Meta Mensal</h3>
@@ -326,74 +185,103 @@
 
   <script>
     const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxU7_uGTObenukASrSYgoQ39AJP2pSZ5eZKoAjSYucVPMLhB9sgmkGmHx9ZCQCwWfDW/exec";
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-    let gastos = [];
-    let exames = [];
-    let meta = 3000;
-    let chartFinancasInstance = null;
-    let chartSaudeInstance = null;
-    let imagemBase64Fin = "";
-    let arquivoBase64Saude = "";
+    let gastos = [], exames = [], meta = 3000;
+    let chartFinancasInstance = null, chartSaudeInstance = null;
+    let imagemBase64Fin = "", arquivoBase64Saude = "";
 
     document.getElementById('dataInput').valueAsDate = new Date();
     document.getElementById('saudeData').valueAsDate = new Date();
 
-    function trocarMódulo(modulo) {
-      const tabFin = document.getElementById('tabBtnFinancas');
-      const tabSau = document.getElementById('tabBtnSaude');
-      const modFin = document.getElementById('moduloFinancas');
-      const modSau = document.getElementById('moduloSaude');
-      const headerTitle = document.getElementById('appHeaderTitle');
-      const headerIcon = document.getElementById('appHeaderIcon');
-
-      if (modulo === 'financas') {
-        modFin.classList.remove('hidden');
-        modSau.classList.add('hidden');
-        tabFin.className = "px-4 py-2 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow-md flex items-center gap-2";
-        tabSau.className = "px-4 py-2 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white flex items-center gap-2";
-        headerTitle.innerText = "Finanças MaRa";
-        headerIcon.className = "fa-solid fa-wallet text-lg";
-      } else {
-        modFin.classList.add('hidden');
-        modSau.classList.remove('hidden');
-        tabSau.className = "px-4 py-2 rounded-lg text-xs font-bold transition bg-teal-600 text-white shadow-md flex items-center gap-2";
-        tabFin.className = "px-4 py-2 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white flex items-center gap-2";
-        headerTitle.innerText = "Saúde MaRa";
-        headerIcon.className = "fa-solid fa-heart-pulse text-lg";
-        renderGraficoSaude();
-      }
+    function trocarMódulo(m) {
+      document.getElementById('moduloFinancas').classList.toggle('hidden', m !== 'financas');
+      document.getElementById('moduloSaude').classList.toggle('hidden', m !== 'saude');
+      if (m === 'saude') renderGraficoSaude();
     }
 
     async function carregarDadosPlanilha() {
       try {
         const res = await fetch(WEBHOOK_URL);
         const data = await res.json();
-        
         if (data) {
           if (Array.isArray(data.gastos)) gastos = data.gastos.reverse();
           if (Array.isArray(data.exames)) exames = data.exames.reverse();
           if (data.meta) meta = parseFloat(data.meta);
-          
           document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
           atualizarDashboardFinancas();
           atualizarDashboardSaude();
         }
-      } catch (err) {
-        console.error("Erro ao carregar dados:", err);
-      }
+      } catch (err) {}
     }
 
-    // --- MÓDULO SAÚDE LOGIC ---
-    function processarArquivoSaude(e) {
+    // LEITURA E PARSER AUTOMÁTICO DE EXAMES (PDF E IMAGEM)
+    async function processarArquivoSaudeAuto(e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      document.getElementById('saudeFileName').innerText = file.name;
+      document.getElementById('saudeDropLabel').innerText = "Arquivo selecionado: " + file.name;
+      const statusEl = document.getElementById('saudeOcrStatus');
+      statusEl.classList.remove('hidden');
+
       const reader = new FileReader();
-      reader.onload = function(evt) {
+      reader.onload = async function(evt) {
         arquivoBase64Saude = evt.target.result;
+        
+        let textoExtraido = "";
+        try {
+          if (file.type.indexOf('pdf') !== -1 || file.name.endsWith('.pdf')) {
+            textoExtraido = await extrairTextoPDF(evt.target.result);
+          } else {
+            const result = await Tesseract.recognize(evt.target.result, 'por');
+            textoExtraido = result.data.text;
+          }
+        } catch(err) { console.error("Erro OCR:", err); }
+
+        statusEl.classList.add('hidden');
+        
+        if (textoExtraido) {
+          document.getElementById('saudeResumo').value = textoExtraido.substring(0, 300) + "...";
+          if (!document.getElementById('saudeTitulo').value) {
+            document.getElementById('saudeTitulo').value = file.name.replace(/\.[^/.]+$/, "");
+          }
+          analisarEPreencherTaxas(textoExtraido);
+        }
       };
       reader.readAsDataURL(file);
+    }
+
+    async function extrairTextoPDF(base64Data) {
+      const loadingTask = pdfjsLib.getDocument(base64Data);
+      const pdf = await loadingTask.promise;
+      let fullText = "";
+      for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        fullText += textContent.items.map(item => item.str).join(" ") + " ";
+      }
+      return fullText;
+    }
+
+    // EXTRAÇÃO INTELIGENTE DE MARCADORES NUMÉRICOS
+    function analisarEPreencherTaxas(text) {
+      const t = text.toLowerCase().replace(/,/g, '.');
+
+      // Glicemia
+      const mGlic = t.match(/glicemia[^\d]*(\d{2,3}(\.\d+)?)/);
+      if (mGlic && mGlic[1]) document.getElementById('mGlicemia').value = parseFloat(mGlic[1]);
+
+      // Colesterol Total
+      const mCol = t.match(/colesterol\s+total[^\d]*(\d{2,3}(\.\d+)?)/);
+      if (mCol && mCol[1]) document.getElementById('mColesterol').value = parseFloat(mCol[1]);
+
+      // Triglicerídeos
+      const mTrig = t.match(/trigli[^\d]*(\d{2,3}(\.\d+)?)/);
+      if (mTrig && mTrig[1]) document.getElementById('mTriglicerideos').value = parseFloat(mTrig[1]);
+
+      // Peso / Composição
+      const mPeso = t.match(/peso[^\d]*(\d{2,3}(\.\d+)?)/) || t.match(/gordura[^\d]*(\d{1,2}(\.\d+)?)/);
+      if (mPeso && mPeso[1]) document.getElementById('mPeso').value = parseFloat(mPeso[1]);
     }
 
     async function salvarExameSaude() {
@@ -404,10 +292,7 @@
       const lab = document.getElementById('saudeLab').value;
       const resumo = document.getElementById('saudeResumo').value;
 
-      if (!titulo || !data) {
-        alert("Preencha o título e a data do exame!");
-        return;
-      }
+      if (!titulo || !data) { alert("Preencha título e data!"); return; }
 
       const indicadores = {};
       if (document.getElementById('mGlicemia').value) indicadores["Glicemia"] = parseFloat(document.getElementById('mGlicemia').value);
@@ -416,55 +301,40 @@
       if (document.getElementById('mPeso').value) indicadores["Peso"] = parseFloat(document.getElementById('mPeso').value);
 
       const btn = document.getElementById('btnSalvarSaude');
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Arquivando no Google Drive...`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Salvando no Drive...`;
       btn.disabled = true;
-
-      const payload = {
-        action: "addSaude",
-        titulo, tipo, paciente, data, laboratorio: lab, resumo,
-        indicadores,
-        arquivoBase64: arquivoBase64Saude
-      };
 
       try {
         await fetch(WEBHOOK_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "addSaude", titulo, tipo, paciente, data, laboratorio: lab, resumo, indicadores, arquivoBase64: arquivoBase64Saude })
         });
-      } catch (err) { console.error("Erro ao salvar exame:", err); }
+      } catch (err) {}
 
-      btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Arquivar Exame & Atualizar Histórico`;
+      btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Salvar Exame no Google Drive & Atualizar Gráfico`;
       btn.disabled = false;
       document.getElementById('saudeTitulo').value = '';
       document.getElementById('saudeResumo').value = '';
-      document.getElementById('saudeFileName').innerText = "Anexar PDF ou Imagem do Laudo";
       arquivoBase64Saude = "";
-
       setTimeout(carregarDadosPlanilha, 2000);
     }
 
     function atualizarDashboardSaude() {
       const tbody = document.getElementById('tabelaExames');
       tbody.innerHTML = '';
-
       if (exames.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-500">Nenhum exame cadastrado na aba Saúde ainda.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-500">Nenhum exame cadastrado.</td></tr>';
       } else {
         exames.forEach(e => {
           const row = document.createElement('tr');
           row.className = 'border-b border-slate-800 hover:bg-black/40 transition';
-          
-          const link = e.arquivoUrl ? `<a href="${e.arquivoUrl}" target="_blank" class="text-teal-400 font-bold hover:underline text-xs"><i class="fa-solid fa-file-pdf"></i> Abrir Laudo</a>` : '-';
-          
           row.innerHTML = `
             <td class="p-3 text-slate-400 text-xs">${e.data}</td>
             <td class="p-3 font-semibold text-slate-200">${e.titulo}</td>
             <td class="p-3 text-xs text-indigo-300 font-bold">${e.paciente}</td>
             <td class="p-3"><span class="bg-black border border-slate-700 text-xs px-2 py-1 rounded text-teal-300">${e.tipo}</span></td>
-            <td class="p-3 text-xs text-slate-400">${e.resumo || '-'}</td>
-            <td class="p-3 text-center">${link}</td>
+            <td class="p-3 text-xs text-slate-400">${(e.resumo || '-').substring(0, 60)}...</td>
+            <td class="p-3 text-center">${e.arquivoUrl ? `<a href="${e.arquivoUrl}" target="_blank" class="text-teal-400 font-bold hover:underline text-xs"><i class="fa-solid fa-file-pdf"></i> Abrir Laudo</a>` : '-'}</td>
           `;
           tbody.appendChild(row);
         });
@@ -474,16 +344,13 @@
 
     function renderGraficoSaude() {
       const ctx = document.getElementById('chartEvolucaoSaude').getContext('2d');
-      const metricaSelecionada = document.getElementById('selectMetricaGrafico').value;
-
-      // Filtra exames que possuem a métrica gravada
+      const mSel = document.getElementById('selectMetricaGrafico').value;
       const pontos = [];
+
       exames.slice().reverse().forEach(e => {
         try {
           const ind = JSON.parse(e.indicadoresJson || "{}");
-          if (ind[metricaSelecionada] !== undefined) {
-            pontos.push({ data: e.data, valor: ind[metricaSelecionada] });
-          }
+          if (ind[mSel] !== undefined) pontos.push({ data: e.data, valor: ind[mSel] });
         } catch(err) {}
       });
 
@@ -494,31 +361,16 @@
         data: {
           labels: pontos.map(p => p.data),
           datasets: [{
-            label: metricaSelecionada,
-            data: pontos.map(p => p.valor),
-            borderColor: '#14b8a6',
-            backgroundColor: 'rgba(20, 184, 166, 0.15)',
-            fill: true,
-            tension: 0.3,
-            borderWidth: 2,
-            pointRadius: 5,
-            pointBackgroundColor: '#2dd4bf'
+            label: mSel, data: pontos.map(p => p.valor),
+            borderColor: '#14b8a6', backgroundColor: 'rgba(20, 184, 166, 0.15)', fill: true, tension: 0.3, borderWidth: 2, pointRadius: 5
           }]
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
-          }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
       });
     }
 
-    // --- MÓDULO FINANÇAS LOGIC ---
-    function processarImagem(e) {
+    // LOGIC FINANÇAS
+    function processarImagemFinancas(e) {
       const file = e.target.files[0];
       if (!file) return;
       document.getElementById('formConfirmacao').classList.remove('hidden');
@@ -529,28 +381,10 @@
     }
 
     async function salvarGasto() {
-      const desc = document.getElementById('descInput').value;
-      const valor = parseFloat(document.getElementById('valorInput').value);
-      const data = document.getElementById('dataInput').value;
-      const cat = document.getElementById('categoriaInput').value;
-
-      if (!desc || isNaN(valor) || valor <= 0) { alert("Preencha valor e descrição!"); return; }
-
-      const btn = document.getElementById('btnSalvar');
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Enviando...`;
-      btn.disabled = true;
-
-      try {
-        await fetch(WEBHOOK_URL, {
-          method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data, desc, cat, valor, imagemBase64: imagemBase64Fin })
-        });
-      } catch (err) {}
-
-      btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Confirmar e Salvar no Finanças`;
-      btn.disabled = false;
+      const desc = document.getElementById('descInput').value, valor = parseFloat(document.getElementById('valorInput').value), data = document.getElementById('dataInput').value, cat = document.getElementById('categoriaInput').value;
+      if (!desc || isNaN(valor) || valor <= 0) return;
+      await fetch(WEBHOOK_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ data, desc, cat, valor, imagemBase64: imagemBase64Fin }) });
       document.getElementById('formConfirmacao').classList.add('hidden');
-      imagemBase64Fin = "";
       setTimeout(carregarDadosPlanilha, 2000);
     }
 
@@ -559,10 +393,9 @@
       const nova = parseFloat(document.getElementById('novaMetaInput').value);
       if (nova > 0) {
         meta = nova;
-        document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-        atualizarDashboardFinancas();
         await fetch(WEBHOOK_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "updateMeta", meta: nova }) });
         document.getElementById('modalMeta').classList.add('hidden');
+        carregarDadosPlanilha();
       }
     }
 
@@ -570,23 +403,7 @@
       const total = gastos.reduce((acc, g) => acc + g.valor, 0);
       document.getElementById('totalGasto').innerText = 'R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
       document.getElementById('totalLidos').innerText = gastos.length;
-
-      const pct = Math.min((total / meta) * 100, 100);
-      document.getElementById('barProgress').style.width = pct + '%';
-
-      const alertBox = document.getElementById('budgetAlertBox');
-      alertBox.classList.remove('hidden');
-      if (total > meta) {
-        alertBox.className = 'rounded-2xl p-4 border bg-red-950/60 border-red-500/50 text-red-200 shadow-lg animate-pulse';
-        document.getElementById('alertIcon').className = 'fa-solid fa-triangle-exclamation';
-        document.getElementById('alertTitle').innerText = 'Atenção! Orçamento Excedido';
-        document.getElementById('alertSubtitle').innerText = `Ultrapassou em R$ ${(total - meta).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-      } else {
-        alertBox.className = 'rounded-2xl p-4 border bg-emerald-950/40 border-emerald-500/30 text-emerald-200 shadow-lg';
-        document.getElementById('alertIcon').className = 'fa-solid fa-circle-check';
-        document.getElementById('alertTitle').innerText = 'Orçamento Sob Controle';
-        document.getElementById('alertSubtitle').innerText = `R$ ${(meta - total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} disponíveis para este mês.`;
-      }
+      document.getElementById('barProgress').style.width = Math.min((total / meta) * 100, 100) + '%';
 
       const catTotals = {};
       gastos.forEach(g => catTotals[g.cat] = (catTotals[g.cat] || 0) + g.valor);
@@ -600,13 +417,7 @@
       gastos.forEach(g => {
         const row = document.createElement('tr');
         row.className = 'border-b border-slate-800 hover:bg-black/40 transition';
-        row.innerHTML = `
-          <td class="p-3 text-slate-400 text-xs">${g.data}</td>
-          <td class="p-3 font-semibold text-slate-200">${g.desc}</td>
-          <td class="p-3"><span class="bg-black border border-slate-700 text-xs px-2 py-1 rounded text-indigo-300">${g.cat}</span></td>
-          <td class="p-3 text-right font-extrabold text-red-400">R$ ${g.valor.toFixed(2)}</td>
-          <td class="p-3 text-center">${g.imagemUrl ? `<a href="${g.imagemUrl}" target="_blank" class="text-indigo-400 text-xs font-bold"><i class="fa-solid fa-paperclip"></i> Ver</a>` : '-'}</td>
-        `;
+        row.innerHTML = `<td class="p-3 text-slate-400 text-xs">${g.data}</td><td class="p-3 font-semibold text-slate-200">${g.desc}</td><td class="p-3"><span class="bg-black border border-slate-700 text-xs px-2 py-1 rounded text-indigo-300">${g.cat}</span></td><td class="p-3 text-right font-extrabold text-red-400">R$ ${g.valor.toFixed(2)}</td><td class="p-3 text-center">${g.imagemUrl ? `<a href="${g.imagemUrl}" target="_blank" class="text-indigo-400 text-xs font-bold"><i class="fa-solid fa-paperclip"></i> Ver</a>` : '-'}</td>`;
         tbody.appendChild(row);
       });
 
@@ -617,13 +428,9 @@
       const ctx = document.getElementById('chartCategorias').getContext('2d');
       const sorted = Object.entries(catTotals).sort((a,b) => b[1] - a[1]);
       if (chartFinancasInstance) chartFinancasInstance.destroy();
-
       chartFinancasInstance = new Chart(ctx, {
         type: 'bar',
-        data: {
-          labels: sorted.map(s => s[0]),
-          datasets: [{ data: sorted.map(s => s[1]), backgroundColor: '#6366f1', borderRadius: 8 }]
-        },
+        data: { labels: sorted.map(s => s[0]), datasets: [{ data: sorted.map(s => s[1]), backgroundColor: '#6366f1', borderRadius: 8 }] },
         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
       });
     }
