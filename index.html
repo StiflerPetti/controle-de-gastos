@@ -3,41 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Finanças & Saúde MaRa</title>
+  <title>Finanças MaRa - Controle de Gastos</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #000; -webkit-text-size-adjust: 100%; }
+    body { 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      background-color: #000000;
+      -webkit-text-size-adjust: 100%;
+    }
     .bg-water-union {
       background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.96)), 
                         url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1920&q=80');
-      background-size: cover; background-position: center; background-attachment: fixed;
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
     }
-    input, select, textarea { font-size: 16px !important; }
+    input, select, textarea {
+      font-size: 16px !important;
+    }
   </style>
 </head>
 <body class="bg-water-union text-slate-100 min-h-screen pb-12">
 
-  <!-- Header -->
+  <!-- Header Centralizado -->
   <header class="bg-black/85 backdrop-blur-md border-b border-indigo-500/20 sticky top-0 z-50 shadow-xl">
-    <div class="max-w-5xl mx-auto px-4 py-3 flex flex-col items-center justify-center text-center space-y-3 relative">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col items-center justify-center text-center space-y-1 relative">
       <div class="flex items-center space-x-2">
         <div class="bg-gradient-to-tr from-indigo-600 to-violet-500 p-2 rounded-xl text-white shadow-md shadow-indigo-500/30">
-          <i class="fa-solid fa-heart-pulse text-lg" id="appHeaderIcon"></i>
+          <i class="fa-solid fa-wallet text-lg"></i>
         </div>
-        <h1 class="text-xl font-extrabold tracking-tight text-indigo-400" id="appHeaderTitle">Controle MaRa</h1>
+        <h1 class="text-xl font-extrabold tracking-tight text-indigo-400">Finanças MaRa</h1>
       </div>
-
-      <div class="flex items-center gap-2 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
-        <button id="tabBtnFinancas" onclick="trocarModulo('financas')" class="px-4 py-2 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow-md flex items-center gap-2">
-          <i class="fa-solid fa-wallet"></i> Finanças
-        </button>
-        <button id="tabBtnSaude" onclick="trocarModulo('saude')" class="px-4 py-2 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white flex items-center gap-2">
-          <i class="fa-solid fa-notes-medical"></i> Painel de Saúde
+      <p class="text-xs text-slate-400 font-medium">Mayone & Rafaella • Nuvem Sincronizada</p>
+      
+      <div class="mt-2 md:mt-0 md:absolute md:right-4 md:top-4">
+        <button onclick="carregarDadosPlanilha()" class="text-xs text-indigo-300 bg-indigo-950/80 border border-indigo-500/30 px-3 py-2 rounded-xl hover:bg-indigo-900/50 transition flex items-center gap-1.5 font-bold">
+          <i class="fa-solid fa-rotate text-xs"></i> Atualizar
         </button>
       </div>
     </div>
@@ -45,157 +49,282 @@
 
   <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
 
-    <!-- =================================================== -->
-    <!-- MÓDULO 1: FINANÇAS                                  -->
-    <!-- =================================================== -->
-    <div id="moduloFinancas" class="space-y-6">
-      <div id="budgetAlertBox" class="hidden rounded-2xl p-4 border transition-all duration-300">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div id="alertIconBg" class="p-2.5 rounded-xl text-lg flex items-center justify-center"><i id="alertIcon" class="fa-solid"></i></div>
-            <div><h4 id="alertTitle" class="text-sm font-bold tracking-wide"></h4><p id="alertSubtitle" class="text-xs opacity-90 font-medium"></p></div>
+    <!-- Alerta Dinâmico do Orçamento -->
+    <div id="budgetAlertBox" class="hidden rounded-2xl p-4 border transition-all duration-300">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div id="alertIconBg" class="p-2.5 rounded-xl text-lg flex items-center justify-center">
+            <i id="alertIcon" class="fa-solid"></i>
           </div>
-          <span id="alertBadge" class="text-xs font-extrabold px-3 py-1.5 rounded-lg uppercase tracking-wider"></span>
-        </div>
-      </div>
-
-      <!-- Indicadores -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
-          <div><p class="text-xs font-semibold text-slate-400 mb-1">Total Gasto (Este Mês)</p><p class="text-3xl font-extrabold text-red-500" id="totalGasto">R$ 0,00</p></div>
-          <div class="mt-4"><div class="bg-black rounded-full h-2 overflow-hidden border border-slate-800"><div id="barProgress" class="bg-indigo-500 h-full w-0 transition-all duration-500"></div></div><p class="text-[11px] text-slate-400 mt-2 flex justify-between font-medium"><span>Meta: <span class="text-emerald-400 font-semibold">R$ <span id="metaVal">3.000,00</span></span></span><button onclick="abrirModalMeta()" class="text-indigo-400 hover:text-indigo-300 underline font-semibold">Editar Meta</button></p></div>
-        </div>
-
-        <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
           <div>
-            <p class="text-xs font-semibold text-slate-400 mb-1">Maior Categoria de Gasto</p>
-            <p class="text-xs font-bold text-indigo-400 uppercase tracking-wide" id="topCategoriaName">-</p>
-            <p class="text-3xl font-extrabold text-amber-400 mt-1" id="topCategoriaValor">R$ 0,00</p>
+            <h4 id="alertTitle" class="text-sm font-bold tracking-wide"></h4>
+            <p id="alertSubtitle" class="text-xs opacity-90 font-medium"></p>
           </div>
-          <p class="text-[11px] text-slate-400 mt-4 font-medium" id="topCategoriaPercent">Representa <span class="text-indigo-300 font-bold">0%</span> do total</p>
         </div>
-
-        <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
-          <div><p class="text-xs font-semibold text-slate-400 mb-1">Comprovantes & Registros</p><p class="text-3xl font-extrabold text-emerald-400" id="totalLidos">0</p></div>
-          <p class="text-[11px] text-slate-400 mt-4 font-medium flex items-center gap-1.5"><i class="fa-solid fa-cloud-check text-emerald-400"></i> Sincronizados na nuvem MaRa</p>
-        </div>
-      </div>
-
-      <!-- Importar Comprovante -->
-      <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl">
-        <h2 class="text-lg font-bold text-indigo-300 mb-2 flex items-center gap-2"><i class="fa-solid fa-file-invoice-dollar text-indigo-400"></i> Importar Comprovante, Print ou PDF</h2>
-        <div class="border-2 border-dashed border-indigo-500/40 hover:border-indigo-400 rounded-2xl p-6 text-center transition cursor-pointer bg-black/60 flex flex-col items-center justify-center" onclick="document.getElementById('fileInput').click()">
-          <input type="file" id="fileInput" accept="image/*,.pdf" class="hidden" onchange="processarImagemFinancas(event)">
-          <i class="fa-solid fa-file-arrow-up text-3xl text-indigo-400 mb-2"></i>
-          <p class="text-sm font-bold text-indigo-300">Escolher Imagem ou Arquivo PDF</p>
-        </div>
-        <div id="formConfirmacao" class="hidden mt-6 bg-black/80 border border-indigo-500/30 rounded-2xl p-5 shadow-lg space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <input type="text" id="descInput" placeholder="Descrição / Loja" class="bg-[#111827] border border-slate-700 text-slate-100 rounded-xl p-3">
-            <input type="number" step="0.01" id="valorInput" placeholder="Valor (R$)" class="bg-[#111827] border border-slate-700 text-red-400 font-bold rounded-xl p-3">
-            <input type="date" id="dataInput" class="bg-[#111827] border border-slate-700 text-slate-200 rounded-xl p-3">
-            <select id="categoriaInput" class="bg-[#111827] border border-slate-700 text-slate-200 rounded-xl p-3">
-              <option value="Alimentação">Alimentação</option><option value="Supermercado">Supermercado</option><option value="Transporte">Transporte</option><option value="Lazer">Lazer</option><option value="Saúde">Saúde</option><option value="Farmácia">Farmácia</option><option value="Cartão de Crédito">Cartão de Crédito</option><option value="Educação">Educação</option><option value="Moradia">Moradia</option><option value="Outros">Outros</option>
-            </select>
-          </div>
-          <button onclick="salvarGasto()" id="btnSalvar" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> Confirmar e Salvar no Finanças</button>
-        </div>
-      </div>
-
-      <!-- Tabela & Gráfico de Barras com Cores Individuais -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg">
-          <h3 class="text-base font-bold text-indigo-300 mb-4">Histórico do Mês</h3>
-          <div class="overflow-x-auto"><table class="w-full text-left text-sm text-slate-300"><thead class="text-xs uppercase bg-black/60 border-b border-slate-800 text-slate-400"><tr><th class="p-3">Data</th><th class="p-3">Descrição</th><th class="p-3">Categoria</th><th class="p-3 text-right">Valor</th><th class="p-3 text-center">Ações</th></tr></thead><tbody id="tabelaGastos"></tbody></table></div>
-        </div>
-        <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
-          <div>
-            <h3 class="text-base font-bold text-indigo-300">Ranking de Gastos</h3>
-            <p class="text-xs text-slate-400">Valores acumulados por categoria</p>
-          </div>
-          <div class="w-full min-h-[260px] my-auto relative"><canvas id="chartCategorias"></canvas></div>
-        </div>
+        <span id="alertBadge" class="text-xs font-extrabold px-3 py-1.5 rounded-lg uppercase tracking-wider"></span>
       </div>
     </div>
 
-    <!-- =================================================== -->
-    <!-- MÓDULO 2: SAÚDE                                     -->
-    <!-- =================================================== -->
-    <div id="moduloSaude" class="space-y-6 hidden">
-      <div class="bg-[#111827]/90 backdrop-blur border border-teal-500/20 rounded-2xl p-6 shadow-xl space-y-4">
-        <h2 class="text-lg font-bold text-teal-300 flex items-center gap-2">
-          <i class="fa-solid fa-notes-medical text-teal-400"></i> Arquivar Exame & Alimentar Histórico
-        </h2>
-        <p class="text-xs text-slate-400">Selecione o PDF ou Foto do exame para salvar no Google Drive e preencha as taxas desejadas para atualizar os gráficos.</p>
-
-        <!-- Dropzone -->
-        <div class="border-2 border-dashed border-teal-500/40 hover:border-teal-400 rounded-2xl p-6 text-center transition cursor-pointer bg-black/60 flex flex-col items-center justify-center" onclick="document.getElementById('saudeFileInput').click()">
-          <input type="file" id="saudeFileInput" accept="image/*,.pdf" class="hidden" onchange="selecionarArquivoSaude(event)">
-          <i class="fa-solid fa-file-medical text-3xl text-teal-400 mb-2"></i>
-          <p class="text-sm font-bold text-teal-300" id="saudeDropLabel">Clique para Selecionar o Laudo / Exame (PDF ou Foto)</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div><label class="block text-[11px] text-slate-400 mb-1 font-semibold">Nome do Exame</label><input type="text" id="saudeTitulo" placeholder="Ex: Hemograma / Ultrassom" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none"></div>
-          <div><label class="block text-[11px] text-slate-400 mb-1 font-semibold">Tipo</label><select id="saudeTipo" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none"><option value="Exame de Sangue">Exame de Sangue / Laboratorial</option><option value="Imagem / Raio-X">Imagem (Ultrassom, RM, Tomografia)</option><option value="Cardiologia">Cardiologia (ECG)</option><option value="Composição Corporal">Composição Corporal</option><option value="Outros">Outros</option></select></div>
-          <div><label class="block text-[11px] text-slate-400 mb-1 font-semibold">Paciente</label><select id="saudePaciente" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none"><option value="Mayone">Mayone</option><option value="Rafaella">Rafaella</option></select></div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div><label class="block text-[11px] text-slate-400 mb-1 font-semibold">Data</label><input type="date" id="saudeData" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none"></div>
-          <div><label class="block text-[11px] text-slate-400 mb-1 font-semibold">Laboratório / Clínica</label><input type="text" id="saudeLab" placeholder="Ex: Fleury / Sabin" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none"></div>
-        </div>
-
+    <!-- Indicadores Alinhados -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      
+      <!-- Total Gasto -->
+      <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
         <div>
-          <label class="block text-[11px] text-slate-400 mb-1 font-semibold">Resumo do Laudo / Conclusão</label>
-          <textarea id="saudeResumo" rows="2" placeholder="Observações do exame..." class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none text-xs"></textarea>
+          <p class="text-xs font-semibold text-slate-400 mb-1">Total Gasto (Este Mês)</p>
+          <p class="text-3xl font-extrabold text-red-500" id="totalGasto">R$ 0,00</p>
+        </div>
+        <div class="mt-4">
+          <div class="bg-black rounded-full h-2 overflow-hidden border border-slate-800">
+            <div id="barProgress" class="bg-indigo-500 h-full w-0 transition-all duration-500"></div>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-2 flex justify-between font-medium">
+            <span>Meta: <span class="text-emerald-400 font-semibold">R$ <span id="metaVal">3.000,00</span></span></span>
+            <button onclick="abrirModalMeta()" class="text-indigo-400 hover:text-indigo-300 underline font-semibold">Editar Meta</button>
+          </p>
+        </div>
+      </div>
+
+      <!-- Maior Categoria -->
+      <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
+        <div>
+          <p class="text-xs font-semibold text-slate-400 mb-1">Maior Categoria de Gasto</p>
+          <p class="text-xs font-bold text-indigo-400 uppercase tracking-wide" id="topCategoriaName">-</p>
+          <p class="text-3xl font-extrabold text-amber-400 mt-1" id="topCategoriaValor">R$ 0,00</p>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-4 font-medium" id="topCategoriaPercent">
+          Representa <span class="text-indigo-300 font-bold">0%</span> do total deste mês
+        </p>
+      </div>
+
+      <!-- Comprovantes Lidos -->
+      <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
+        <div>
+          <p class="text-xs font-semibold text-slate-400 mb-1">Comprovantes & Registros</p>
+          <p class="text-3xl font-extrabold text-emerald-400" id="totalLidos">0</p>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-4 font-medium flex items-center gap-1.5">
+          <i class="fa-solid fa-cloud-check text-emerald-400"></i> Sincronizados na nuvem MaRa
+        </p>
+      </div>
+    </div>
+
+    <!-- Importar Comprovante -->
+    <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl">
+      <h2 class="text-lg font-bold text-indigo-300 mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-file-invoice-dollar text-indigo-400"></i> Importar Print, Foto ou PDF
+      </h2>
+      <p class="text-sm text-slate-400 mb-6">
+        Selecione uma foto da galeria ou um arquivo PDF de comprovante.
+      </p>
+
+      <div class="border-2 border-dashed border-indigo-500/40 hover:border-indigo-400 rounded-2xl p-8 text-center transition cursor-pointer bg-black/60 flex flex-col items-center justify-center" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept="image/*,.pdf" class="hidden" onchange="processarImagem(event)">
+        <div class="bg-indigo-950/60 p-4 rounded-full text-indigo-400 mb-3 border border-indigo-500/30">
+          <i class="fa-solid fa-file-arrow-up text-3xl"></i>
+        </div>
+        <p class="text-base font-bold text-indigo-300">Escolher Imagem ou Arquivo PDF</p>
+        <p class="text-xs text-slate-400 mt-1">Toque para selecionar o comprovante</p>
+      </div>
+
+      <div id="formConfirmacao" class="hidden mt-6 bg-black/80 border border-indigo-500/30 rounded-2xl p-5 shadow-lg">
+        <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
+          <div class="flex items-center gap-3">
+            <img id="imgPreview" src="" alt="Preview" class="w-12 h-12 object-cover rounded-lg border border-slate-700 hidden">
+            <div id="pdfPreview" class="w-12 h-12 bg-red-950/80 border border-red-500/40 text-red-400 flex items-center justify-center rounded-lg hidden">
+              <i class="fa-solid fa-file-pdf text-2xl"></i>
+            </div>
+            <p class="text-xs font-bold text-indigo-300 flex items-center gap-2">
+              <i class="fa-solid fa-circle-check text-base"></i> Preencha o valor e a descrição:
+            </p>
+          </div>
+          <span id="imgStatusPreview" class="text-indigo-300 text-xs bg-indigo-950 border border-indigo-500/30 px-2.5 py-1 rounded-md font-semibold">📄 Pronta</span>
         </div>
 
-        <!-- Painel de Taxas Explicitas -->
-        <div class="bg-black/60 p-4 rounded-xl border border-slate-800 space-y-2">
-          <p class="text-xs font-bold text-teal-400 flex items-center justify-between">
-            <span><i class="fa-solid fa-chart-line"></i> Taxas do Exame (Alimentam o Gráfico):</span>
-            <span class="text-[10px] text-slate-400">Preencha os valores para gerar a curva temporal</span>
-          </p>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-            <div><label class="text-[10px] text-slate-400">Glicemia (mg/dL)</label><input type="number" id="mGlicemia" placeholder="Ex: 88" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-teal-300 font-bold"></div>
-            <div><label class="text-[10px] text-slate-400">Colesterol Total</label><input type="number" id="mColesterol" placeholder="Ex: 175" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-teal-300 font-bold"></div>
-            <div><label class="text-[10px] text-slate-400">Triglicerídeos</label><input type="number" id="mTriglicerideos" placeholder="Ex: 110" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-teal-300 font-bold"></div>
-            <div><label class="text-[10px] text-slate-400">Peso / Medidas</label><input type="number" step="0.1" id="mPeso" placeholder="Ex: 78.5" class="w-full bg-[#111827] border border-slate-700 text-xs p-2 rounded-lg text-teal-300 font-bold"></div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1 font-semibold">Estabelecimento / Descrição</label>
+            <input type="text" id="descInput" placeholder="Ex: Fatura / Mercado Livre" class="w-full bg-[#111827] border border-slate-700 text-slate-100 placeholder-slate-500 rounded-xl p-3 focus:border-indigo-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1 font-semibold">Valor (R$)</label>
+            <input type="number" step="0.01" id="valorInput" placeholder="0,00" class="w-full bg-[#111827] border border-slate-700 text-red-400 placeholder-slate-500 font-bold rounded-xl p-3 focus:border-indigo-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1 font-semibold">Data</label>
+            <input type="date" id="dataInput" class="w-full bg-[#111827] border border-slate-700 text-slate-200 rounded-xl p-3 focus:border-indigo-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1 font-semibold">Categoria</label>
+            <select id="categoriaInput" class="w-full bg-[#111827] border border-slate-700 text-slate-200 rounded-xl p-3 focus:border-indigo-500 outline-none">
+              <option value="Alimentação">Alimentação</option>
+              <option value="Supermercado">Supermercado</option>
+              <option value="Transporte">Transporte</option>
+              <option value="Lazer">Lazer</option>
+              <option value="Saúde">Saúde</option>
+              <option value="Farmácia">Farmácia</option>
+              <option value="Cartão de Crédito">Cartão de Crédito</option>
+              <option value="Educação">Educação</option>
+              <option value="Moradia">Moradia</option>
+              <option value="Outros">Outros</option>
+            </select>
           </div>
         </div>
 
-        <button onclick="salvarExameSaude()" id="btnSalvarSaude" class="w-full bg-teal-600 hover:bg-teal-500 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
-          <i class="fa-solid fa-cloud-arrow-up"></i> Arquivar no Google Drive & Desenhar Gráfico
+        <button onclick="salvarGasto()" id="btnSalvar" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Confirmar e Enviar para a Planilha MaRa
         </button>
       </div>
+    </div>
 
-      <!-- Gráfico de Evolução -->
-      <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
-        <div class="flex items-center justify-between">
-          <div><h3 class="text-base font-bold text-teal-300">Evolução Histórica das Taxas</h3><p class="text-xs text-slate-400">Selecione o indicador para comparar seus exames</p></div>
-          <select id="selectMetricaGrafico" onchange="renderGraficoSaude()" class="bg-black border border-slate-700 text-xs text-teal-300 font-bold p-2 rounded-lg">
-            <option value="Glicemia">Glicemia</option><option value="Colesterol">Colesterol Total</option><option value="Triglicerídeos">Triglicerídeos</option><option value="Peso">Peso / Medidas</option>
-          </select>
+    <!-- Tabela & Gráfico de Barras Reorganizados -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      
+      <!-- Tabela Histórico -->
+      <div class="lg:col-span-2 bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-base font-bold text-indigo-300">Histórico do Mês</h3>
+          <span id="loadingMsg" class="text-xs text-indigo-400 flex items-center gap-1 hidden font-semibold">
+            <i class="fa-solid fa-spinner fa-spin"></i> Sincronizando...
+          </span>
         </div>
-        <div class="w-full h-[250px] relative"><canvas id="chartEvolucaoSaude"></canvas></div>
+        <div class="overflow-x-auto max-h-[550px] overflow-y-auto pr-1">
+          <table class="w-full text-left text-sm text-slate-300">
+            <thead class="text-xs uppercase bg-black/60 border-b border-slate-800 text-slate-400 sticky top-0 z-10">
+              <tr>
+                <th class="p-3">Data</th>
+                <th class="p-3">Descrição</th>
+                <th class="p-3">Categoria</th>
+                <th class="p-3 text-right">Valor</th>
+                <th class="p-3 text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaGastos">
+              <tr><td colspan="5" class="p-4 text-center text-slate-500">Carregando dados da nuvem...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg">
-        <h3 class="text-base font-bold text-teal-300 mb-4">Histórico Completo de Exames</h3>
-        <div class="overflow-x-auto"><table class="w-full text-left text-sm text-slate-300"><thead class="text-xs uppercase bg-black/60 border-b border-slate-800 text-slate-400"><tr><th class="p-3">Data</th><th class="p-3">Exame</th><th class="p-3">Paciente</th><th class="p-3">Tipo</th><th class="p-3">Resumo / Laudo</th><th class="p-3 text-center">Arquivo</th><th class="p-3 text-center">Ações</th></tr></thead><tbody id="tabelaExames"></tbody></table></div>
+      <!-- Gráfico de Ranking (Barras Horizontais com Altura Controlada) -->
+      <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
+        <div class="mb-3">
+          <h3 class="text-base font-bold text-indigo-300 text-left">Ranking de Gastos</h3>
+          <p class="text-xs text-slate-400">Valores acumulados por categoria</p>
+        </div>
+        <div class="w-full relative h-[380px] my-2">
+          <canvas id="chartCategorias"></canvas>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-2 text-center">Atualizado em tempo real</p>
       </div>
+
     </div>
 
   </main>
 
+  <!-- MODAL DE EDIÇÃO DA META MENSAL -->
   <div id="modalMeta" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-      <h3 class="text-lg font-bold text-indigo-300"><i class="fa-solid fa-bullseye"></i> Definir Meta Mensal</h3>
-      <input type="number" step="0.01" id="novaMetaInput" placeholder="3000,00" class="w-full bg-black border border-slate-700 text-emerald-400 font-extrabold text-base rounded-xl p-3 outline-none">
-      <div class="flex gap-2 justify-end">
-        <button onclick="document.getElementById('modalMeta').classList.add('hidden')" class="px-4 py-2 text-xs font-bold text-slate-400">Cancelar</button>
-        <button onclick="salvarNovaMeta()" class="px-5 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl">Salvar Meta</button>
+    <div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl">
+      <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-bold text-indigo-300 flex items-center gap-2">
+          <i class="fa-solid fa-bullseye text-indigo-400"></i> Definir Meta Mensal
+        </h3>
+        <button onclick="fecharModalMeta()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1 font-semibold">Valor da Meta (R$)</label>
+          <input type="number" step="0.01" id="novaMetaInput" placeholder="3000,00" class="w-full bg-black border border-slate-700 text-emerald-400 font-extrabold text-base rounded-xl p-3 focus:border-indigo-500 outline-none">
+          <p class="text-[11px] text-slate-500 mt-1">Este valor será sincronizado nos celulares de Mayone e Rafaella.</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 justify-end mt-6">
+        <button onclick="fecharModalMeta()" class="px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-white rounded-xl transition">
+          Cancelar
+        </button>
+        <button id="btnSalvarMeta" onclick="salvarNovaMeta()" class="px-5 py-2.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Salvar Meta na Nuvem
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE EDIÇÃO DE GASTO -->
+  <div id="modalEditar" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-lg w-full shadow-2xl">
+      <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-bold text-indigo-300 flex items-center gap-2">
+          <i class="fa-solid fa-pen-to-square text-indigo-400"></i> Editar Lançamento
+        </h3>
+        <button onclick="fecharModalEditar()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1 font-semibold">Descrição / Estabelecimento</label>
+          <input type="text" id="editDesc" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 focus:border-indigo-500 outline-none">
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1 font-semibold">Valor (R$)</label>
+            <input type="number" step="0.01" id="editValor" class="w-full bg-black border border-slate-700 text-red-400 font-bold rounded-xl p-3 focus:border-indigo-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1 font-semibold">Data</label>
+            <input type="date" id="editData" class="w-full bg-black border border-slate-700 text-slate-200 rounded-xl p-3 focus:border-indigo-500 outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-1 font-semibold">Categoria</label>
+          <select id="editCategoria" class="w-full bg-black border border-slate-700 text-slate-200 rounded-xl p-3 focus:border-indigo-500 outline-none">
+            <option value="Alimentação">Alimentação</option>
+            <option value="Supermercado">Supermercado</option>
+            <option value="Transporte">Transporte</option>
+            <option value="Lazer">Lazer</option>
+            <option value="Saúde">Saúde</option>
+            <option value="Farmácia">Farmácia</option>
+            <option value="Cartão de Crédito">Cartão de Crédito</option>
+            <option value="Educação">Educação</option>
+            <option value="Moradia">Moradia</option>
+            <option value="Outros">Outros</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 justify-end mt-6">
+        <button onclick="fecharModalEditar()" class="px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-white rounded-xl transition">
+          Cancelar
+        </button>
+        <button id="btnSalvarEdicao" onclick="salvarEdicao()" class="px-5 py-2.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center gap-2">
+          <i class="fa-solid fa-check"></i> Salvar Alterações
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO -->
+  <div id="modalExcluir" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl">
+      <div class="flex items-center gap-3 text-red-400 mb-3">
+        <div class="bg-red-950/60 p-3 rounded-xl border border-red-500/30">
+          <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+        </div>
+        <h3 class="text-lg font-bold text-white">Confirmar Exclusão</h3>
+      </div>
+      <p class="text-sm text-slate-300 mb-6 font-medium" id="textConfirmExcluir">
+        Tem certeza que deseja excluir este gasto do histórico?
+      </p>
+      <div class="flex items-center gap-3 justify-end">
+        <button onclick="fecharModalExcluir()" class="px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-white rounded-xl transition">
+          Cancelar
+        </button>
+        <button id="btnConfirmarExclusao" class="px-4 py-2.5 text-xs font-bold bg-red-600 hover:bg-red-500 text-white rounded-xl transition shadow-md shadow-red-600/30 flex items-center gap-2">
+          <i class="fa-solid fa-trash-can"></i> Confirmar Exclusão
+        </button>
       </div>
     </div>
   </div>
@@ -203,223 +332,338 @@
   <script>
     const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxU7_uGTObenukASrSYgoQ39AJP2pSZ5eZKoAjSYucVPMLhB9sgmkGmHx9ZCQCwWfDW/exec";
 
-    let gastos = [], exames = [], meta = 3000;
-    let chartFinancasInstance = null, chartSaudeInstance = null;
-    let imagemBase64Fin = "", arquivoBase64Saude = "";
+    let gastos = [];
+    let meta = 3000;
+    let chartInstance = null;
+    let imagemBase64Atual = "";
+    let itemParaExcluir = null;
+    let rowIdEdicaoAtual = null;
 
     document.getElementById('dataInput').valueAsDate = new Date();
-    document.getElementById('saudeData').valueAsDate = new Date();
-
-    function trocarModulo(m) {
-      document.getElementById('moduloFinancas').classList.toggle('hidden', m !== 'financas');
-      document.getElementById('moduloSaude').classList.toggle('hidden', m !== 'saude');
-      if (m === 'saude') renderGraficoSaude();
-    }
 
     async function carregarDadosPlanilha() {
+      const loading = document.getElementById('loadingMsg');
+      loading.classList.remove('hidden');
       try {
         const res = await fetch(WEBHOOK_URL);
         const data = await res.json();
+        
         if (data) {
-          if (Array.isArray(data.gastos)) gastos = data.gastos.reverse();
-          if (Array.isArray(data.exames)) exames = data.exames.reverse();
-          if (data.meta) meta = parseFloat(data.meta);
+          if (Array.isArray(data.gastos)) {
+            gastos = data.gastos.reverse();
+          } else if (Array.isArray(data)) {
+            gastos = data.reverse();
+          }
+          if (data.meta) {
+            meta = parseFloat(data.meta);
+          }
           document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-          atualizarDashboardFinancas();
-          atualizarDashboardSaude();
+          atualizarDashboard();
         }
-      } catch (err) {}
-    }
-
-    async function excluirExameSaude(rowId, titulo) {
-      if (!confirm(`Deseja realmente excluir o exame "${titulo}" do histórico?`)) return;
-      try {
-        await fetch(WEBHOOK_URL, {
-          method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "deleteSaude", rowId: rowId })
-        });
-        setTimeout(carregarDadosPlanilha, 1500);
-      } catch(err) {}
-    }
-
-    function selecionarArquivoSaude(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      document.getElementById('saudeDropLabel').innerText = "Arquivo selecionado: " + file.name;
-      if (!document.getElementById('saudeTitulo').value) {
-        document.getElementById('saudeTitulo').value = file.name.replace(/\.[^/.]+$/, "").replace(/[_]/g, " ");
+      } catch (err) {
+        console.error("Erro ao carregar dados:", err);
+      } finally {
+        loading.classList.add('hidden');
       }
-      const reader = new FileReader();
-      reader.onload = function(evt) { arquivoBase64Saude = evt.target.result; };
-      reader.readAsDataURL(file);
     }
 
-    async function salvarExameSaude() {
-      const titulo = document.getElementById('saudeTitulo').value;
-      const tipo = document.getElementById('saudeTipo').value;
-      const paciente = document.getElementById('saudePaciente').value;
-      const data = document.getElementById('saudeData').value;
-      const lab = document.getElementById('saudeLab').value;
-      const resumo = document.getElementById('saudeResumo').value;
+    function abrirModalMeta() {
+      document.getElementById('novaMetaInput').value = meta;
+      document.getElementById('modalMeta').classList.remove('hidden');
+    }
 
-      if (!titulo || !data) { alert("Preencha o título e a data do exame!"); return; }
+    function fecharModalMeta() {
+      document.getElementById('modalMeta').classList.add('hidden');
+    }
 
-      const indicadores = {};
-      if (document.getElementById('mGlicemia').value) indicadores["Glicemia"] = parseFloat(document.getElementById('mGlicemia').value);
-      if (document.getElementById('mColesterol').value) indicadores["Colesterol"] = parseFloat(document.getElementById('mColesterol').value);
-      if (document.getElementById('mTriglicerideos').value) indicadores["Triglicerídeos"] = parseFloat(document.getElementById('mTriglicerideos').value);
-      if (document.getElementById('mPeso').value) indicadores["Peso"] = parseFloat(document.getElementById('mPeso').value);
+    async function salvarNovaMeta() {
+      const novaMetaInput = document.getElementById('novaMetaInput').value;
+      if (!novaMetaInput || isNaN(novaMetaInput) || parseFloat(novaMetaInput) <= 0) {
+        alert("Por favor, insira um valor válido para a meta!");
+        return;
+      }
 
-      const btn = document.getElementById('btnSalvarSaude');
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Arquivando no Google Drive...`;
+      const novaMetaVal = parseFloat(novaMetaInput);
+      const btn = document.getElementById('btnSalvarMeta');
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sincronizando...`;
       btn.disabled = true;
 
+      meta = novaMetaVal;
+      document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      atualizarDashboard();
+
       try {
         await fetch(WEBHOOK_URL, {
-          method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "addSaude", titulo, tipo, paciente, data, laboratorio: lab, resumo, indicadores, arquivoBase64: arquivoBase64Saude })
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "updateMeta", meta: novaMetaVal })
         });
-      } catch (err) {}
-
-      btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Arquivar no Google Drive & Desenhar Gráfico`;
-      btn.disabled = false;
-      document.getElementById('saudeTitulo').value = '';
-      document.getElementById('saudeResumo').value = '';
-      document.getElementById('mGlicemia').value = '';
-      document.getElementById('mColesterol').value = '';
-      document.getElementById('mTriglicerideos').value = '';
-      document.getElementById('mPeso').value = '';
-      arquivoBase64Saude = "";
-      setTimeout(carregarDadosPlanilha, 2000);
-    }
-
-    function atualizarDashboardSaude() {
-      const tbody = document.getElementById('tabelaExames');
-      tbody.innerHTML = '';
-      if (exames.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-500">Nenhum exame cadastrado.</td></tr>';
-      } else {
-        exames.forEach(e => {
-          const row = document.createElement('tr');
-          row.className = 'border-b border-slate-800 hover:bg-black/40 transition';
-          
-          let indParsed = {};
-          try { indParsed = JSON.parse(e.indicadoresJson || "{}"); } catch(err) {}
-
-          const link = e.arquivoUrl ? `<a href="${e.arquivoUrl}" target="_blank" class="text-teal-400 font-bold hover:underline text-xs"><i class="fa-solid fa-file-pdf"></i> Abrir</a>` : '-';
-          const btnDel = `<button onclick="excluirExameSaude(${e.rowId}, '${e.titulo.replace(/'/g, "\\'")}')" class="text-slate-500 hover:text-red-400 transition p-1" title="Excluir"><i class="fa-solid fa-trash-can"></i></button>`;
-
-          row.innerHTML = `
-            <td class="p-3 text-slate-400 text-xs">${e.data}</td>
-            <td class="p-3 font-semibold text-slate-200">${e.titulo}</td>
-            <td class="p-3 text-xs text-indigo-300 font-bold">${e.paciente}</td>
-            <td class="p-3"><span class="bg-black border border-slate-700 text-xs px-2 py-1 rounded text-teal-300">${e.tipo}</span></td>
-            <td class="p-3 text-xs text-slate-400">${(e.resumo || '-').substring(0, 50)}</td>
-            <td class="p-3 text-center">${link}</td>
-            <td class="p-3 text-center">${btnDel}</td>
-          `;
-          tbody.appendChild(row);
-        });
+      } catch (err) {
+        console.error("Erro ao atualizar meta:", err);
       }
-      renderGraficoSaude();
+
+      btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Salvar Meta na Nuvem`;
+      btn.disabled = false;
+      fecharModalMeta();
+
+      setTimeout(carregarDadosPlanilha, 1500);
     }
 
-    function renderGraficoSaude() {
-      const ctx = document.getElementById('chartEvolucaoSaude').getContext('2d');
-      const mSel = document.getElementById('selectMetricaGrafico').value;
-      const pontos = [];
-
-      exames.slice().reverse().forEach(e => {
-        try {
-          const ind = JSON.parse(e.indicadoresJson || "{}");
-          if (ind[mSel] !== undefined) {
-            pontos.push({ data: e.data, valor: ind[mSel] });
-          }
-        } catch(err) {}
-      });
-
-      if (chartSaudeInstance) chartSaudeInstance.destroy();
-
-      chartSaudeInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: pontos.map(p => p.data),
-          datasets: [{
-            label: mSel, data: pontos.map(p => p.valor),
-            borderColor: '#14b8a6', backgroundColor: 'rgba(20, 184, 166, 0.15)', fill: true, tension: 0.3, borderWidth: 2, pointRadius: 5
-          }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-      });
-    }
-
-    // FINANÇAS LOGIC
-    function processarImagemFinancas(e) {
+    function processarImagem(e) {
       const file = e.target.files[0];
       if (!file) return;
+
       document.getElementById('formConfirmacao').classList.remove('hidden');
       document.getElementById('descInput').value = file.name.replace(/\.[^/.]+$/, "").substring(0, 25);
+
+      const isPdf = file.type.indexOf('pdf') !== -1 || file.name.endsWith('.pdf');
+      const imgPreview = document.getElementById('imgPreview');
+      const pdfPreview = document.getElementById('pdfPreview');
+
+      if (isPdf) {
+        imgPreview.classList.add('hidden');
+        pdfPreview.classList.remove('hidden');
+      } else {
+        pdfPreview.classList.add('hidden');
+        imgPreview.classList.remove('hidden');
+      }
+
       const reader = new FileReader();
-      reader.onload = function(evt) { imagemBase64Fin = evt.target.result; };
+      reader.onload = function(uploadEvent) {
+        imagemBase64Atual = uploadEvent.target.result;
+        if (!isPdf) {
+          imgPreview.src = imagemBase64Atual;
+        }
+        document.getElementById('valorInput').focus();
+      };
       reader.readAsDataURL(file);
     }
 
     async function salvarGasto() {
-      const desc = document.getElementById('descInput').value, valor = parseFloat(document.getElementById('valorInput').value), data = document.getElementById('dataInput').value, cat = document.getElementById('categoriaInput').value;
-      if (!desc || isNaN(valor) || valor <= 0) return;
-      await fetch(WEBHOOK_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ data, desc, cat, valor, imagemBase64: imagemBase64Fin }) });
+      const desc = document.getElementById('descInput').value;
+      const valor = parseFloat(document.getElementById('valorInput').value);
+      const data = document.getElementById('dataInput').value;
+      const cat = document.getElementById('categoriaInput').value;
+
+      if (!desc || isNaN(valor) || valor <= 0) {
+        alert("Preencha a descrição e um valor válido!");
+        return;
+      }
+
+      const btn = document.getElementById('btnSalvar');
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Enviando para o Drive...`;
+      btn.disabled = true;
+
+      const payload = { data, desc, cat, valor, imagemBase64: imagemBase64Atual };
+
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.error("Erro ao sincronizar:", err);
+      }
+
+      btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Confirmar e Enviar para a Planilha MaRa`;
+      btn.disabled = false;
       document.getElementById('formConfirmacao').classList.add('hidden');
+      document.getElementById('descInput').value = '';
+      document.getElementById('valorInput').value = '';
+      document.getElementById('fileInput').value = '';
+      document.getElementById('imgPreview').classList.add('hidden');
+      document.getElementById('pdfPreview').classList.add('hidden');
+      imagemBase64Atual = "";
+
       setTimeout(carregarDadosPlanilha, 2000);
     }
 
-    function abrirModalMeta() { document.getElementById('novaMetaInput').value = meta; document.getElementById('modalMeta').classList.remove('hidden'); }
-    async function salvarNovaMeta() {
-      const nova = parseFloat(document.getElementById('novaMetaInput').value);
-      if (nova > 0) {
-        meta = nova;
-        await fetch(WEBHOOK_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "updateMeta", meta: nova }) });
-        document.getElementById('modalMeta').classList.add('hidden');
-        carregarDadosPlanilha();
-      }
+    function abrirModalEditar(rowId, desc, valor, data, cat) {
+      rowIdEdicaoAtual = rowId;
+      document.getElementById('editDesc').value = desc;
+      document.getElementById('editValor').value = valor;
+      document.getElementById('editData').value = data;
+      document.getElementById('editCategoria').value = cat;
+      document.getElementById('modalEditar').classList.remove('hidden');
     }
 
-    function atualizarDashboardFinancas() {
+    function fecharModalEditar() {
+      rowIdEdicaoAtual = null;
+      document.getElementById('modalEditar').classList.add('hidden');
+    }
+
+    async function salvarEdicao() {
+      if (!rowIdEdicaoAtual) return;
+
+      const desc = document.getElementById('editDesc').value;
+      const valor = parseFloat(document.getElementById('editValor').value);
+      const data = document.getElementById('editData').value;
+      const cat = document.getElementById('editCategoria').value;
+
+      if (!desc || isNaN(valor) || valor <= 0) {
+        alert("Preencha os campos corretamente!");
+        return;
+      }
+
+      const btn = document.getElementById('btnSalvarEdicao');
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Salvando...`;
+      btn.disabled = true;
+
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "update", rowId: rowIdEdicaoAtual, desc, valor, data, cat })
+        });
+      } catch (err) {
+        console.error("Erro ao editar:", err);
+      }
+
+      btn.innerHTML = `<i class="fa-solid fa-check"></i> Salvar Alterações`;
+      btn.disabled = false;
+      fecharModalEditar();
+
+      setTimeout(carregarDadosPlanilha, 1500);
+    }
+
+    function abrirModalExcluir(rowId, desc, valor) {
+      itemParaExcluir = rowId;
+      document.getElementById('textConfirmExcluir').innerText = `Tem certeza que deseja excluir "${desc}" no valor de R$ ${valor.toFixed(2)} da sua planilha?`;
+      document.getElementById('modalExcluir').classList.remove('hidden');
+    }
+
+    function fecharModalExcluir() {
+      itemParaExcluir = null;
+      document.getElementById('modalExcluir').classList.add('hidden');
+    }
+
+    document.getElementById('btnConfirmarExclusao').onclick = async function() {
+      if (!itemParaExcluir) return;
+
+      const btn = this;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Excluindo...`;
+      btn.disabled = true;
+
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "delete", rowId: itemParaExcluir })
+        });
+      } catch (err) {
+        console.error("Erro ao excluir:", err);
+      }
+
+      btn.innerHTML = `<i class="fa-solid fa-trash-can"></i> Confirmar Exclusão`;
+      btn.disabled = false;
+      fecharModalExcluir();
+
+      setTimeout(carregarDadosPlanilha, 1500);
+    };
+
+    function atualizarDashboard() {
       const total = gastos.reduce((acc, g) => acc + g.valor, 0);
       document.getElementById('totalGasto').innerText = 'R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
       document.getElementById('totalLidos').innerText = gastos.length;
-      document.getElementById('barProgress').style.width = Math.min((total / meta) * 100, 100) + '%';
+
+      const pct = Math.min((total / meta) * 100, 100);
+      const bar = document.getElementById('barProgress');
+      bar.style.width = pct + '%';
+
+      const alertBox = document.getElementById('budgetAlertBox');
+      const alertIconBg = document.getElementById('alertIconBg');
+      const alertIcon = document.getElementById('alertIcon');
+      const alertTitle = document.getElementById('alertTitle');
+      const alertSubtitle = document.getElementById('alertSubtitle');
+      const alertBadge = document.getElementById('alertBadge');
+
+      alertBox.classList.remove('hidden');
+
+      if (total > meta) {
+        const excesso = total - meta;
+        alertBox.className = 'rounded-2xl p-4 border transition-all duration-300 bg-red-950/60 border-red-500/50 text-red-200 shadow-lg shadow-red-950/30 animate-pulse';
+        alertIconBg.className = 'p-2.5 rounded-xl text-lg flex items-center justify-center bg-red-900/80 text-red-300 border border-red-500/40';
+        alertIcon.className = 'fa-solid fa-triangle-exclamation';
+        alertTitle.innerText = 'Atenção! Orçamento Mensal Excedido';
+        alertSubtitle.innerText = `Os gastos ultrapassaram a meta em R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        alertBadge.className = 'text-xs font-extrabold px-3 py-1.5 rounded-lg uppercase tracking-wider bg-red-600 text-white shadow-md shadow-red-600/30';
+        alertBadge.innerText = 'Meta Estourada';
+        bar.className = 'bg-red-500 h-full w-0 transition-all duration-500';
+      } else {
+        const restante = meta - total;
+        alertBox.className = 'rounded-2xl p-4 border transition-all duration-300 bg-emerald-950/40 border-emerald-500/30 text-emerald-200 shadow-lg';
+        alertIconBg.className = 'p-2.5 rounded-xl text-lg flex items-center justify-center bg-emerald-900/60 text-emerald-300 border border-emerald-500/30';
+        alertIcon.className = 'fa-solid fa-circle-check';
+        alertTitle.innerText = 'Orçamento Sob Controle';
+        alertSubtitle.innerText = `Vocês ainda têm R$ ${restante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} disponíveis para este mês.`;
+        alertBadge.className = 'text-xs font-extrabold px-3 py-1.5 rounded-lg uppercase tracking-wider bg-emerald-950 border border-emerald-500/40 text-emerald-300';
+        alertBadge.innerText = 'Tudo Certo';
+        bar.className = 'bg-indigo-500 h-full w-0 transition-all duration-500';
+      }
 
       const catTotals = {};
       gastos.forEach(g => catTotals[g.cat] = (catTotals[g.cat] || 0) + g.valor);
       let maxCat = '-', maxVal = 0;
-      for (const [c, v] of Object.entries(catTotals)) { if (v > maxVal) { maxVal = v; maxCat = c; } }
+      for (const [c, v] of Object.entries(catTotals)) {
+        if (v > maxVal) { maxVal = v; maxCat = c; }
+      }
+
+      const catPercent = total > 0 ? ((maxVal / total) * 100).toFixed(1) : 0;
       document.getElementById('topCategoriaName').innerText = maxCat;
       document.getElementById('topCategoriaValor').innerText = 'R$ ' + maxVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      const catPercent = total > 0 ? ((maxVal / total) * 100).toFixed(1) : 0;
-      document.getElementById('topCategoriaPercent').innerHTML = `Representa <span class="text-indigo-300 font-bold">${catPercent}%</span> do total`;
+      document.getElementById('topCategoriaPercent').innerHTML = `Representa <span class="text-indigo-300 font-bold">${catPercent}%</span> do total deste mês`;
 
       const tbody = document.getElementById('tabelaGastos');
       tbody.innerHTML = '';
-      gastos.forEach(g => {
-        const row = document.createElement('tr');
-        row.className = 'border-b border-slate-800 hover:bg-black/40 transition';
-        row.innerHTML = `<td class="p-3 text-slate-400 text-xs">${g.data}</td><td class="p-3 font-semibold text-slate-200">${g.desc}</td><td class="p-3"><span class="bg-black border border-slate-700 text-xs px-2 py-1 rounded text-indigo-300">${g.cat}</span></td><td class="p-3 text-right font-extrabold text-red-400">R$ ${g.valor.toFixed(2)}</td><td class="p-3 text-center">${g.imagemUrl ? `<a href="${g.imagemUrl}" target="_blank" class="text-indigo-400 text-xs font-bold"><i class="fa-solid fa-paperclip"></i> Ver</a>` : '-'}</td>`;
-        tbody.appendChild(row);
-      });
+      if (gastos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum gasto gravado na planilha ainda.</td></tr>';
+      } else {
+        gastos.forEach(g => {
+          const row = document.createElement('tr');
+          row.className = 'border-b border-slate-800 hover:bg-black/40 transition';
+          
+          let iconAnexo = '<i class="fa-solid fa-paperclip"></i> Ver';
+          if (g.imagemUrl && g.imagemUrl.indexOf('.pdf') !== -1) {
+            iconAnexo = '<i class="fa-solid fa-file-pdf text-red-400"></i> PDF';
+          }
 
-      renderGraficoFinancas(catTotals);
+          const linkFoto = g.imagemUrl ? `<a href="${g.imagemUrl}" target="_blank" class="text-indigo-400 hover:underline text-xs mr-2 font-semibold">${iconAnexo}</a>` : '';
+          const descEscapada = g.desc.replace(/'/g, "\\'");
+          
+          row.innerHTML = `
+            <td class="p-3 text-slate-400 text-xs">${g.data}</td>
+            <td class="p-3 font-semibold text-slate-200">${g.desc}</td>
+            <td class="p-3"><span class="bg-black/60 border border-slate-700 text-xs px-2 py-1 rounded-md text-indigo-300 font-medium">${g.cat}</span></td>
+            <td class="p-3 text-right font-extrabold text-red-400">R$ ${g.valor.toFixed(2)}</td>
+            <td class="p-3 text-center flex items-center justify-center gap-2">
+              ${linkFoto}
+              <button onclick="abrirModalEditar(${g.rowId}, '${descEscapada}', ${g.valor}, '${g.data}', '${g.cat}')" class="text-slate-400 hover:text-indigo-400 transition p-1" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
+              <button onclick="abrirModalExcluir(${g.rowId}, '${descEscapada}', ${g.valor})" class="text-slate-500 hover:text-red-400 transition p-1" title="Excluir"><i class="fa-solid fa-trash-can"></i></button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      renderGrafico(catTotals);
     }
 
-    function renderGraficoFinancas(catTotals) {
+    function renderGrafico(catTotals) {
       const ctx = document.getElementById('chartCategorias').getContext('2d');
-      const sorted = Object.entries(catTotals).sort((a,b) => b[1] - a[1]);
-      const labels = sorted.map(s => s[0]);
-      const data = sorted.map(s => s[1]);
+      
+      const sortedEntries = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+      const labels = sortedEntries.map(e => e[0]);
+      const data = sortedEntries.map(e => e[1]);
 
-      if (chartFinancasInstance) chartFinancasInstance.destroy();
+      if (chartInstance) chartInstance.destroy();
       if (labels.length === 0) return;
 
-      chartFinancasInstance = new Chart(ctx, {
+      chartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
           labels: labels,
@@ -427,9 +671,16 @@
             label: 'Total Gasto (R$)',
             data: data,
             backgroundColor: [
-              'rgba(99, 102, 241, 0.85)', 'rgba(16, 185, 129, 0.85)', 'rgba(245, 158, 11, 0.85)',
-              'rgba(236, 72, 153, 0.85)', 'rgba(139, 92, 246, 0.85)', 'rgba(6, 182, 212, 0.85)',
-              'rgba(56, 189, 248, 0.85)', 'rgba(239, 68, 68, 0.85)', 'rgba(100, 116, 139, 0.85)', 'rgba(168, 85, 247, 0.85)'
+              'rgba(99, 102, 241, 0.85)',
+              'rgba(16, 185, 129, 0.85)',
+              'rgba(245, 158, 11, 0.85)',
+              'rgba(236, 72, 153, 0.85)',
+              'rgba(139, 92, 246, 0.85)',
+              'rgba(6, 182, 212, 0.85)',
+              'rgba(56, 189, 248, 0.85)',
+              'rgba(239, 68, 68, 0.85)',
+              'rgba(100, 116, 139, 0.85)',
+              'rgba(168, 85, 247, 0.85)'
             ],
             borderColor: [
               '#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6',
@@ -447,16 +698,30 @@
             legend: { display: false },
             tooltip: {
               callbacks: {
-                label: function(context) { return ' R$ ' + context.parsed.x.toLocaleString('pt-BR', { minimumFractionDigits: 2 }); }
+                label: function(context) {
+                  return ' R$ ' + context.parsed.x.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                }
               }
             }
           },
           scales: {
             x: {
               grid: { color: 'rgba(255, 255, 255, 0.05)' },
-              ticks: { color: '#94a3b8', font: { size: 10, weight: '600' }, callback: function(value) { return 'R$ ' + value; } }
+              ticks: {
+                color: '#94a3b8',
+                font: { size: 10, weight: '600' },
+                callback: function(value) {
+                  return 'R$ ' + value;
+                }
+              }
             },
-            y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { size: 11, weight: '700' } } }
+            y: {
+              grid: { display: false },
+              ticks: {
+                color: '#e2e8f0',
+                font: { size: 11, weight: '700' }
+              }
+            }
           }
         }
       });
