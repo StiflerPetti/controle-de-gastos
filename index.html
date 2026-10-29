@@ -37,7 +37,7 @@
           <i class="fa-solid fa-chart-pie mr-1"></i> Finanças
         </button>
         <button onclick="mudarAba('alertas')" id="tabBtnAlertas" class="px-4 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
-          <i class="fa-solid fa-phone-volume mr-1"></i> Alertas de Câmbio & Ligações
+          <i class="fa-solid fa-bell mr-1"></i> Alertas de Voz & Ativos
         </button>
       </div>
 
@@ -50,6 +50,24 @@
   </header>
 
   <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
+
+    <!-- BANNER DE ALERTA SONORO ATINGIDO -->
+    <div id="bannerAlertaAtingido" class="hidden bg-amber-950/90 border-2 border-amber-500/80 rounded-2xl p-5 shadow-2xl transition-all">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="p-3 bg-amber-600/30 text-amber-400 rounded-xl text-2xl animate-bounce">
+            <i class="fa-solid fa-volume-high font-bold"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-amber-200" id="tituloBannerAlerta">Meta Atingida!</h3>
+            <p class="text-xs text-amber-300" id="descBannerAlerta">O valor alvo foi atingido.</p>
+          </div>
+        </div>
+        <button onclick="fecharBannerAlerta()" class="bg-black/80 hover:bg-black text-amber-300 border border-amber-500/40 px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg">
+          Silenciar Alarme
+        </button>
+      </div>
+    </div>
 
     <!-- SEÇÃO 1: FINANÇAS -->
     <div id="secaoFinancas" class="space-y-6">
@@ -119,47 +137,73 @@
       </div>
     </div>
 
-    <!-- SEÇÃO 2: ALERTAS DE CÂMBIO & LIGAÇÕES -->
+    <!-- SEÇÃO 2: ALERTAS DE CÂMBIO, OURO & CRIPTOS -->
     <div id="secaoAlertas" class="space-y-6 hidden">
       <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
         <div class="flex justify-between items-center">
-          <h2 class="text-lg font-bold text-indigo-300 flex items-center gap-2"><i class="fa-solid fa-bolt text-amber-400"></i> Monitor de Cotações em Tempo Real</h2>
-          <button onclick="buscarCotacoesAgora()" class="text-xs bg-indigo-950 border border-indigo-500/40 text-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-900 transition font-bold"><i class="fa-solid fa-arrows-rotate"></i> Consultar Cotações</button>
+          <h2 class="text-lg font-bold text-indigo-300 flex items-center gap-2"><i class="fa-solid fa-coins text-amber-400"></i> Cotações de Ativos em Tempo Real</h2>
+          <div class="flex items-center gap-2">
+            <span id="statusMonitor" class="text-[11px] text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-500/30 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-circle text-[8px] mr-1"></i> Monitor Sonoro Ativo</span>
+            <button onclick="buscarCotacoesAgora()" class="text-xs bg-indigo-950 border border-indigo-500/40 text-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-900 transition font-bold"><i class="fa-solid fa-arrows-rotate"></i> Atualizar</button>
+          </div>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="cardsCotacoes">
-          <div class="bg-black/60 border border-slate-800 p-4 rounded-xl text-center"><p class="text-xs text-slate-400">Dólar Comercial (USD)</p><p id="cotacaoUSD" class="text-2xl font-extrabold text-emerald-400 mt-1">Carregando...</p></div>
-          <div class="bg-black/60 border border-slate-800 p-4 rounded-xl text-center"><p class="text-xs text-slate-400">Euro (EUR)</p><p id="cotacaoEUR" class="text-2xl font-extrabold text-indigo-400 mt-1">Carregando...</p></div>
-          <div class="bg-black/60 border border-slate-800 p-4 rounded-xl text-center"><p class="text-xs text-slate-400">Bitcoin (BTC)</p><p id="cotacaoBTC" class="text-2xl font-extrabold text-amber-400 mt-1">Carregando...</p></div>
-          <div class="bg-black/60 border border-slate-800 p-4 rounded-xl text-center"><p class="text-xs text-slate-400">Libra (GBP)</p><p id="cotacaoGBP" class="text-2xl font-extrabold text-sky-400 mt-1">Carregando...</p></div>
+        
+        <!-- Cards de Ativos Ampliados (Incluindo Ouro) -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div class="bg-black/60 border border-slate-800 p-3 rounded-xl text-center">
+            <p class="text-[11px] text-slate-400 flex items-center justify-center gap-1"><i class="fa-solid fa-dollar-sign text-emerald-400"></i> Dólar (USD)</p>
+            <p id="cotacaoUSD" class="text-xl font-extrabold text-emerald-400 mt-1">Carregando...</p>
+          </div>
+          <div class="bg-black/60 border border-slate-800 p-3 rounded-xl text-center">
+            <p class="text-[11px] text-slate-400 flex items-center justify-center gap-1"><i class="fa-solid fa-euro-sign text-indigo-400"></i> Euro (EUR)</p>
+            <p id="cotacaoEUR" class="text-xl font-extrabold text-indigo-400 mt-1">Carregando...</p>
+          </div>
+          <div class="bg-black/60 border border-slate-800 p-3 rounded-xl text-center border-amber-500/30">
+            <p class="text-[11px] text-amber-400 font-bold flex items-center justify-center gap-1"><i class="fa-solid fa-cubes-stacked text-amber-400"></i> Ouro (XAU/g)</p>
+            <p id="cotacaoXAU" class="text-xl font-extrabold text-amber-400 mt-1">Carregando...</p>
+          </div>
+          <div class="bg-black/60 border border-slate-800 p-3 rounded-xl text-center">
+            <p class="text-[11px] text-slate-400 flex items-center justify-center gap-1"><i class="fa-brands fa-bitcoin text-amber-500"></i> Bitcoin (BTC)</p>
+            <p id="cotacaoBTC" class="text-xl font-extrabold text-amber-500 mt-1">Carregando...</p>
+          </div>
+          <div class="bg-black/60 border border-slate-800 p-3 rounded-xl text-center">
+            <p class="text-[11px] text-slate-400 flex items-center justify-center gap-1"><i class="fa-brands fa-ethereum text-purple-400"></i> Ethereum (ETH)</p>
+            <p id="cotacaoETH" class="text-xl font-extrabold text-purple-400 mt-1">Carregando...</p>
+          </div>
+          <div class="bg-black/60 border border-slate-800 p-3 rounded-xl text-center">
+            <p class="text-[11px] text-slate-400 flex items-center justify-center gap-1"><i class="fa-solid fa-sterling-sign text-sky-400"></i> Libra (GBP)</p>
+            <p id="cotacaoGBP" class="text-xl font-extrabold text-sky-400 mt-1">Carregando...</p>
+          </div>
         </div>
       </div>
 
       <!-- Criar Alvo / Meta de Alerta -->
       <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-        <h3 class="text-base font-bold text-indigo-300 flex items-center gap-2"><i class="fa-solid fa-bullseye text-indigo-400"></i> Configurar Nova Meta de Alerta e Ligação</h3>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <h3 class="text-base font-bold text-indigo-300 flex items-center gap-2"><i class="fa-solid fa-bullseye text-indigo-400"></i> Configurar Meta de Preço e Alarme por Voz</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <select id="alvoAtivo" class="bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none">
-            <option value="USD">Dólar (USD)</option>
+            <option value="USD">Dólar Comercial (USD)</option>
             <option value="EUR">Euro (EUR)</option>
+            <option value="XAU">Ouro por Grama (XAU em R$)</option>
             <option value="BTC">Bitcoin (BTC)</option>
-            <option value="GBP">Libra (GBP)</option>
+            <option value="ETH">Ethereum (ETH)</option>
+            <option value="GBP">Libra Esterlina (GBP)</option>
           </select>
           <select id="alvoCondicao" class="bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none">
             <option value="menor">Ficar abaixo de (&lt;)</option>
             <option value="maior">Ficar acima de (&gt;)</option>
           </select>
-          <input type="number" step="0.01" id="alvoValor" placeholder="Preço Alvo (Ex: 5.20)" class="bg-black border border-slate-700 text-emerald-400 font-bold rounded-xl p-3 outline-none">
-          <input type="text" id="alvoTelefone" placeholder="Seu Telefone (Ex: 61999998888)" class="bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none">
+          <input type="number" step="0.01" id="alvoValor" placeholder="Preço Alvo (Ex: 5.20 ou 410.00)" class="bg-black border border-slate-700 text-emerald-400 font-bold rounded-xl p-3 outline-none">
         </div>
         <div class="flex gap-3 pt-2">
-          <button onclick="adicionarAlvo()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-sm transition shadow-lg"><i class="fa-solid fa-plus"></i> Salvar Alvo de Alerta</button>
-          <button onclick="simularLigacao()" class="bg-slate-800 hover:bg-slate-700 text-indigo-300 px-5 py-3 rounded-xl text-sm font-bold transition border border-indigo-500/30"><i class="fa-solid fa-phone"></i> Simular Ligação</button>
+          <button onclick="adicionarAlvo()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-sm transition shadow-lg"><i class="fa-solid fa-plus"></i> Salvar Alvo de Monitoramento</button>
+          <button onclick="testarAlarmeVoz()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 px-5 py-3 rounded-xl text-sm font-bold transition border border-amber-500/30"><i class="fa-solid fa-volume-high"></i> Testar Alarme de Voz</button>
         </div>
       </div>
 
       <!-- Lista de Alvos Cadastrados -->
       <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-        <h3 class="text-base font-bold text-indigo-300">Seus Alvos Ativos</h3>
+        <h3 class="text-base font-bold text-indigo-300">Seus Ativos e Metas em Acompanhamento</h3>
         <div id="listaAlvos" class="space-y-2">
           <p class="text-sm text-slate-500">Nenhum alvo cadastrado no momento.</p>
         </div>
@@ -168,7 +212,7 @@
 
   </main>
 
-  <!-- Modais -->
+  <!-- Modais de Finanças -->
   <div id="modalMeta" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
       <h3 class="text-lg font-bold text-indigo-300"><i class="fa-solid fa-bullseye"></i> Definir Meta Mensal</h3>
@@ -213,6 +257,7 @@
     const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxU7_uGTObenukASrSYgoQ39AJP2pSZ5eZKoAjSYucVPMLhB9sgmkGmHx9ZCQCwWfDW/exec";
     let gastos = [], meta = 3000, chartInstance = null, arquivoBase64 = "", itemEditandoId = null, itemExcluindoId = null;
     let alvosAlertas = JSON.parse(localStorage.getItem('alvosAlertas_mara') || '[]');
+    let cotacoesAtuais = {};
 
     document.getElementById('dataInput').valueAsDate = new Date();
 
@@ -438,54 +483,134 @@
       });
     }
 
-    // --- FUNÇÕES DA ABA DE ALERTAS E CÂMBIO ---
+    // --- LÓGICA DE MONITORAMENTO E ALERTA SONORO DE ATIVOS ---
+
     async function buscarCotacoesAgora() {
       try {
-        const res = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL,BTC-BRL,GBP-BRL');
+        // Consulta em lote incluindo Ouro (XAU), Dólar, Euro, Bitcoin, Ethereum e Libra
+        const res = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL,BTC-BRL,ETH-BRL,GBP-BRL,BRL-XAU');
         const data = await res.json();
-        if(data.USDBRL) document.getElementById('cotacaoUSD').innerText = 'R$ ' + parseFloat(data.USDBRL.bid).toFixed(2);
-        if(data.EURBRL) document.getElementById('cotacaoEUR').innerText = 'R$ ' + parseFloat(data.EURBRL.bid).toFixed(2);
-        if(data.BTCBRL) document.getElementById('cotacaoBTC').innerText = 'R$ ' + parseFloat(data.BTCBRL.bid).toLocaleString('pt-BR', {maximumFractionDigits: 0});
-        if(data.GBPBRL) document.getElementById('cotacaoGBP').innerText = 'R$ ' + parseFloat(data.GBPBRL.bid).toFixed(2);
+        
+        if (data.USDBRL) { cotacoesAtuais.USD = parseFloat(data.USDBRL.bid); document.getElementById('cotacaoUSD').innerText = 'R$ ' + cotacoesAtuais.USD.toFixed(2); }
+        if (data.EURBRL) { cotacoesAtuais.EUR = parseFloat(data.EURBRL.bid); document.getElementById('cotacaoEUR').innerText = 'R$ ' + cotacoesAtuais.EUR.toFixed(2); }
+        if (data.BTCBRL) { cotacoesAtuais.BTC = parseFloat(data.BTCBRL.bid); document.getElementById('cotacaoBTC').innerText = 'R$ ' + cotacoesAtuais.BTC.toLocaleString('pt-BR', {maximumFractionDigits: 0}); }
+        if (data.ETHBRL) { cotacoesAtuais.ETH = parseFloat(data.ETHBRL.bid); document.getElementById('cotacaoETH').innerText = 'R$ ' + cotacoesAtuais.ETH.toLocaleString('pt-BR', {maximumFractionDigits: 0}); }
+        if (data.GBPBRL) { cotacoesAtuais.GBP = parseFloat(data.GBPBRL.bid); document.getElementById('cotacaoGBP').innerText = 'R$ ' + cotacoesAtuais.GBP.toFixed(2); }
+        
+        // Cálculo do valor do Ouro por Grama em Reais (XAU)
+        if (data.BRLXAU) {
+          const oncaEmBrl = 1 / parseFloat(data.BRLXAU.bid);
+          cotacoesAtuais.XAU = oncaEmBrl / 31.1035; // Grama do Ouro em Reais
+          document.getElementById('cotacaoXAU').innerText = 'R$ ' + cotacoesAtuais.XAU.toFixed(2);
+        }
+
+        verificarAlvosEAlertar();
       } catch (err) {
-        console.error("Erro ao buscar cotações", err);
+        console.error("Erro ao buscar cotações de ativos", err);
       }
+    }
+
+    function verificarAlvosEAlertar() {
+      alvosAlertas.forEach(alvo => {
+        const precoAtual = cotacoesAtuais[alvo.ativo];
+        if (!precoAtual) return;
+
+        let atingido = false;
+        if (alvo.condicao === 'menor' && precoAtual <= alvo.valor) atingido = true;
+        if (alvo.condicao === 'maior' && precoAtual >= alvo.valor) atingido = true;
+
+        if (atingido && !alvo.notificado) {
+          alvo.notificado = true;
+          localStorage.setItem('alvosAlertas_mara', JSON.stringify(alvosAlertas));
+          dispararAlertaSonoroVisual(alvo.ativo, precoAtual, alvo.valor);
+        }
+      });
+    }
+
+    function dispararAlertaSonoroVisual(ativo, valorAtual, valorMeta) {
+      // Nome amigável do ativo para voz
+      const nomesAtivos = { USD: 'Dólar', EUR: 'Euro', XAU: 'Ouro por grama', BTC: 'Bitcoin', ETH: 'Ethereum', GBP: 'Libra' };
+      const nomeVoz = nomesAtivos[ativo] || ativo;
+
+      // 1. Toca o Alarme Sonoro + Voz pelo dispositivo
+      tocarAlarmeVoz(nomeVoz, valorAtual);
+
+      // 2. Exibe Banner Destacado no Topo
+      const banner = document.getElementById('bannerAlertaAtingido');
+      document.getElementById('tituloBannerAlerta').innerText = `🚨 Meta Atingida! ${nomeVoz} em R$ ${valorAtual.toFixed(2)}`;
+      document.getElementById('descBannerAlerta').innerText = `O valor alvo de R$ ${valorMeta.toFixed(2)} foi alcançado neste momento!`;
+      banner.classList.remove('hidden');
+    }
+
+    function tocarAlarmeVoz(nomeAtivo, valor) {
+      // Falar em Voz Alta (Speech Synthesis)
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(`Atenção Mayone! O ativo ${nomeAtivo} atingiu ${valor.toFixed(2)} reais. Hora de conferir!`);
+        msg.lang = 'pt-BR';
+        msg.rate = 1.0;
+        window.speechSynthesis.speak(msg);
+      }
+
+      // Tocar tom de alarme repetido
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        for (let i = 0; i < 4; i++) {
+          setTimeout(() => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = 880;
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            setTimeout(() => osc.stop(), 250);
+          }, i * 350);
+        }
+      } catch (e) {}
+    }
+
+    function testarAlarmeVoz() {
+      dispararAlertaSonoroVisual("XAU", 412.50, 415.00);
+    }
+
+    function fecharBannerAlerta() {
+      document.getElementById('bannerAlertaAtingido').classList.add('hidden');
     }
 
     function adicionarAlvo() {
       const ativo = document.getElementById('alvoAtivo').value;
       const condicao = document.getElementById('alvoCondicao').value;
       const valor = parseFloat(document.getElementById('alvoValor').value);
-      const telefone = document.getElementById('alvoTelefone').value;
 
-      if(isNaN(valor) || valor <= 0 || !telefone) {
-        return alert("Preencha um valor alvo válido e o número de telefone!");
+      if (isNaN(valor) || valor <= 0) {
+        return alert("Preencha um valor alvo válido para o monitoramento!");
       }
 
-      alvosAlertas.push({ id: Date.now(), ativo, condicao, valor, telefone });
+      alvosAlertas.push({ id: Date.now(), ativo, condicao, valor, notificado: false });
       localStorage.setItem('alvosAlertas_mara', JSON.stringify(alvosAlertas));
       document.getElementById('alvoValor').value = '';
-      document.getElementById('alvoTelefone').value = '';
       renderizarAlvos();
-      alert("Alvo cadastrado com sucesso!");
+      alert("Alvo cadastrado com sucesso! O site vai emitir o alerta sonoro e falar em voz alta assim que a cotação for atingida.");
     }
 
     function renderizarAlvos() {
       const container = document.getElementById('listaAlvos');
       container.innerHTML = '';
-      if(alvosAlertas.length === 0) {
+      if (alvosAlertas.length === 0) {
         container.innerHTML = '<p class="text-sm text-slate-500">Nenhum alvo cadastrado no momento.</p>';
         return;
       }
+      const nomes = { USD: 'Dólar (USD)', EUR: 'Euro (EUR)', XAU: 'Ouro (Grama)', BTC: 'Bitcoin (BTC)', ETH: 'Ethereum (ETH)', GBP: 'Libra (GBP)' };
       alvosAlertas.forEach(alvo => {
         const div = document.createElement('div');
         div.className = 'bg-black/60 border border-slate-800 p-3 rounded-xl flex justify-between items-center';
         div.innerHTML = `
           <div>
-            <span class="font-bold text-indigo-300 uppercase">${alvo.ativo}</span> 
+            <span class="font-bold text-indigo-300 uppercase">${nomes[alvo.ativo] || alvo.ativo}</span> 
             <span class="text-xs text-slate-400">se ${alvo.condicao === 'menor' ? 'ficar abaixo de' : 'ficar acima de'}</span> 
             <span class="font-extrabold text-emerald-400">R$ ${alvo.valor.toFixed(2)}</span>
-            <p class="text-[11px] text-slate-500"><i class="fa-solid fa-phone"></i> Tel: ${alvo.telefone}</p>
+            <p class="text-[11px] text-slate-500"><i class="fa-solid fa-volume-high text-amber-400"></i> Alarme de Voz Ativo</p>
           </div>
           <button onclick="removerAlvo(${alvo.id})" class="text-slate-500 hover:text-red-400 p-2"><i class="fa-solid fa-trash-can"></i></button>
         `;
@@ -499,11 +624,12 @@
       renderizarAlvos();
     }
 
-    function simularLigacao() {
-      alert("Simulação de Ligação Automática:\n\n'Alô Mayone! O Dólar atingiu sua meta de preço e está em R$ 5,18. Hora de aproveitar!'\n\n(Dica: Para efetuar chamadas reais gratuitas para o seu celular, você pode conectar este app a um fluxo do Make.com acionado por Webhook).");
-    }
-
+    // Inicialização do Painel e Consulta
     carregarDados();
+    buscarCotacoesAgora();
+
+    // Consulta automática a cada 2 minutos enquanto a aba estiver aberta
+    setInterval(buscarCotacoesAgora, 120000);
   </script>
 </body>
 </html>
