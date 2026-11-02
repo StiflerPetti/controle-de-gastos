@@ -315,20 +315,36 @@
       const valor = parseFloat(document.getElementById('valorInput').value);
       const data = document.getElementById('dataInput').value;
       const cat = document.getElementById('categoriaInput').value;
+      const btnSalvar = document.getElementById('btnSalvar');
+
       if (!desc || isNaN(valor) || valor <= 0) return alert("Preencha descrição e valor válidos!");
+
+      // Bloquear botão e mostrar indicador de carregamento
+      btnSalvar.disabled = true;
+      btnSalvar.classList.add('opacity-50', 'cursor-not-allowed');
+      btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando para a nuvem...';
 
       try {
         await fetch(WEBHOOK_URL, {
           method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ data, desc, cat, valor, imagemBase64: arquivoBase64 })
         });
-      } catch (err) {}
-      
-      document.getElementById('formConfirmacao').classList.add('hidden');
-      document.getElementById('descInput').value = '';
-      document.getElementById('valorInput').value = '';
-      arquivoBase64 = "";
-      setTimeout(carregarDados, 2000);
+      } catch (err) {
+        console.error("Erro no envio:", err);
+      } finally {
+        // Reset dos campos e liberar botão
+        document.getElementById('formConfirmacao').classList.add('hidden');
+        document.getElementById('descInput').value = '';
+        document.getElementById('valorInput').value = '';
+        document.getElementById('fileInput').value = '';
+        arquivoBase64 = "";
+
+        btnSalvar.disabled = false;
+        btnSalvar.classList.remove('opacity-50', 'cursor-not-allowed');
+        btnSalvar.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Confirmar e Enviar para a Planilha';
+
+        setTimeout(carregarDados, 1500);
+      }
     }
 
     async function salvarMeta() {
@@ -391,9 +407,25 @@
     };
 
     function atualizarDashboard() {
-      const total = gastos.reduce((acc, g) => acc + g.valor, 0);
+      // Filtrar apenas lançamentos do mês e ano vigentes (ou mês selecionado)
+      const agora = new Date();
+      const anoAtual = agora.getFullYear();
+      const mesAtual = agora.getMonth() + 1; // 1 a 12
+
+      const gastosDoMes = gastos.filter(g => {
+        if (!g.data) return false;
+        const partes = g.data.split('-'); // Esperado formato YYYY-MM-DD
+        if (partes.length === 3) {
+          const anoGasto = parseInt(partes[0], 10);
+          const mesGasto = parseInt(partes[1], 10);
+          return anoGasto === anoAtual && mesGasto === mesAtual;
+        }
+        return false;
+      });
+
+      const total = gastosDoMes.reduce((acc, g) => acc + g.valor, 0);
       document.getElementById('totalGasto').innerText = 'R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-      document.getElementById('totalLidos').innerText = gastos.length;
+      document.getElementById('totalLidos').innerText = gastosDoMes.length;
 
       const pct = Math.min((total / meta) * 100, 100);
       const bar = document.getElementById('barProgress');
@@ -422,7 +454,7 @@
       }
 
       const catTotals = {};
-      gastos.forEach(g => catTotals[g.cat] = (catTotals[g.cat] || 0) + g.valor);
+      gastosDoMes.forEach(g => catTotals[g.cat] = (catTotals[g.cat] || 0) + g.valor);
       let maxCat = '-', maxVal = 0;
       for (const [c, v] of Object.entries(catTotals)) { if (v > maxVal) { maxVal = v; maxCat = c; } }
       document.getElementById('topCategoriaName').innerText = maxCat;
