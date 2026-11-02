@@ -135,7 +135,28 @@
           <div class="w-full relative min-h-[300px]"><canvas id="chartCategorias"></canvas></div>
         </div>
         <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
-          <h3 class="text-base font-bold text-indigo-300 mb-4"><i class="fa-solid fa-chart-column text-indigo-400 mr-2"></i>Evolução de Gastos (Mês a Mês)</h3>
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+            <h3 class="text-base font-bold text-indigo-300 flex items-center gap-2">
+              <i class="fa-solid fa-chart-column text-indigo-400"></i> Evolução Mês a Mês
+            </h3>
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <label for="filtroCategoriaMeses" class="text-xs text-slate-400 font-semibold whitespace-nowrap">Filtrar Categoria:</label>
+              <select id="filtroCategoriaMeses" onchange="renderGraficoMeses(gastos)" class="bg-black border border-slate-700 text-indigo-300 text-xs rounded-xl px-3 py-1.5 outline-none w-full sm:w-auto font-bold">
+                <option value="TODAS">Todas as Categorias (Total)</option>
+                <option value="Alimentação">Alimentação</option>
+                <option value="Supermercado">Supermercado</option>
+                <option value="Transporte">Transporte</option>
+                <option value="Lazer">Lazer</option>
+                <option value="Saúde">Saúde</option>
+                <option value="Farmácia">Farmácia</option>
+                <option value="Cartão de Crédito">Cartão de Crédito</option>
+                <option value="Educação">Educação</option>
+                <option value="Moradia">Moradia</option>
+                <option value="Doações">Doações</option>
+                <option value="Outros">Outros</option>
+              </select>
+            </div>
+          </div>
           <div class="w-full relative min-h-[300px]"><canvas id="chartComparacaoMeses"></canvas></div>
         </div>
       </div>
@@ -526,9 +547,16 @@
       if (chartComparacaoInstance) chartComparacaoInstance.destroy();
       if (!todosGastos || todosGastos.length === 0) return;
 
+      const catSelecionada = document.getElementById('filtroCategoriaMeses') ? document.getElementById('filtroCategoriaMeses').value : 'TODAS';
+
+      // Filtrar por categoria se não for "TODAS"
+      const gastosFiltrados = catSelecionada === 'TODAS' 
+        ? todosGastos 
+        : todosGastos.filter(g => g.cat === catSelecionada);
+
       // Agrupar totais por Mês/Ano (Ex: "2026-10" => "10/2026")
       const totaisPorMes = {};
-      todosGastos.forEach(g => {
+      gastosFiltrados.forEach(g => {
         if (!g.data) return;
         const partes = g.data.split('-');
         if (partes.length === 3) {
@@ -545,15 +573,18 @@
       });
       const valores = chavesOrdenadas.map(chave => totaisPorMes[chave]);
 
+      const corBarra = catSelecionada === 'TODAS' ? 'rgba(99, 102, 241, 0.8)' : 'rgba(245, 158, 11, 0.8)';
+      const corBorda = catSelecionada === 'TODAS' ? '#6366f1' : '#f59e0b';
+
       chartComparacaoInstance = new Chart(ctx, {
         type: 'bar',
         data: {
           labels: labels,
           datasets: [{
-            label: 'Total Gasto (R$)',
+            label: catSelecionada === 'TODAS' ? 'Total Geral (R$)' : `Total: ${catSelecionada} (R$)`,
             data: valores,
-            backgroundColor: 'rgba(99, 102, 241, 0.75)',
-            borderColor: '#6366f1',
+            backgroundColor: corBarra,
+            borderColor: corBorda,
             borderWidth: 2,
             borderRadius: 8
           }]
@@ -562,11 +593,11 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { display: false },
+            legend: { display: catSelecionada !== 'TODAS' },
             tooltip: {
               callbacks: {
                 label: function(context) {
-                  return 'Total: R$ ' + context.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                  return (catSelecionada === 'TODAS' ? 'Total: R$ ' : `${catSelecionada}: R$ `) + context.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
                 }
               }
             }
