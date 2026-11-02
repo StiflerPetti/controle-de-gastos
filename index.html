@@ -134,6 +134,10 @@
           <h3 class="text-base font-bold text-indigo-300 mb-4">Ranking de Gastos por Categoria</h3>
           <div class="w-full relative min-h-[300px]"><canvas id="chartCategorias"></canvas></div>
         </div>
+        <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
+          <h3 class="text-base font-bold text-indigo-300 mb-4"><i class="fa-solid fa-chart-column text-indigo-400 mr-2"></i>Evolução de Gastos (Mês a Mês)</h3>
+          <div class="w-full relative min-h-[300px]"><canvas id="chartComparacaoMeses"></canvas></div>
+        </div>
       </div>
     </div>
 
@@ -255,7 +259,7 @@
 
   <script>
     const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxU7_uGTObenukASrSYgoQ39AJP2pSZ5eZKoAjSYucVPMLhB9sgmkGmHx9ZCQCwWfDW/exec";
-    let gastos = [], meta = 3000, chartInstance = null, arquivoBase64 = "", itemEditandoId = null, itemExcluindoId = null;
+    let gastos = [], meta = 3000, chartInstance = null, chartComparacaoInstance = null, arquivoBase64 = "", itemEditandoId = null, itemExcluindoId = null;
     let alvosAlertas = JSON.parse(localStorage.getItem('alvosAlertas_mara') || '[]');
     let cotacoesAtuais = {};
 
@@ -486,6 +490,7 @@
       }
 
       renderGrafico(catTotals);
+      renderGraficoMeses(gastos);
     }
 
     function renderGrafico(catTotals) {
@@ -510,6 +515,71 @@
           scales: {
             x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', callback: v => 'R$ ' + v } },
             y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { weight: '700' } } }
+          }
+        }
+      });
+    }
+
+
+    function renderGraficoMeses(todosGastos) {
+      const ctx = document.getElementById('chartComparacaoMeses').getContext('2d');
+      if (chartComparacaoInstance) chartComparacaoInstance.destroy();
+      if (!todosGastos || todosGastos.length === 0) return;
+
+      // Agrupar totais por Mês/Ano (Ex: "2026-10" => "10/2026")
+      const totaisPorMes = {};
+      todosGastos.forEach(g => {
+        if (!g.data) return;
+        const partes = g.data.split('-');
+        if (partes.length === 3) {
+          const chaveAnomes = `${partes[0]}-${partes[1]}`; // YYYY-MM
+          totaisPorMes[chaveAnomes] = (totaisPorMes[chaveAnomes] || 0) + g.valor;
+        }
+      });
+
+      // Ordenar os meses cronologicamente
+      const chavesOrdenadas = Object.keys(totaisPorMes).sort();
+      const labels = chavesOrdenadas.map(chave => {
+        const [ano, mes] = chave.split('-');
+        return `${mes}/${ano}`;
+      });
+      const valores = chavesOrdenadas.map(chave => totaisPorMes[chave]);
+
+      chartComparacaoInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Total Gasto (R$)',
+            data: valores,
+            backgroundColor: 'rgba(99, 102, 241, 0.75)',
+            borderColor: '#6366f1',
+            borderWidth: 2,
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return 'Total: R$ ' + context.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#e2e8f0', font: { weight: '700' } }
+            },
+            y: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#94a3b8', callback: v => 'R$ ' + v }
+            }
           }
         }
       });
