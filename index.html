@@ -20,7 +20,6 @@
 </head>
 <body class="bg-water-union text-slate-100 min-h-screen pb-12">
 
-  <!-- Header -->
   <header class="bg-black/85 backdrop-blur-md border-b border-indigo-500/20 sticky top-0 z-50 shadow-xl">
     <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col items-center justify-center text-center space-y-2 relative">
       <div class="flex items-center space-x-2">
@@ -31,7 +30,6 @@
       </div>
       <p class="text-xs text-slate-400 font-medium">Mayone & Rafaella • Nuvem Sincronizada</p>
 
-      <!-- Navegação de Abas -->
       <div class="flex bg-black/60 border border-slate-800 p-1 rounded-xl gap-1 mt-2">
         <button onclick="mudarAba('financas')" id="tabBtnFinancas" class="px-4 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow">
           <i class="fa-solid fa-chart-pie mr-1"></i> Finanças
@@ -41,7 +39,10 @@
         </button>
       </div>
 
-      <div class="mt-2 md:mt-0 md:absolute md:right-4 md:top-4">
+      <div class="mt-2 md:mt-0 md:absolute md:right-4 md:top-4 flex items-center gap-2">
+        <button onclick="configurarToken()" class="text-xs text-slate-300 bg-slate-900 border border-slate-700 px-3 py-2 rounded-xl hover:bg-slate-800 transition flex items-center gap-1.5 font-bold" title="Chave de acesso">
+          <i class="fa-solid fa-key text-xs text-amber-400"></i> Chave
+        </button>
         <button onclick="carregarDados()" class="text-xs text-indigo-300 bg-indigo-950/80 border border-indigo-500/30 px-3 py-2 rounded-xl hover:bg-indigo-900/50 transition flex items-center gap-1.5 font-bold">
           <i class="fa-solid fa-rotate text-xs"></i> Atualizar
         </button>
@@ -51,7 +52,6 @@
 
   <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
 
-    <!-- BANNER DE ALERTA SONORO ATINGIDO -->
     <div id="bannerAlertaAtingido" class="hidden bg-amber-950/90 border-2 border-amber-500/80 rounded-2xl p-5 shadow-2xl transition-all">
       <div class="flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-3">
@@ -69,9 +69,7 @@
       </div>
     </div>
 
-    <!-- SEÇÃO 1: FINANÇAS -->
     <div id="secaoFinancas" class="space-y-6">
-      <!-- Alerta de Orçamento -->
       <div id="budgetAlertBox" class="hidden rounded-2xl p-4 border transition-all duration-300">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -82,7 +80,6 @@
         </div>
       </div>
 
-      <!-- Indicadores -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
           <div><p class="text-xs font-semibold text-slate-400 mb-1">Total Gasto (Este Mês)</p><p class="text-3xl font-extrabold text-red-500" id="totalGasto">R$ 0,00</p></div>
@@ -98,7 +95,6 @@
         </div>
       </div>
 
-      <!-- Importar Comprovante -->
       <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl">
         <h2 class="text-lg font-bold text-indigo-300 mb-2 flex items-center gap-2"><i class="fa-solid fa-file-invoice-dollar text-indigo-400"></i> Importar Print, Foto ou PDF</h2>
         <div class="border-2 border-dashed border-indigo-500/40 hover:border-indigo-400 rounded-2xl p-8 text-center transition cursor-pointer bg-black/60 flex flex-col items-center justify-center" onclick="document.getElementById('fileInput').click()">
@@ -119,7 +115,6 @@
         </div>
       </div>
 
-      <!-- Tabela & Gráfico -->
       <div class="space-y-6">
         <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg">
           <div class="flex justify-between items-center mb-4"><h3 class="text-base font-bold text-indigo-300">Histórico do Mês</h3><span id="loadingMsg" class="text-xs text-indigo-400 hidden"><i class="fa-solid fa-spinner fa-spin"></i> Sincronizando...</span></div>
@@ -143,17 +138,7 @@
               <label for="filtroCategoriaMeses" class="text-xs text-slate-400 font-semibold whitespace-nowrap">Filtrar Categoria:</label>
               <select id="filtroCategoriaMeses" onchange="renderGraficoMeses(gastos)" class="bg-black border border-slate-700 text-indigo-300 text-xs rounded-xl px-3 py-1.5 outline-none w-full sm:w-auto font-bold">
                 <option value="TODAS">Todas as Categorias (Total)</option>
-                <option value="Alimentação">Alimentação</option>
-                <option value="Supermercado">Supermercado</option>
-                <option value="Transporte">Transporte</option>
-                <option value="Lazer">Lazer</option>
-                <option value="Saúde">Saúde</option>
-                <option value="Farmácia">Farmácia</option>
-                <option value="Cartão de Crédito">Cartão de Crédito</option>
-                <option value="Educação">Educação</option>
-                <option value="Moradia">Moradia</option>
-                <option value="Doações">Doações</option>
-                <option value="Outros">Outros</option>
+                <option value="Alimentação">Alimentação</option><option value="Supermercado">Supermercado</option><option value="Transporte">Transporte</option><option value="Lazer">Lazer</option><option value="Saúde">Saúde</option><option value="Farmácia">Farmácia</option><option value="Cartão de Crédito">Cartão de Crédito</option><option value="Educação">Educação</option><option value="Moradia">Moradia</option><option value="Doações">Doações</option><option value="Outros">Outros</option>
               </select>
             </div>
           </div>
@@ -162,7 +147,6 @@
       </div>
     </div>
 
-    <!-- SEÇÃO 2: ALERTAS DE CÂMBIO, OURO & CRIPTOS -->
     <div id="secaoAlertas" class="space-y-6 hidden">
       <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
         <div class="flex justify-between items-center">
@@ -172,8 +156,6 @@
             <button onclick="buscarCotacoesAgora()" class="text-xs bg-indigo-950 border border-indigo-500/40 text-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-900 transition font-bold"><i class="fa-solid fa-arrows-rotate"></i> Atualizar</button>
           </div>
         </div>
-        
-        <!-- Cards de Ativos Ampliados (Incluindo Ouro) -->
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <div class="bg-black/60 border border-slate-800 p-3 rounded-xl text-center">
             <p class="text-[11px] text-slate-400 flex items-center justify-center gap-1"><i class="fa-solid fa-dollar-sign text-emerald-400"></i> Dólar (USD)</p>
@@ -202,21 +184,14 @@
         </div>
       </div>
 
-      <!-- Criar Alvo / Meta de Alerta -->
       <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
         <h3 class="text-base font-bold text-indigo-300 flex items-center gap-2"><i class="fa-solid fa-bullseye text-indigo-400"></i> Configurar Meta de Preço e Alarme por Voz</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           <select id="alvoAtivo" class="bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none">
-            <option value="USD">Dólar Comercial (USD)</option>
-            <option value="EUR">Euro (EUR)</option>
-            <option value="XAU">Ouro por Grama (XAU em R$)</option>
-            <option value="BTC">Bitcoin (BTC)</option>
-            <option value="ETH">Ethereum (ETH)</option>
-            <option value="GBP">Libra Esterlina (GBP)</option>
+            <option value="USD">Dólar Comercial (USD)</option><option value="EUR">Euro (EUR)</option><option value="XAU">Ouro por Grama (XAU em R$)</option><option value="BTC">Bitcoin (BTC)</option><option value="ETH">Ethereum (ETH)</option><option value="GBP">Libra Esterlina (GBP)</option>
           </select>
           <select id="alvoCondicao" class="bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none">
-            <option value="menor">Ficar abaixo de (&lt;)</option>
-            <option value="maior">Ficar acima de (&gt;)</option>
+            <option value="menor">Ficar abaixo de (<)</option><option value="maior">Ficar acima de (>)</option>
           </select>
           <input type="number" step="0.01" id="alvoValor" placeholder="Preço Alvo (Ex: 5.20 ou 410.00)" class="bg-black border border-slate-700 text-emerald-400 font-bold rounded-xl p-3 outline-none">
         </div>
@@ -226,18 +201,14 @@
         </div>
       </div>
 
-      <!-- Lista de Alvos Cadastrados -->
       <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
         <h3 class="text-base font-bold text-indigo-300">Seus Ativos e Metas em Acompanhamento</h3>
-        <div id="listaAlvos" class="space-y-2">
-          <p class="text-sm text-slate-500">Nenhum alvo cadastrado no momento.</p>
-        </div>
+        <div id="listaAlvos" class="space-y-2"><p class="text-sm text-slate-500">Nenhum alvo cadastrado no momento.</p></div>
       </div>
     </div>
-
   </main>
 
-  <!-- Modais de Finanças -->
+  <!-- Modais -->
   <div id="modalMeta" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
       <h3 class="text-lg font-bold text-indigo-300"><i class="fa-solid fa-bullseye"></i> Definir Meta Mensal</h3>
@@ -286,6 +257,48 @@
 
     document.getElementById('dataInput').valueAsDate = new Date();
 
+    function obterToken() {
+      let t = sessionStorage.getItem('mara_api_token') || '';
+      if (!t) {
+        t = (prompt("Digite a chave de acesso (API_TOKEN) do Finanças MaRa:") || '').trim();
+        if (t) sessionStorage.setItem('mara_api_token', t);
+      }
+      return t;
+    }
+
+    function configurarToken() {
+      const atual = sessionStorage.getItem('mara_api_token') || '';
+      const novo = prompt("Atualizar chave de acesso (API_TOKEN) para esta sessão:", atual);
+      if (novo !== null) {
+        const limpo = novo.trim();
+        if (limpo) sessionStorage.setItem('mara_api_token', limpo);
+        else sessionStorage.removeItem('mara_api_token');
+        carregarDados();
+      }
+    }
+
+    function parseNumero(v) {
+      if (typeof v === 'number') return isFinite(v) ? v : 0;
+      if (!v) return 0;
+      const limpo = String(v).replace(/[^\d,-]/g, '').replace(',', '.');
+      const n = parseFloat(limpo);
+      return isNaN(n) ? 0 : n;
+    }
+
+    function extrairAnoMes(dataStr) {
+      if (!dataStr) return null;
+      const s = String(dataStr).trim().split('T')[0];
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+        const [ano, mes] = s.split('-');
+        return { ano: parseInt(ano, 10), mes: parseInt(mes, 10), chave: `${ano}-${mes}`, label: `${mes}/${ano}` };
+      }
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+        const [dia, mes, ano] = s.split('/');
+        return { ano: parseInt(ano, 10), mes: parseInt(mes, 10), chave: `${ano}-${mes}`, label: `${mes}/${ano}` };
+      }
+      return null;
+    }
+
     function mudarAba(aba) {
       const btnFin = document.getElementById('tabBtnFinancas');
       const btnAlt = document.getElementById('tabBtnAlertas');
@@ -313,16 +326,47 @@
     async function carregarDados() {
       document.getElementById('loadingMsg').classList.remove('hidden');
       try {
-        const res = await fetch(WEBHOOK_URL);
-        const data = await res.json();
-        if (data) {
-          gastos = Array.isArray(data.gastos) ? data.gastos.reverse() : [];
-          if (data.meta) meta = parseFloat(data.meta);
-          document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-          atualizarDashboard();
+        const token = obterToken();
+        if (!token) {
+          document.getElementById('tabelaGastos').innerHTML =
+            '<tr><td colspan="5" class="p-4 text-center text-amber-300">Informe a chave de acesso em "Chave" para carregar os dados.</td></tr>';
+          return;
         }
-      } catch (err) { console.error(err); }
-      finally { document.getElementById('loadingMsg').classList.add('hidden'); }
+
+        const sep = WEBHOOK_URL.includes('?') ? '&' : '?';
+        const res = await fetch(`${WEBHOOK_URL}${sep}token=${encodeURIComponent(token)}`, { cache: 'no-store' });
+        const data = await res.json();
+
+        if (data?.error === 'unauthorized') {
+          sessionStorage.removeItem('mara_api_token');
+          document.getElementById('tabelaGastos').innerHTML =
+            '<tr><td colspan="5" class="p-4 text-center text-red-300">Chave de acesso inválida. Clique em "Chave" para tentar novamente.</td></tr>';
+          return;
+        }
+
+        const listaBruta = Array.isArray(data?.gastos) ? data.gastos : [];
+        gastos = listaBruta.map((g, idx) => ({
+          ...g,
+          rowId: g.rowId ?? idx + 2,
+          desc: String(g.desc ?? 'Sem descrição'),
+          cat: String(g.cat ?? 'Outros'),
+          data: String(g.data ?? ''),
+          valor: parseNumero(g.valor)
+        })).reverse();
+
+        if (data?.meta) {
+          const m = parseNumero(data.meta);
+          if (m > 0) meta = m;
+        }
+        document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        atualizarDashboard();
+      } catch (err) {
+        console.error("Erro ao carregar dados:", err);
+        document.getElementById('tabelaGastos').innerHTML =
+          '<tr><td colspan="5" class="p-4 text-center text-amber-300">Não foi possível ler os dados da planilha.</td></tr>';
+      } finally {
+        document.getElementById('loadingMsg').classList.add('hidden');
+      }
     }
 
     function processarArquivo(e) {
@@ -335,6 +379,17 @@
       reader.readAsDataURL(file);
     }
 
+    async function enviarPostSeguro(payload) {
+      const token = obterToken();
+      if (!token) throw new Error("Chave não informada.");
+      await fetch(WEBHOOK_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, token })
+      });
+    }
+
     async function salvarGasto() {
       const desc = document.getElementById('descInput').value;
       const valor = parseFloat(document.getElementById('valorInput').value);
@@ -344,31 +399,24 @@
 
       if (!desc || isNaN(valor) || valor <= 0) return alert("Preencha descrição e valor válidos!");
 
-      // Bloquear botão e mostrar indicador de carregamento
       btnSalvar.disabled = true;
       btnSalvar.classList.add('opacity-50', 'cursor-not-allowed');
       btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando para a nuvem...';
 
       try {
-        await fetch(WEBHOOK_URL, {
-          method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data, desc, cat, valor, imagemBase64: arquivoBase64 })
-        });
-      } catch (err) {
-        console.error("Erro no envio:", err);
-      } finally {
-        // Reset dos campos e liberar botão
+        await enviarPostSeguro({ data, desc, cat, valor, imagemBase64: arquivoBase64 });
         document.getElementById('formConfirmacao').classList.add('hidden');
         document.getElementById('descInput').value = '';
         document.getElementById('valorInput').value = '';
         document.getElementById('fileInput').value = '';
         arquivoBase64 = "";
-
+        setTimeout(carregarDados, 1500);
+      } catch (err) {
+        alert(err.message || "Erro no envio.");
+      } finally {
         btnSalvar.disabled = false;
         btnSalvar.classList.remove('opacity-50', 'cursor-not-allowed');
         btnSalvar.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Confirmar e Enviar para a Planilha';
-
-        setTimeout(carregarDados, 1500);
       }
     }
 
@@ -378,12 +426,9 @@
         meta = novaMeta;
         fecharModal('modalMeta');
         try {
-          await fetch(WEBHOOK_URL, {
-            method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "updateMeta", meta: novaMeta })
-          });
+          await enviarPostSeguro({ action: "updateMeta", meta: novaMeta });
         } catch (err) {}
-        carregarDados();
+        setTimeout(carregarDados, 1200);
       }
     }
 
@@ -405,17 +450,14 @@
 
       fecharModal('modalEditar');
       try {
-        await fetch(WEBHOOK_URL, {
-          method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "update", rowId: itemEditandoId, desc, valor, data, cat })
-        });
+        await enviarPostSeguro({ action: "update", rowId: itemEditandoId, desc, valor, data, cat });
       } catch (err) {}
       setTimeout(carregarDados, 1500);
     }
 
     function abrirExcluir(id, desc, val) {
       itemExcluindoId = id;
-      document.getElementById('textConfirmExcluir').innerText = `Deseja realmente excluir "${desc}" de R$ ${val.toFixed(2)}?`;
+      document.getElementById('textConfirmExcluir').innerText = `Deseja realmente excluir "${desc}" de R$ ${Number(val).toFixed(2)}?`;
       abrirModal('modalExcluir');
     }
 
@@ -423,36 +465,26 @@
       if (!itemExcluindoId) return;
       fecharModal('modalExcluir');
       try {
-        await fetch(WEBHOOK_URL, {
-          method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "delete", rowId: itemExcluindoId })
-        });
+        await enviarPostSeguro({ action: "delete", rowId: itemExcluindoId });
       } catch (err) {}
       setTimeout(carregarDados, 1500);
     };
 
     function atualizarDashboard() {
-      // Filtrar apenas lançamentos do mês e ano vigentes (ou mês selecionado)
       const agora = new Date();
       const anoAtual = agora.getFullYear();
-      const mesAtual = agora.getMonth() + 1; // 1 a 12
+      const mesAtual = agora.getMonth() + 1;
 
       const gastosDoMes = gastos.filter(g => {
-        if (!g.data) return false;
-        const partes = g.data.split('-'); // Esperado formato YYYY-MM-DD
-        if (partes.length === 3) {
-          const anoGasto = parseInt(partes[0], 10);
-          const mesGasto = parseInt(partes[1], 10);
-          return anoGasto === anoAtual && mesGasto === mesAtual;
-        }
-        return false;
+        const info = extrairAnoMes(g.data);
+        return info && info.ano === anoAtual && info.mes === mesAtual;
       });
 
-      const total = gastosDoMes.reduce((acc, g) => acc + g.valor, 0);
+      const total = gastosDoMes.reduce((acc, g) => acc + parseNumero(g.valor), 0);
       document.getElementById('totalGasto').innerText = 'R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
       document.getElementById('totalLidos').innerText = gastosDoMes.length;
 
-      const pct = Math.min((total / meta) * 100, 100);
+      const pct = Math.min((total / (meta || 1)) * 100, 100);
       const bar = document.getElementById('barProgress');
       bar.style.width = pct + '%';
 
@@ -479,7 +511,10 @@
       }
 
       const catTotals = {};
-      gastosDoMes.forEach(g => catTotals[g.cat] = (catTotals[g.cat] || 0) + g.valor);
+      gastosDoMes.forEach(g => {
+        const c = g.cat || 'Outros';
+        catTotals[c] = (catTotals[c] || 0) + parseNumero(g.valor);
+      });
       let maxCat = '-', maxVal = 0;
       for (const [c, v] of Object.entries(catTotals)) { if (v > maxVal) { maxVal = v; maxCat = c; } }
       document.getElementById('topCategoriaName').innerText = maxCat;
@@ -492,19 +527,20 @@
         tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum gasto registrado.</td></tr>';
       } else {
         gastos.forEach(g => {
+          const valNum = parseNumero(g.valor);
           const row = document.createElement('tr');
           row.className = 'border-b border-slate-800 hover:bg-black/40 transition';
-          const link = g.imagemUrl ? `<a href="${g.imagemUrl}" target="_blank" class="text-indigo-400 text-xs font-bold mr-2"><i class="fa-solid fa-paperclip"></i></a>` : '';
-          const descEscapada = g.desc.replace(/'/g, "\\'");
+          const link = g.imagemUrl ? `<a href="${g.imagemUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-400 text-xs font-bold mr-2"><i class="fa-solid fa-paperclip"></i></a>` : '';
+          const descEscapada = String(g.desc).replace(/'/g, "\\'");
           row.innerHTML = `
             <td class="p-3 text-slate-400 text-xs">${g.data}</td>
             <td class="p-3 font-semibold text-slate-200">${g.desc}</td>
             <td class="p-3"><span class="bg-black/60 border border-slate-700 text-xs px-2 py-1 rounded text-indigo-300">${g.cat}</span></td>
-            <td class="p-3 text-right font-extrabold text-red-400">R$ ${g.valor.toFixed(2)}</td>
+            <td class="p-3 text-right font-extrabold text-red-400">R$ ${valNum.toFixed(2)}</td>
             <td class="p-3 text-center flex items-center justify-center gap-2">
               ${link}
-              <button onclick="abrirEditar(${g.rowId}, '${descEscapada}', ${g.valor}, '${g.data}', '${g.cat}')" class="text-slate-400 hover:text-indigo-400 p-1"><i class="fa-solid fa-pen-to-square"></i></button>
-              <button onclick="abrirExcluir(${g.rowId}, '${descEscapada}', ${g.valor})" class="text-slate-500 hover:text-red-400 p-1"><i class="fa-solid fa-trash-can"></i></button>
+              <button onclick="abrirEditar('${g.rowId}', '${descEscapada}', ${valNum}, '${g.data}', '${g.cat}')" class="text-slate-400 hover:text-indigo-400 p-1"><i class="fa-solid fa-pen-to-square"></i></button>
+              <button onclick="abrirExcluir('${g.rowId}', '${descEscapada}', ${valNum})" class="text-slate-500 hover:text-red-400 p-1"><i class="fa-solid fa-trash-can"></i></button>
             </td>`;
           tbody.appendChild(row);
         });
@@ -541,37 +577,25 @@
       });
     }
 
-
     function renderGraficoMeses(todosGastos) {
       const ctx = document.getElementById('chartComparacaoMeses').getContext('2d');
       if (chartComparacaoInstance) chartComparacaoInstance.destroy();
       if (!todosGastos || todosGastos.length === 0) return;
 
-      const catSelecionada = document.getElementById('filtroCategoriaMeses') ? document.getElementById('filtroCategoriaMeses').value : 'TODAS';
+      const catSelecionada = document.getElementById('filtroCategoriaMeses')?.value || 'TODAS';
+      const gastosFiltrados = catSelecionada === 'TODAS' ? todosGastos : todosGastos.filter(g => g.cat === catSelecionada);
 
-      // Filtrar por categoria se não for "TODAS"
-      const gastosFiltrados = catSelecionada === 'TODAS' 
-        ? todosGastos 
-        : todosGastos.filter(g => g.cat === catSelecionada);
-
-      // Agrupar totais por Mês/Ano (Ex: "2026-10" => "10/2026")
       const totaisPorMes = {};
       gastosFiltrados.forEach(g => {
-        if (!g.data) return;
-        const partes = g.data.split('-');
-        if (partes.length === 3) {
-          const chaveAnomes = `${partes[0]}-${partes[1]}`; // YYYY-MM
-          totaisPorMes[chaveAnomes] = (totaisPorMes[chaveAnomes] || 0) + g.valor;
+        const info = extrairAnoMes(g.data);
+        if (info) {
+          totaisPorMes[info.chave] = { label: info.label, total: (totaisPorMes[info.chave]?.total || 0) + parseNumero(g.valor) };
         }
       });
 
-      // Ordenar os meses cronologicamente
       const chavesOrdenadas = Object.keys(totaisPorMes).sort();
-      const labels = chavesOrdenadas.map(chave => {
-        const [ano, mes] = chave.split('-');
-        return `${mes}/${ano}`;
-      });
-      const valores = chavesOrdenadas.map(chave => totaisPorMes[chave]);
+      const labels = chavesOrdenadas.map(k => totaisPorMes[k].label);
+      const valores = chavesOrdenadas.map(k => totaisPorMes[k].total);
 
       const corBarra = catSelecionada === 'TODAS' ? 'rgba(99, 102, 241, 0.8)' : 'rgba(245, 158, 11, 0.8)';
       const corBorda = catSelecionada === 'TODAS' ? '#6366f1' : '#f59e0b';
@@ -579,7 +603,7 @@
       chartComparacaoInstance = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: labels,
+          labels,
           datasets: [{
             label: catSelecionada === 'TODAS' ? 'Total Geral (R$)' : `Total: ${catSelecionada} (R$)`,
             data: valores,
@@ -596,47 +620,32 @@
             legend: { display: catSelecionada !== 'TODAS' },
             tooltip: {
               callbacks: {
-                label: function(context) {
-                  return (catSelecionada === 'TODAS' ? 'Total: R$ ' : `${catSelecionada}: R$ `) + context.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-                }
+                label: (context) => (catSelecionada === 'TODAS' ? 'Total: R$ ' : `${catSelecionada}: R$ `) + Number(context.parsed.y).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
               }
             }
           },
           scales: {
-            x: {
-              grid: { color: 'rgba(255,255,255,0.05)' },
-              ticks: { color: '#e2e8f0', font: { weight: '700' } }
-            },
-            y: {
-              grid: { color: 'rgba(255,255,255,0.05)' },
-              ticks: { color: '#94a3b8', callback: v => 'R$ ' + v }
-            }
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#e2e8f0', font: { weight: '700' } } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', callback: v => 'R$ ' + v } }
           }
         }
       });
     }
 
-    // --- LÓGICA DE MONITORAMENTO E ALERTA SONORO DE ATIVOS ---
-
     async function buscarCotacoesAgora() {
       try {
-        // Consulta em lote incluindo Ouro (XAU), Dólar, Euro, Bitcoin, Ethereum e Libra
         const res = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL,BTC-BRL,ETH-BRL,GBP-BRL,BRL-XAU');
         const data = await res.json();
-        
         if (data.USDBRL) { cotacoesAtuais.USD = parseFloat(data.USDBRL.bid); document.getElementById('cotacaoUSD').innerText = 'R$ ' + cotacoesAtuais.USD.toFixed(2); }
         if (data.EURBRL) { cotacoesAtuais.EUR = parseFloat(data.EURBRL.bid); document.getElementById('cotacaoEUR').innerText = 'R$ ' + cotacoesAtuais.EUR.toFixed(2); }
         if (data.BTCBRL) { cotacoesAtuais.BTC = parseFloat(data.BTCBRL.bid); document.getElementById('cotacaoBTC').innerText = 'R$ ' + cotacoesAtuais.BTC.toLocaleString('pt-BR', {maximumFractionDigits: 0}); }
         if (data.ETHBRL) { cotacoesAtuais.ETH = parseFloat(data.ETHBRL.bid); document.getElementById('cotacaoETH').innerText = 'R$ ' + cotacoesAtuais.ETH.toLocaleString('pt-BR', {maximumFractionDigits: 0}); }
         if (data.GBPBRL) { cotacoesAtuais.GBP = parseFloat(data.GBPBRL.bid); document.getElementById('cotacaoGBP').innerText = 'R$ ' + cotacoesAtuais.GBP.toFixed(2); }
-        
-        // Cálculo do valor do Ouro por Grama em Reais (XAU)
         if (data.BRLXAU) {
           const oncaEmBrl = 1 / parseFloat(data.BRLXAU.bid);
-          cotacoesAtuais.XAU = oncaEmBrl / 31.1035; // Grama do Ouro em Reais
+          cotacoesAtuais.XAU = oncaEmBrl / 31.1035;
           document.getElementById('cotacaoXAU').innerText = 'R$ ' + cotacoesAtuais.XAU.toFixed(2);
         }
-
         verificarAlvosEAlertar();
       } catch (err) {
         console.error("Erro ao buscar cotações de ativos", err);
@@ -647,11 +656,9 @@
       alvosAlertas.forEach(alvo => {
         const precoAtual = cotacoesAtuais[alvo.ativo];
         if (!precoAtual) return;
-
         let atingido = false;
         if (alvo.condicao === 'menor' && precoAtual <= alvo.valor) atingido = true;
         if (alvo.condicao === 'maior' && precoAtual >= alvo.valor) atingido = true;
-
         if (atingido && !alvo.notificado) {
           alvo.notificado = true;
           localStorage.setItem('alvosAlertas_mara', JSON.stringify(alvosAlertas));
@@ -661,14 +668,9 @@
     }
 
     function dispararAlertaSonoroVisual(ativo, valorAtual, valorMeta) {
-      // Nome amigável do ativo para voz
       const nomesAtivos = { USD: 'Dólar', EUR: 'Euro', XAU: 'Ouro por grama', BTC: 'Bitcoin', ETH: 'Ethereum', GBP: 'Libra' };
       const nomeVoz = nomesAtivos[ativo] || ativo;
-
-      // 1. Toca o Alarme Sonoro + Voz pelo dispositivo
       tocarAlarmeVoz(nomeVoz, valorAtual);
-
-      // 2. Exibe Banner Destacado no Topo
       const banner = document.getElementById('bannerAlertaAtingido');
       document.getElementById('tituloBannerAlerta').innerText = `🚨 Meta Atingida! ${nomeVoz} em R$ ${valorAtual.toFixed(2)}`;
       document.getElementById('descBannerAlerta').innerText = `O valor alvo de R$ ${valorMeta.toFixed(2)} foi alcançado neste momento!`;
@@ -676,7 +678,6 @@
     }
 
     function tocarAlarmeVoz(nomeAtivo, valor) {
-      // Falar em Voz Alta (Speech Synthesis)
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(`Atenção Mayone! O ativo ${nomeAtivo} atingiu ${valor.toFixed(2)} reais. Hora de conferir!`);
@@ -684,8 +685,6 @@
         msg.rate = 1.0;
         window.speechSynthesis.speak(msg);
       }
-
-      // Tocar tom de alarme repetido
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         for (let i = 0; i < 4; i++) {
@@ -703,28 +702,19 @@
       } catch (e) {}
     }
 
-    function testarAlarmeVoz() {
-      dispararAlertaSonoroVisual("XAU", 412.50, 415.00);
-    }
-
-    function fecharBannerAlerta() {
-      document.getElementById('bannerAlertaAtingido').classList.add('hidden');
-    }
+    function testarAlarmeVoz() { dispararAlertaSonoroVisual("XAU", 412.50, 415.00); }
+    function fecharBannerAlerta() { document.getElementById('bannerAlertaAtingido').classList.add('hidden'); }
 
     function adicionarAlvo() {
       const ativo = document.getElementById('alvoAtivo').value;
       const condicao = document.getElementById('alvoCondicao').value;
       const valor = parseFloat(document.getElementById('alvoValor').value);
-
-      if (isNaN(valor) || valor <= 0) {
-        return alert("Preencha um valor alvo válido para o monitoramento!");
-      }
-
+      if (isNaN(valor) || valor <= 0) return alert("Preencha um valor alvo válido para o monitoramento!");
       alvosAlertas.push({ id: Date.now(), ativo, condicao, valor, notificado: false });
       localStorage.setItem('alvosAlertas_mara', JSON.stringify(alvosAlertas));
       document.getElementById('alvoValor').value = '';
       renderizarAlvos();
-      alert("Alvo cadastrado com sucesso! O site vai emitir o alerta sonoro e falar em voz alta assim que a cotação for atingida.");
+      alert("Alvo cadastrado com sucesso!");
     }
 
     function renderizarAlvos() {
@@ -757,11 +747,8 @@
       renderizarAlvos();
     }
 
-    // Inicialização do Painel e Consulta
     carregarDados();
     buscarCotacoesAgora();
-
-    // Consulta automática a cada 2 minutos enquanto a aba estiver aberta
     setInterval(buscarCotacoesAgora, 120000);
   </script>
 </body>
