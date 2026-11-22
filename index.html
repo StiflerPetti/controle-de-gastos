@@ -117,18 +117,27 @@
 
       <div class="space-y-6">
         <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg">
-          <div class="flex justify-between items-center mb-4"><h3 class="text-base font-bold text-indigo-300">Histórico do Mês</h3><span id="loadingMsg" class="text-xs text-indigo-400 hidden"><i class="fa-solid fa-spinner fa-spin"></i> Sincronizando...</span></div>
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-base font-bold text-indigo-300">Histórico do Mês</h3>
+            <span id="loadingMsg" class="text-xs text-indigo-400 hidden"><i class="fa-solid fa-spinner fa-spin"></i> Sincronizando...</span>
+          </div>
           <div class="overflow-x-auto max-h-[500px] overflow-y-auto pr-1">
             <table class="w-full text-left text-sm text-slate-300">
-              <thead class="text-xs uppercase bg-black/60 border-b border-slate-800 text-slate-400 sticky top-0 z-10"><tr><th class="p-3">Data</th><th class="p-3">Descrição</th><th class="p-3">Categoria</th><th class="p-3 text-right">Valor</th><th class="p-3 text-center">Ações</th></tr></thead>
-              <tbody id="tabelaGastos"><tr><td colspan="5" class="p-4 text-center text-slate-500">Carregando dados...</td></tr></tbody>
+              <thead class="text-xs uppercase bg-black/60 border-b border-slate-800 text-slate-400 sticky top-0 z-10">
+                <tr><th class="p-3">Data</th><th class="p-3">Descrição</th><th class="p-3">Categoria</th><th class="p-3 text-right">Valor</th><th class="p-3 text-center">Ações</th></tr>
+              </thead>
+              <tbody id="tabelaGastos">
+                <tr><td colspan="5" class="p-4 text-center text-slate-500">Carregando dados...</td></tr>
+              </tbody>
             </table>
           </div>
         </div>
+
         <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
           <h3 class="text-base font-bold text-indigo-300 mb-4">Ranking de Gastos por Categoria</h3>
           <div class="w-full relative min-h-[300px]"><canvas id="chartCategorias"></canvas></div>
         </div>
+
         <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <h3 class="text-base font-bold text-indigo-300 flex items-center gap-2">
@@ -143,6 +152,37 @@
             </div>
           </div>
           <div class="w-full relative min-h-[300px]"><canvas id="chartComparacaoMeses"></canvas></div>
+        </div>
+
+        <!-- NOVO GRÁFICO 1: Comparativo de Categorias entre 2 Meses -->
+        <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
+            <div>
+              <h3 class="text-base font-bold text-indigo-300 flex items-center gap-2">
+                <i class="fa-solid fa-code-compare text-emerald-400"></i> Comparativo por Categoria (2 Meses)
+              </h3>
+              <p class="text-xs text-slate-400">Compare lado a lado o peso de cada categoria entre dois meses</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+              <select id="selectMesA" onchange="renderGraficoComparativoDoisMeses()" class="bg-black border border-slate-700 text-indigo-300 text-xs rounded-xl px-3 py-1.5 outline-none font-bold flex-1 md:flex-none"></select>
+              <span class="text-xs text-slate-500 font-bold">vs</span>
+              <select id="selectMesB" onchange="renderGraficoComparativoDoisMeses()" class="bg-black border border-slate-700 text-emerald-300 text-xs rounded-xl px-3 py-1.5 outline-none font-bold flex-1 md:flex-none"></select>
+            </div>
+          </div>
+          <div class="w-full relative min-h-[380px]"><canvas id="chartDoisMeses"></canvas></div>
+        </div>
+
+        <!-- NOVO GRÁFICO 2: Ritmo de Gastos Acumulados (Burn-up vs Meta) -->
+        <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+            <div>
+              <h3 class="text-base font-bold text-indigo-300 flex items-center gap-2">
+                <i class="fa-solid fa-chart-line text-amber-400"></i> Ritmo de Gasto Acumulado vs. Meta
+              </h3>
+              <p class="text-xs text-slate-400">Evolução diária acumulada deste mês comparada à linha ideal da meta e ao mês passado</p>
+            </div>
+          </div>
+          <div class="w-full relative min-h-[300px]"><canvas id="chartRitmoAcumulado"></canvas></div>
         </div>
       </div>
     </div>
@@ -251,7 +291,11 @@
 
   <script>
     const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxU7_uGTObenukASrSYgoQ39AJP2pSZ5eZKoAjSYucVPMLhB9sgmkGmHx9ZCQCwWfDW/exec";
-    let gastos = [], meta = 3000, chartInstance = null, chartComparacaoInstance = null, arquivoBase64 = "", itemEditandoId = null, itemExcluindoId = null;
+    const CACHE_KEY = "mara_cache_financas_v1";
+
+    let gastos = [], meta = 3000;
+    let chartInstance = null, chartComparacaoInstance = null, chartDoisMesesInstance = null, chartRitmoInstance = null;
+    let arquivoBase64 = "", itemEditandoId = null, itemExcluindoId = null;
     let alvosAlertas = JSON.parse(localStorage.getItem('alvosAlertas_mara') || '[]');
     let cotacoesAtuais = {};
 
@@ -299,6 +343,38 @@
       return null;
     }
 
+    function aplicarDadosNaTela(data) {
+      const listaBruta = Array.isArray(data?.gastos) ? data.gastos : [];
+      gastos = listaBruta.map((g, idx) => ({
+        ...g,
+        rowId: g.rowId ?? idx + 2,
+        desc: String(g.desc ?? 'Sem descrição'),
+        cat: String(g.cat ?? 'Outros'),
+        data: String(g.data ?? ''),
+        valor: parseNumero(g.valor)
+      })).reverse();
+
+      if (data?.meta) {
+        const m = parseNumero(data.meta);
+        if (m > 0) meta = m;
+      }
+      document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      atualizarDashboard();
+    }
+
+    function carregarCacheInicial() {
+      try {
+        const salvo = localStorage.getItem(CACHE_KEY);
+        if (!salvo) return false;
+        const parsed = JSON.parse(salvo);
+        if (parsed && Array.isArray(parsed.gastos)) {
+          aplicarDadosNaTela(parsed);
+          return true;
+        }
+      } catch (e) {}
+      return false;
+    }
+
     function mudarAba(aba) {
       const btnFin = document.getElementById('tabBtnFinancas');
       const btnAlt = document.getElementById('tabBtnAlertas');
@@ -324,9 +400,10 @@
     function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
 
     async function carregarDados() {
+      const temCache = gastos.length > 0;
       document.getElementById('loadingMsg').classList.remove('hidden');
       try {
-        const token = obterToken();
+        const token = sessionStorage.getItem('mara_api_token') || (!temCache ? obterToken() : '');
         if (!token) {
           document.getElementById('tabelaGastos').innerHTML =
             '<tr><td colspan="5" class="p-4 text-center text-amber-300">Informe a chave de acesso em "Chave" para carregar os dados.</td></tr>';
@@ -344,26 +421,18 @@
           return;
         }
 
-        const listaBruta = Array.isArray(data?.gastos) ? data.gastos : [];
-        gastos = listaBruta.map((g, idx) => ({
-          ...g,
-          rowId: g.rowId ?? idx + 2,
-          desc: String(g.desc ?? 'Sem descrição'),
-          cat: String(g.cat ?? 'Outros'),
-          data: String(g.data ?? ''),
-          valor: parseNumero(g.valor)
-        })).reverse();
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+          gastos: Array.isArray(data?.gastos) ? data.gastos : [],
+          meta: data?.meta ?? meta
+        }));
 
-        if (data?.meta) {
-          const m = parseNumero(data.meta);
-          if (m > 0) meta = m;
-        }
-        document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-        atualizarDashboard();
+        aplicarDadosNaTela(data);
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
-        document.getElementById('tabelaGastos').innerHTML =
-          '<tr><td colspan="5" class="p-4 text-center text-amber-300">Não foi possível ler os dados da planilha.</td></tr>';
+        if (!temCache) {
+          document.getElementById('tabelaGastos').innerHTML =
+            '<tr><td colspan="5" class="p-4 text-center text-amber-300">Não foi possível ler os dados da planilha.</td></tr>';
+        }
       } finally {
         document.getElementById('loadingMsg').classList.add('hidden');
       }
@@ -548,6 +617,9 @@
 
       renderGrafico(catTotals);
       renderGraficoMeses(gastos);
+      popularSeletoresMeses(gastos);
+      renderGraficoComparativoDoisMeses();
+      renderGraficoRitmoAcumulado(gastos);
     }
 
     function renderGrafico(catTotals) {
@@ -627,6 +699,234 @@
           scales: {
             x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#e2e8f0', font: { weight: '700' } } },
             y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', callback: v => 'R$ ' + v } }
+          }
+        }
+      });
+    }
+
+    function popularSeletoresMeses(todosGastos) {
+      const selA = document.getElementById('selectMesA');
+      const selB = document.getElementById('selectMesB');
+      if (!selA || !selB) return;
+
+      const mesesMap = {};
+      todosGastos.forEach(g => {
+        const info = extrairAnoMes(g.data);
+        if (info) mesesMap[info.chave] = info.label;
+      });
+
+      const agora = new Date();
+      const chaveAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
+      const labelAtual = `${String(agora.getMonth() + 1).padStart(2, '0')}/${agora.getFullYear()}`;
+      mesesMap[chaveAtual] = labelAtual;
+
+      const chaves = Object.keys(mesesMap).sort().reverse();
+      const valorAnteriorA = selA.value;
+      const valorAnteriorB = selB.value;
+
+      const optionsHTML = chaves.map(k => `<option value="${k}">${mesesMap[k]}</option>`).join('');
+      selA.innerHTML = optionsHTML;
+      selB.innerHTML = optionsHTML;
+
+      selA.value = chaves.includes(valorAnteriorA) ? valorAnteriorA : (chaves[0] || '');
+      selB.value = chaves.includes(valorAnteriorB) ? valorAnteriorB : (chaves[1] || chaves[0] || '');
+    }
+
+    function renderGraficoComparativoDoisMeses() {
+      const ctx = document.getElementById('chartDoisMeses').getContext('2d');
+      if (chartDoisMesesInstance) chartDoisMesesInstance.destroy();
+
+      const mesA = document.getElementById('selectMesA')?.value;
+      const mesB = document.getElementById('selectMesB')?.value;
+      if (!mesA || !mesB) return;
+
+      const labelMesA = document.getElementById('selectMesA').selectedOptions[0]?.text || mesA;
+      const labelMesB = document.getElementById('selectMesB').selectedOptions[0]?.text || mesB;
+
+      const totaisA = {};
+      const totaisB = {};
+      const todasCategorias = new Set();
+
+      gastos.forEach(g => {
+        const info = extrairAnoMes(g.data);
+        if (!info) return;
+        const cat = g.cat || 'Outros';
+        const val = parseNumero(g.valor);
+
+        if (info.chave === mesA) {
+          totaisA[cat] = (totaisA[cat] || 0) + val;
+          todasCategorias.add(cat);
+        }
+        if (info.chave === mesB) {
+          totaisB[cat] = (totaisB[cat] || 0) + val;
+          todasCategorias.add(cat);
+        }
+      });
+
+      const categoriasOrdenadas = Array.from(todasCategorias).sort((a, b) => {
+        const somaA = (totaisA[a] || 0) + (totaisB[a] || 0);
+        const somaB = (totaisA[b] || 0) + (totaisB[b] || 0);
+        return somaB - somaA;
+      });
+
+      if (categoriasOrdenadas.length === 0) return;
+
+      chartDoisMesesInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: categoriasOrdenadas,
+          datasets: [
+            {
+              label: labelMesA,
+              data: categoriasOrdenadas.map(c => totaisA[c] || 0),
+              backgroundColor: 'rgba(99, 102, 241, 0.85)',
+              borderColor: '#6366f1',
+              borderWidth: 1,
+              borderRadius: 6
+            },
+            {
+              label: labelMesB,
+              data: categoriasOrdenadas.map(c => totaisB[c] || 0),
+              backgroundColor: 'rgba(16, 185, 129, 0.75)',
+              borderColor: '#10b981',
+              borderWidth: 1,
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#e2e8f0', font: { weight: '700' } } },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: R$ ${Number(ctx.parsed.x).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#94a3b8', callback: v => 'R$ ' + v }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: '#e2e8f0', font: { weight: '700' } }
+            }
+          }
+        }
+      });
+    }
+
+    function renderGraficoRitmoAcumulado(todosGastos) {
+      const ctx = document.getElementById('chartRitmoAcumulado').getContext('2d');
+      if (chartRitmoInstance) chartRitmoInstance.destroy();
+
+      const agora = new Date();
+      const anoAtual = agora.getFullYear();
+      const mesAtual = agora.getMonth() + 1;
+      const diaHoje = agora.getDate();
+
+      const dataMesAnt = new Date(anoAtual, agora.getMonth() - 1, 1);
+      const anoAnt = dataMesAnt.getFullYear();
+      const mesAnt = dataMesAnt.getMonth() + 1;
+
+      const diasNoMes = new Date(anoAtual, mesAtual, 0).getDate();
+      const labelsDias = Array.from({ length: diasNoMes }, (_, i) => `Dia ${i + 1}`);
+
+      const gastosDiariosAtual = new Array(diasNoMes).fill(0);
+      const gastosDiariosAnt = new Array(diasNoMes).fill(0);
+
+      todosGastos.forEach(g => {
+        const info = extrairAnoMes(g.data);
+        if (!info) return;
+        const s = String(g.data).trim().split('T')[0];
+        let dia = 1;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) dia = parseInt(s.split('-')[2], 10);
+        else if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) dia = parseInt(s.split('/')[0], 10);
+
+        const idxDia = Math.min(Math.max(dia - 1, 0), diasNoMes - 1);
+        const val = parseNumero(g.valor);
+
+        if (info.ano === anoAtual && info.mes === mesAtual) {
+          gastosDiariosAtual[idxDia] += val;
+        } else if (info.ano === anoAnt && info.mes === mesAnt) {
+          gastosDiariosAnt[idxDia] += val;
+        }
+      });
+
+      const acumuladoAtual = [];
+      const acumuladoAnt = [];
+      const linhaMetaIdeal = [];
+      let somaAtual = 0, somaAnt = 0;
+
+      for (let i = 0; i < diasNoMes; i++) {
+        somaAtual += gastosDiariosAtual[i];
+        somaAnt += gastosDiariosAnt[i];
+
+        acumuladoAtual.push(i < diaHoje ? somaAtual : null);
+        acumuladoAnt.push(somaAnt);
+        linhaMetaIdeal.push(((meta || 3000) / diasNoMes) * (i + 1));
+      }
+
+      chartRitmoInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labelsDias,
+          datasets: [
+            {
+              label: 'Acumulado Este Mês',
+              data: acumuladoAtual,
+              borderColor: '#6366f1',
+              backgroundColor: 'rgba(99, 102, 241, 0.15)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.25,
+              pointRadius: 3
+            },
+            {
+              label: 'Acumulado Mês Anterior',
+              data: acumuladoAnt,
+              borderColor: '#64748b',
+              borderWidth: 2,
+              tension: 0.25,
+              pointRadius: 0
+            },
+            {
+              label: 'Ritmo Ideal da Meta',
+              data: linhaMetaIdeal,
+              borderColor: '#f59e0b',
+              borderDash: [6, 6],
+              borderWidth: 2,
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { labels: { color: '#e2e8f0', font: { weight: '600' } } },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => ctx.parsed.y !== null
+                  ? `${ctx.dataset.label}: R$ ${Number(ctx.parsed.y).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                  : ''
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.03)' },
+              ticks: { color: '#94a3b8', maxTicksLimit: 10 }
+            },
+            y: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#94a3b8', callback: v => 'R$ ' + v }
+            }
           }
         }
       });
@@ -747,6 +1047,7 @@
       renderizarAlvos();
     }
 
+    carregarCacheInicial();
     carregarDados();
     buscarCotacoesAgora();
     setInterval(buscarCotacoesAgora, 120000);
