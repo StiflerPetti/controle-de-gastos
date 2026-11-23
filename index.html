@@ -34,8 +34,8 @@
         <button onclick="mudarAba('financas')" id="tabBtnFinancas" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow">
           <i class="fa-solid fa-chart-pie mr-1"></i> Finanças
         </button>
-        <button onclick="mudarAba('categorias')" id="tabBtnCategorias" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
-          <i class="fa-solid fa-filter mr-1"></i> Por Categoria
+        <button onclick="mudarAba('dashboards')" id="tabBtnDashboards" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
+          <i class="fa-solid fa-chart-column mr-1"></i> Dashboards
         </button>
         <button onclick="mudarAba('alertas')" id="tabBtnAlertas" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
           <i class="fa-solid fa-bell mr-1"></i> Alertas de Voz & Ativos
@@ -72,7 +72,7 @@
       </div>
     </div>
 
-    <!-- SEÇÃO 1: FINANÇAS -->
+    <!-- SEÇÃO 1: FINANÇAS (ATÉ RANKING DE GASTOS POR CATEGORIA) -->
     <div id="secaoFinancas" class="space-y-6">
       <div id="budgetAlertBox" class="hidden rounded-2xl p-4 border transition-all duration-300">
         <div class="flex items-center justify-between">
@@ -141,56 +141,11 @@
           <h3 class="text-base font-bold text-indigo-300 mb-4">Ranking de Gastos por Categoria</h3>
           <div class="w-full relative min-h-[300px]"><canvas id="chartCategorias"></canvas></div>
         </div>
-
-        <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-            <h3 class="text-base font-bold text-indigo-300 flex items-center gap-2">
-              <i class="fa-solid fa-chart-column text-indigo-400"></i> Evolução Mês a Mês
-            </h3>
-            <div class="flex items-center gap-2 w-full sm:w-auto">
-              <label for="filtroCategoriaMeses" class="text-xs text-slate-400 font-semibold whitespace-nowrap">Filtrar Categoria:</label>
-              <select id="filtroCategoriaMeses" onchange="renderGraficoMeses(gastos)" class="bg-black border border-slate-700 text-indigo-300 text-xs rounded-xl px-3 py-1.5 outline-none w-full sm:w-auto font-bold">
-                <option value="TODAS">Todas as Categorias (Total)</option>
-                <option value="Alimentação">Alimentação</option><option value="Supermercado">Supermercado</option><option value="Transporte">Transporte</option><option value="Lazer">Lazer</option><option value="Saúde">Saúde</option><option value="Farmácia">Farmácia</option><option value="Cartão de Crédito">Cartão de Crédito</option><option value="Educação">Educação</option><option value="Moradia">Moradia</option><option value="Doações">Doações</option><option value="Outros">Outros</option>
-              </select>
-            </div>
-          </div>
-          <div class="w-full relative min-h-[300px]"><canvas id="chartComparacaoMeses"></canvas></div>
-        </div>
-
-        <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
-            <div>
-              <h3 class="text-base font-bold text-indigo-300 flex items-center gap-2">
-                <i class="fa-solid fa-code-compare text-emerald-400"></i> Comparativo por Categoria (2 Meses)
-              </h3>
-              <p class="text-xs text-slate-400">Compare lado a lado o peso de cada categoria entre dois meses</p>
-            </div>
-            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-              <select id="selectMesA" onchange="renderGraficoComparativoDoisMeses()" class="bg-black border border-slate-700 text-indigo-300 text-xs rounded-xl px-3 py-1.5 outline-none font-bold flex-1 md:flex-none"></select>
-              <span class="text-xs text-slate-500 font-bold">vs</span>
-              <select id="selectMesB" onchange="renderGraficoComparativoDoisMeses()" class="bg-black border border-slate-700 text-emerald-300 text-xs rounded-xl px-3 py-1.5 outline-none font-bold flex-1 md:flex-none"></select>
-            </div>
-          </div>
-          <div class="w-full relative min-h-[380px]"><canvas id="chartDoisMeses"></canvas></div>
-        </div>
-
-        <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
-            <div>
-              <h3 class="text-base font-bold text-indigo-300 flex items-center gap-2">
-                <i class="fa-solid fa-chart-line text-amber-400"></i> Ritmo de Gasto Acumulado vs. Meta
-              </h3>
-              <p class="text-xs text-slate-400">Evolução diária acumulada deste mês comparada à linha ideal da meta e ao mês passado</p>
-            </div>
-          </div>
-          <div class="w-full relative min-h-[300px]"><canvas id="chartRitmoAcumulado"></canvas></div>
-        </div>
       </div>
     </div>
 
-    <!-- SEÇÃO 2: DASHBOARD POR CATEGORIA (ÚLTIMOS PAGAMENTOS) -->
-    <div id="secaoCategorias" class="space-y-6 hidden">
+    <!-- SEÇÃO 2: DASHBOARDS (FILTRO POR CATEGORIA + GRÁFICOS COMPARATIVOS) -->
+    <div id="secaoDashboards" class="space-y-6 hidden">
       <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
@@ -253,6 +208,51 @@
             </tbody>
           </table>
         </div>
+      </div>
+
+      <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <h3 class="text-base font-bold text-indigo-300 flex items-center gap-2">
+            <i class="fa-solid fa-chart-column text-indigo-400"></i> Evolução Mês a Mês
+          </h3>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <label for="filtroCategoriaMeses" class="text-xs text-slate-400 font-semibold whitespace-nowrap">Filtrar Categoria:</label>
+            <select id="filtroCategoriaMeses" onchange="renderGraficoMeses(gastos)" class="bg-black border border-slate-700 text-indigo-300 text-xs rounded-xl px-3 py-1.5 outline-none w-full sm:w-auto font-bold">
+              <option value="TODAS">Todas as Categorias (Total)</option>
+              <option value="Alimentação">Alimentação</option><option value="Supermercado">Supermercado</option><option value="Transporte">Transporte</option><option value="Lazer">Lazer</option><option value="Saúde">Saúde</option><option value="Farmácia">Farmácia</option><option value="Cartão de Crédito">Cartão de Crédito</option><option value="Educação">Educação</option><option value="Moradia">Moradia</option><option value="Doações">Doações</option><option value="Outros">Outros</option>
+            </select>
+          </div>
+        </div>
+        <div class="w-full relative min-h-[300px]"><canvas id="chartComparacaoMeses"></canvas></div>
+      </div>
+
+      <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-indigo-300 flex items-center gap-2">
+              <i class="fa-solid fa-code-compare text-emerald-400"></i> Comparativo por Categoria (2 Meses)
+            </h3>
+            <p class="text-xs text-slate-400">Compare lado a lado o peso de cada categoria entre dois meses</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <select id="selectMesA" onchange="renderGraficoComparativoDoisMeses()" class="bg-black border border-slate-700 text-indigo-300 text-xs rounded-xl px-3 py-1.5 outline-none font-bold flex-1 md:flex-none"></select>
+            <span class="text-xs text-slate-500 font-bold">vs</span>
+            <select id="selectMesB" onchange="renderGraficoComparativoDoisMeses()" class="bg-black border border-slate-700 text-emerald-300 text-xs rounded-xl px-3 py-1.5 outline-none font-bold flex-1 md:flex-none"></select>
+          </div>
+        </div>
+        <div class="w-full relative min-h-[380px]"><canvas id="chartDoisMeses"></canvas></div>
+      </div>
+
+      <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-indigo-300 flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-amber-400"></i> Ritmo de Gasto Acumulado vs. Meta
+            </h3>
+            <p class="text-xs text-slate-400">Evolução diária acumulada deste mês comparada à linha ideal da meta e ao mês passado</p>
+          </div>
+        </div>
+        <div class="w-full relative min-h-[300px]"><canvas id="chartRitmoAcumulado"></canvas></div>
       </div>
     </div>
 
@@ -447,26 +447,30 @@
 
     function mudarAba(aba) {
       const btnFin = document.getElementById('tabBtnFinancas');
-      const btnCat = document.getElementById('tabBtnCategorias');
+      const btnDash = document.getElementById('tabBtnDashboards');
       const btnAlt = document.getElementById('tabBtnAlertas');
 
       const secFin = document.getElementById('secaoFinancas');
-      const secCat = document.getElementById('secaoCategorias');
+      const secDash = document.getElementById('secaoDashboards');
       const secAlt = document.getElementById('secaoAlertas');
 
       const ativoClass = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow";
       const inativoClass = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
 
       btnFin.className = aba === 'financas' ? ativoClass : inativoClass;
-      btnCat.className = aba === 'categorias' ? ativoClass : inativoClass;
+      btnDash.className = aba === 'dashboards' ? ativoClass : inativoClass;
       btnAlt.className = aba === 'alertas' ? ativoClass : inativoClass;
 
       secFin.classList.toggle('hidden', aba !== 'financas');
-      secCat.classList.toggle('hidden', aba !== 'categorias');
+      secDash.classList.toggle('hidden', aba !== 'dashboards');
       secAlt.classList.toggle('hidden', aba !== 'alertas');
 
-      if (aba === 'categorias') {
+      if (aba === 'dashboards') {
         atualizarDashboardCategoria();
+        renderGraficoMeses(gastos);
+        popularSeletoresMeses(gastos);
+        renderGraficoComparativoDoisMeses();
+        renderGraficoRitmoAcumulado(gastos);
       } else if (aba === 'alertas') {
         buscarCotacoesAgora();
         renderizarAlvos();
@@ -639,7 +643,6 @@
       const catSel = document.getElementById('filtroCatDashboard')?.value || 'TODAS';
       const qtdSel = document.getElementById('filtroQtdUltimos')?.value || '20';
 
-      // 'gastos' já vem ordenado do mais recente para o mais antigo no carregarDados
       let filtrados = catSel === 'TODAS'
         ? [...gastos]
         : gastos.filter(g => String(g.cat).trim() === catSel);
