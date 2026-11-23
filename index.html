@@ -30,11 +30,14 @@
       </div>
       <p class="text-xs text-slate-400 font-medium">Mayone & Rafaella • Nuvem Sincronizada</p>
 
-      <div class="flex bg-black/60 border border-slate-800 p-1 rounded-xl gap-1 mt-2">
-        <button onclick="mudarAba('financas')" id="tabBtnFinancas" class="px-4 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow">
+      <div class="flex flex-wrap justify-center bg-black/60 border border-slate-800 p-1 rounded-xl gap-1 mt-2">
+        <button onclick="mudarAba('financas')" id="tabBtnFinancas" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow">
           <i class="fa-solid fa-chart-pie mr-1"></i> Finanças
         </button>
-        <button onclick="mudarAba('alertas')" id="tabBtnAlertas" class="px-4 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
+        <button onclick="mudarAba('categorias')" id="tabBtnCategorias" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
+          <i class="fa-solid fa-filter mr-1"></i> Por Categoria
+        </button>
+        <button onclick="mudarAba('alertas')" id="tabBtnAlertas" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
           <i class="fa-solid fa-bell mr-1"></i> Alertas de Voz & Ativos
         </button>
       </div>
@@ -69,6 +72,7 @@
       </div>
     </div>
 
+    <!-- SEÇÃO 1: FINANÇAS -->
     <div id="secaoFinancas" class="space-y-6">
       <div id="budgetAlertBox" class="hidden rounded-2xl p-4 border transition-all duration-300">
         <div class="flex items-center justify-between">
@@ -154,7 +158,6 @@
           <div class="w-full relative min-h-[300px]"><canvas id="chartComparacaoMeses"></canvas></div>
         </div>
 
-        <!-- NOVO GRÁFICO 1: Comparativo de Categorias entre 2 Meses -->
         <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
             <div>
@@ -172,7 +175,6 @@
           <div class="w-full relative min-h-[380px]"><canvas id="chartDoisMeses"></canvas></div>
         </div>
 
-        <!-- NOVO GRÁFICO 2: Ritmo de Gastos Acumulados (Burn-up vs Meta) -->
         <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
             <div>
@@ -187,6 +189,74 @@
       </div>
     </div>
 
+    <!-- SEÇÃO 2: DASHBOARD POR CATEGORIA (ÚLTIMOS PAGAMENTOS) -->
+    <div id="secaoCategorias" class="space-y-6 hidden">
+      <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-indigo-300 flex items-center gap-2">
+              <i class="fa-solid fa-layer-group text-indigo-400"></i> Pagamentos por Categoria
+            </h2>
+            <p class="text-xs text-slate-400">Escolha uma categoria e veja os últimos lançamentos registrados</p>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <select id="filtroCatDashboard" onchange="atualizarDashboardCategoria()" class="bg-black border border-slate-700 text-indigo-300 text-sm rounded-xl px-3.5 py-2.5 outline-none font-bold">
+              <option value="TODAS">Todas as Categorias</option>
+              <option value="Alimentação">Alimentação</option>
+              <option value="Supermercado">Supermercado</option>
+              <option value="Transporte">Transporte</option>
+              <option value="Lazer">Lazer</option>
+              <option value="Saúde">Saúde</option>
+              <option value="Farmácia">Farmácia</option>
+              <option value="Cartão de Crédito">Cartão de Crédito</option>
+              <option value="Educação">Educação</option>
+              <option value="Moradia">Moradia</option>
+              <option value="Doações">Doações</option>
+              <option value="Outros">Outros</option>
+            </select>
+
+            <select id="filtroQtdUltimos" onchange="atualizarDashboardCategoria()" class="bg-black border border-slate-700 text-emerald-300 text-sm rounded-xl px-3.5 py-2.5 outline-none font-bold">
+              <option value="10">Últimos 10</option>
+              <option value="20" selected>Últimos 20</option>
+              <option value="50">Últimos 50</option>
+              <option value="ALL">Todos da Categoria</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+          <div class="bg-black/60 border border-slate-800 rounded-2xl p-4">
+            <p class="text-xs text-slate-400 font-semibold">Total na Seleção</p>
+            <p id="catDashTotal" class="text-2xl font-extrabold text-red-400 mt-1">R$ 0,00</p>
+          </div>
+          <div class="bg-black/60 border border-slate-800 rounded-2xl p-4">
+            <p class="text-xs text-slate-400 font-semibold">Pagamentos Exibidos</p>
+            <p id="catDashQtd" class="text-2xl font-extrabold text-indigo-300 mt-1">0</p>
+          </div>
+          <div class="bg-black/60 border border-slate-800 rounded-2xl p-4">
+            <p class="text-xs text-slate-400 font-semibold">Média por Lançamento</p>
+            <p id="catDashMedia" class="text-2xl font-extrabold text-emerald-400 mt-1">R$ 0,00</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg">
+        <h3 class="text-base font-bold text-indigo-300 mb-4" id="tituloListaCategoria">Últimos Pagamentos</h3>
+        <div class="overflow-x-auto max-h-[550px] overflow-y-auto pr-1">
+          <table class="w-full text-left text-sm text-slate-300">
+            <thead class="text-xs uppercase bg-black/60 border-b border-slate-800 text-slate-400 sticky top-0 z-10">
+              <tr><th class="p-3">Data</th><th class="p-3">Descrição</th><th class="p-3">Categoria</th><th class="p-3 text-right">Valor</th><th class="p-3 text-center">Ações</th></tr>
+            </thead>
+            <tbody id="tabelaGastosCategoria">
+              <tr><td colspan="5" class="p-4 text-center text-slate-500">Selecione uma categoria para visualizar.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 3: ALERTAS -->
     <div id="secaoAlertas" class="space-y-6 hidden">
       <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
         <div class="flex justify-between items-center">
@@ -377,20 +447,27 @@
 
     function mudarAba(aba) {
       const btnFin = document.getElementById('tabBtnFinancas');
+      const btnCat = document.getElementById('tabBtnCategorias');
       const btnAlt = document.getElementById('tabBtnAlertas');
+
       const secFin = document.getElementById('secaoFinancas');
+      const secCat = document.getElementById('secaoCategorias');
       const secAlt = document.getElementById('secaoAlertas');
 
-      if (aba === 'financas') {
-        btnFin.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow";
-        btnAlt.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
-        secFin.classList.remove('hidden');
-        secAlt.classList.add('hidden');
-      } else {
-        btnAlt.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow";
-        btnFin.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
-        secAlt.classList.remove('hidden');
-        secFin.classList.add('hidden');
+      const ativoClass = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow";
+      const inativoClass = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
+
+      btnFin.className = aba === 'financas' ? ativoClass : inativoClass;
+      btnCat.className = aba === 'categorias' ? ativoClass : inativoClass;
+      btnAlt.className = aba === 'alertas' ? ativoClass : inativoClass;
+
+      secFin.classList.toggle('hidden', aba !== 'financas');
+      secCat.classList.toggle('hidden', aba !== 'categorias');
+      secAlt.classList.toggle('hidden', aba !== 'alertas');
+
+      if (aba === 'categorias') {
+        atualizarDashboardCategoria();
+      } else if (aba === 'alertas') {
         buscarCotacoesAgora();
         renderizarAlvos();
       }
@@ -539,6 +616,64 @@
       setTimeout(carregarDados, 1500);
     };
 
+    function criarLinhaTabela(g) {
+      const valNum = parseNumero(g.valor);
+      const row = document.createElement('tr');
+      row.className = 'border-b border-slate-800 hover:bg-black/40 transition';
+      const link = g.imagemUrl ? `<a href="${g.imagemUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-400 text-xs font-bold mr-2"><i class="fa-solid fa-paperclip"></i></a>` : '';
+      const descEscapada = String(g.desc).replace(/'/g, "\\'");
+      row.innerHTML = `
+        <td class="p-3 text-slate-400 text-xs">${g.data}</td>
+        <td class="p-3 font-semibold text-slate-200">${g.desc}</td>
+        <td class="p-3"><span class="bg-black/60 border border-slate-700 text-xs px-2 py-1 rounded text-indigo-300">${g.cat}</span></td>
+        <td class="p-3 text-right font-extrabold text-red-400">R$ ${valNum.toFixed(2)}</td>
+        <td class="p-3 text-center flex items-center justify-center gap-2">
+          ${link}
+          <button onclick="abrirEditar('${g.rowId}', '${descEscapada}', ${valNum}, '${g.data}', '${g.cat}')" class="text-slate-400 hover:text-indigo-400 p-1"><i class="fa-solid fa-pen-to-square"></i></button>
+          <button onclick="abrirExcluir('${g.rowId}', '${descEscapada}', ${valNum})" class="text-slate-500 hover:text-red-400 p-1"><i class="fa-solid fa-trash-can"></i></button>
+        </td>`;
+      return row;
+    }
+
+    function atualizarDashboardCategoria() {
+      const catSel = document.getElementById('filtroCatDashboard')?.value || 'TODAS';
+      const qtdSel = document.getElementById('filtroQtdUltimos')?.value || '20';
+
+      // 'gastos' já vem ordenado do mais recente para o mais antigo no carregarDados
+      let filtrados = catSel === 'TODAS'
+        ? [...gastos]
+        : gastos.filter(g => String(g.cat).trim() === catSel);
+
+      if (qtdSel !== 'ALL') {
+        const limite = parseInt(qtdSel, 10);
+        if (!isNaN(limite) && limite > 0) {
+          filtrados = filtrados.slice(0, limite);
+        }
+      }
+
+      const total = filtrados.reduce((acc, g) => acc + parseNumero(g.valor), 0);
+      const qtd = filtrados.length;
+      const media = qtd > 0 ? total / qtd : 0;
+
+      document.getElementById('catDashTotal').innerText = 'R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      document.getElementById('catDashQtd').innerText = qtd;
+      document.getElementById('catDashMedia').innerText = 'R$ ' + media.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+      const rotuloQtd = qtdSel === 'ALL' ? 'Todos os pagamentos' : `Últimos ${qtd} pagamentos`;
+      const rotuloCat = catSel === 'TODAS' ? 'Todas as Categorias' : catSel;
+      document.getElementById('tituloListaCategoria').innerText = `${rotuloQtd} • ${rotuloCat}`;
+
+      const tbody = document.getElementById('tabelaGastosCategoria');
+      tbody.innerHTML = '';
+
+      if (filtrados.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Nenhum pagamento encontrado para "${rotuloCat}".</td></tr>`;
+        return;
+      }
+
+      filtrados.forEach(g => tbody.appendChild(criarLinhaTabela(g)));
+    }
+
     function atualizarDashboard() {
       const agora = new Date();
       const anoAtual = agora.getFullYear();
@@ -595,24 +730,7 @@
       if (gastos.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">Nenhum gasto registrado.</td></tr>';
       } else {
-        gastos.forEach(g => {
-          const valNum = parseNumero(g.valor);
-          const row = document.createElement('tr');
-          row.className = 'border-b border-slate-800 hover:bg-black/40 transition';
-          const link = g.imagemUrl ? `<a href="${g.imagemUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-400 text-xs font-bold mr-2"><i class="fa-solid fa-paperclip"></i></a>` : '';
-          const descEscapada = String(g.desc).replace(/'/g, "\\'");
-          row.innerHTML = `
-            <td class="p-3 text-slate-400 text-xs">${g.data}</td>
-            <td class="p-3 font-semibold text-slate-200">${g.desc}</td>
-            <td class="p-3"><span class="bg-black/60 border border-slate-700 text-xs px-2 py-1 rounded text-indigo-300">${g.cat}</span></td>
-            <td class="p-3 text-right font-extrabold text-red-400">R$ ${valNum.toFixed(2)}</td>
-            <td class="p-3 text-center flex items-center justify-center gap-2">
-              ${link}
-              <button onclick="abrirEditar('${g.rowId}', '${descEscapada}', ${valNum}, '${g.data}', '${g.cat}')" class="text-slate-400 hover:text-indigo-400 p-1"><i class="fa-solid fa-pen-to-square"></i></button>
-              <button onclick="abrirExcluir('${g.rowId}', '${descEscapada}', ${valNum})" class="text-slate-500 hover:text-red-400 p-1"><i class="fa-solid fa-trash-can"></i></button>
-            </td>`;
-          tbody.appendChild(row);
-        });
+        gastos.forEach(g => tbody.appendChild(criarLinhaTabela(g)));
       }
 
       renderGrafico(catTotals);
@@ -620,6 +738,7 @@
       popularSeletoresMeses(gastos);
       renderGraficoComparativoDoisMeses();
       renderGraficoRitmoAcumulado(gastos);
+      atualizarDashboardCategoria();
     }
 
     function renderGrafico(catTotals) {
