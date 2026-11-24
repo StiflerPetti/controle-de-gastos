@@ -351,7 +351,6 @@ document.getElementById('dataInput').valueAsDate=new Date();
     navigator.serviceWorker.register(swUrl).catch(e=>console.warn('SW:', e));
   }
 })();
-})();
 
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('btnInstalar').classList.remove('hidden')});
 window.addEventListener('appinstalled',()=>{deferredPrompt=null;document.getElementById('btnInstalar').classList.add('hidden')});
