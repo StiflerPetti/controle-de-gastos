@@ -421,672 +421,893 @@
   </div>
 </div>
 <script>
-  /* ================= CONFIG ================= */
-  const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxU7_uGTObenukASrSYgoQ39AJP2pSZ5eZKoAjSYucVPMLhB9sgmkGmHx9ZCQCwWfDW/exec";
-  const CACHE_KEY = "mara_cache_financas_v1";
-  const TOKEN_KEY_SESSION = "mara_api_token";
-  const TOKEN_KEY_LOCAL = "mara_api_token_local";
-  const ALVOS_KEY = "alvosAlertas_mara";
+  <script>
+    /* ================= CONFIG ================= */
+    const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxU7_uGTObenukASrSYgoQ39AJP2pSZ5eZKoAjSYucVPMLhB9sgmkGmHx9ZCQCwWfDW/exec";
+    const CACHE_KEY = "mara_cache_financas_v1";
+    const TOKEN_KEY_SESSION = "mara_api_token";
+    const TOKEN_KEY_LOCAL = "mara_api_token_local";
+    const ALVOS_KEY = "alvosAlertas_mara";
 
-  /* ================= ESTADO ================= */
-  let gastos = [], meta = 3000;
-  let chartInstance = null, chartComparacaoInstance = null, chartDoisMesesInstance = null, chartRitmoInstance = null;
-  let arquivoBase64 = "", itemEditandoId = null, itemExcluindoId = null;
-  let alvosAlertas = JSON.parse(localStorage.getItem(ALVOS_KEY) || '[]');
-  let cotacoesAtuais = {};
-  let intervalCotacoes = null;
-  let deferredPrompt = null;
-  let chartResizeTimer = null;
+    /* ================= ESTADO ================= */
+    let gastos = [], meta = 3000;
+    let chartInstance = null, chartComparacaoInstance = null, chartDoisMesesInstance = null, chartRitmoInstance = null;
+    let arquivoBase64 = "", itemEditandoId = null, itemExcluindoId = null;
+    let alvosAlertas = JSON.parse(localStorage.getItem(ALVOS_KEY) || '[]');
+    let cotacoesAtuais = {};
+    let intervalCotacoes = null;
+    let deferredPrompt = null;
+    let chartResizeTimer = null;
 
-  document.getElementById('dataInput').valueAsDate = new Date();
+    document.getElementById('dataInput').valueAsDate = new Date();
 
-  /* ================= PWA ================= */
-  (function setupManifest() {
-    const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-      <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#8b5cf6"/>
-      </linearGradient></defs>
-      <rect width="512" height="512" rx="96" fill="url(#g)"/>
-      <text x="50%" y="58%" font-family="Plus Jakarta Sans,Arial,sans-serif" font-size="260" font-weight="800"
-            fill="#fff" text-anchor="middle" dominant-baseline="middle">M</text>
-    </svg>`;
-    const iconUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(iconSvg)));
-    const manifest = {
-      name: "Finanças MaRa",
-      short_name: "Finanças MaRa",
-      description: "Controle financeiro Mayone & Rafaella",
-      start_url: ".",
-      scope: ".",
-      display: "standalone",
-      orientation: "portrait",
-      background_color: "#000000",
-      theme_color: "#000000",
-      icons: [
-        { src: iconUrl, sizes: "192x192", type: "image/svg+xml", purpose: "any maskable" },
-        { src: iconUrl, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
-      ]
-    };
-    const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
-    document.getElementById('manifestLink').href = URL.createObjectURL(blob);
-    const appleIcon = document.createElement('link');
-    appleIcon.rel = 'apple-touch-icon';
-    appleIcon.href = iconUrl;
-    document.head.appendChild(appleIcon);
-  })();
+    /* ================= PWA ================= */
+    (function setupManifest() {
+      const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#8b5cf6"/>
+        </linearGradient></defs>
+        <rect width="512" height="512" rx="96" fill="url(#g)"/>
+        <text x="50%" y="58%" font-family="Plus Jakarta Sans,Arial,sans-serif" font-size="260" font-weight="800"
+              fill="#fff" text-anchor="middle" dominant-baseline="middle">M</text>
+      </svg>`;
+      const iconUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(iconSvg)));
+      const manifest = {
+        name: "Finanças MaRa",
+        short_name: "Finanças MaRa",
+        description: "Controle financeiro Mayone & Rafaella",
+        start_url: ".",
+        scope: ".",
+        display: "standalone",
+        orientation: "portrait",
+        background_color: "#000000",
+        theme_color: "#000000",
+        icons: [
+          { src: iconUrl, sizes: "192x192", type: "image/svg+xml", purpose: "any maskable" },
+          { src: iconUrl, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
+        ]
+      };
+      const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+      document.getElementById('manifestLink').href = URL.createObjectURL(blob);
+      const appleIcon = document.createElement('link');
+      appleIcon.rel = 'apple-touch-icon';
+      appleIcon.href = iconUrl;
+      document.head.appendChild(appleIcon);
+    })();
 
-  if ('serviceWorker' in navigator) {
-    const swCode = `
-      const CACHE = 'mara-pwa-v1';
-      const ASSETS = ['./'];
-      self.addEventListener('install', e => {
-        e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(()=>{}));
-        self.skipWaiting();
-      });
-      self.addEventListener('activate', e => {
-        e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k!==CACHE).map(k=>caches.delete(k)))));
-        self.clients.claim();
-      });
-      self.addEventListener('fetch', e => {
-        if (e.request.method !== 'GET') return;
-        e.respondWith(
-          caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
-            const copy = res.clone();
-            caches.open(CACHE).then(c => c.put(e.request, copy)).catch(()=>{});
-            return res;
-          }).catch(() => cached))
-        );
-      });
-    `;
-    const swBlob = new Blob([swCode], { type: 'application/javascript' });
-    const swUrl = URL.createObjectURL(swBlob);
-    navigator.serviceWorker.register(swUrl).catch(err => console.warn('SW falhou:', err));
-  }
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    document.getElementById('btnInstalar').classList.remove('hidden');
-  });
-
-  window.addEventListener('appinstalled', () => {
-    deferredPrompt = null;
-    document.getElementById('btnInstalar').classList.add('hidden');
-  });
-
-  function instalarPWA() {
-    if (!deferredPrompt) {
-      alert("Para instalar, use o menu do navegador (⋮) → 'Instalar aplicativo' ou 'Adicionar à tela inicial'.\n\nObs.: só funciona se o site estiver em HTTPS.");
-      return;
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        const CACHE = 'mara-pwa-v1';
+        const ASSETS = ['./'];
+        self.addEventListener('install', e => {
+          e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(()=>{}));
+          self.skipWaiting();
+        });
+        self.addEventListener('activate', e => {
+          e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k!==CACHE).map(k=>caches.delete(k)))));
+          self.clients.claim();
+        });
+        self.addEventListener('fetch', e => {
+          if (e.request.method !== 'GET') return;
+          e.respondWith(
+            caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
+              const copy = res.clone();
+              caches.open(CACHE).then(c => c.put(e.request, copy)).catch(()=>{});
+              return res;
+            }).catch(() => cached))
+          );
+        });
+      `;
+      const swBlob = new Blob([swCode], { type: 'application/javascript' });
+      const swUrl = URL.createObjectURL(swBlob);
+      navigator.serviceWorker.register(swUrl).catch(err => console.warn('SW falhou:', err));
     }
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(choice => {
-      if (choice.outcome === 'accepted') document.getElementById('btnInstalar').classList.add('hidden');
-      deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('btnInstalar').classList.remove('hidden');
     });
-  }
 
-  /* ================= TOKEN / LOGIN ================= */
-  function getToken() {
-    return sessionStorage.getItem(TOKEN_KEY_SESSION) || localStorage.getItem(TOKEN_KEY_LOCAL) || '';
-  }
-  function saveToken(t, lembrar) {
-    if (lembrar) {
-      localStorage.setItem(TOKEN_KEY_LOCAL, t);
-      sessionStorage.removeItem(TOKEN_KEY_SESSION);
-    } else {
-      sessionStorage.setItem(TOKEN_KEY_SESSION, t);
-      localStorage.removeItem(TOKEN_KEY_LOCAL);
-    }
-  }
-  function clearToken() {
-    sessionStorage.removeItem(TOKEN_KEY_SESSION);
-    localStorage.removeItem(TOKEN_KEY_LOCAL);
-  }
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      document.getElementById('btnInstalar').classList.add('hidden');
+    });
 
-  function toggleSenha() {
-    const inp = document.getElementById('senhaInput');
-    const icon = document.getElementById('olhoIcon');
-    if (inp.type === 'password') { inp.type = 'text'; icon.className = 'fa-solid fa-eye-slash'; }
-    else { inp.type = 'password'; icon.className = 'fa-solid fa-eye'; }
-  }
-
-  function mostrarErroSenha(msg) {
-    const box = document.getElementById('senhaErro');
-    document.getElementById('senhaErroMsg').innerText = msg;
-    box.classList.remove('hidden');
-    box.classList.add('flex');
-    const card = document.querySelector('#telaSenha > div');
-    card.classList.remove('shake');
-    void card.offsetWidth;
-    card.classList.add('shake');
-  }
-
-  function esconderTelaSenha() {
-    document.getElementById('telaSenha').style.display = 'none';
-  }
-  function mostrarTelaSenha(editando = false) {
-    const tela = document.getElementById('telaSenha');
-    tela.style.display = 'flex';
-    document.getElementById('senhaErro').classList.add('hidden');
-    const inp = document.getElementById('senhaInput');
-    inp.value = editando ? '' : getToken();
-    document.getElementById('lembrarCheck').checked = !!localStorage.getItem(TOKEN_KEY_LOCAL);
-    setTimeout(() => inp.focus(), 100);
-  }
-
-  async function validarToken(token) {
-    try {
-      const sep = WEBHOOK_URL.includes('?') ? '&' : '?';
-      const res = await fetch(`${WEBHOOK_URL}${sep}token=${encodeURIComponent(token)}`, { cache: 'no-store' });
-      if (!res.ok) return { ok: false, motivo: 'rede' };
-      const data = await res.json();
-      if (data && data.error === 'unauthorized') return { ok: false, motivo: 'invalido' };
-      return { ok: true, data };
-    } catch (e) {
-      return { ok: false, motivo: 'rede' };
-    }
-  }
-
-  async function submeterSenha() {
-    const inp = document.getElementById('senhaInput');
-    const lembrar = document.getElementById('lembrarCheck').checked;
-    const token = inp.value.trim();
-    if (!token) { mostrarErroSenha('Digite a Chave de Acesso.'); return; }
-
-    const btn = document.getElementById('btnEntrar');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Validando...';
-
-    const r = await validarToken(token);
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar';
-
-    if (!r.ok) {
-      if (r.motivo === 'invalido') mostrarErroSenha('Chave inválida. Verifique e tente novamente.');
-      else mostrarErroSenha('Não foi possível conectar. Verifique sua internet.');
-      return;
-    }
-
-    saveToken(token, lembrar);
-    esconderTelaSenha();
-    aplicarDadosNaTela(r.data);
-    salvarCache(r.data);
-  }
-
-  document.getElementById('senhaInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') submeterSenha();
-  });
-
-  function configurarToken() {
-    mostrarTelaSenha(true);
-  }
-
-  /* ================= CACHE / DADOS ================= */
-  function parseNumero(v) {
-    if (typeof v === 'number') return isFinite(v) ? v : 0;
-    if (!v) return 0;
-    const limpo = String(v).replace(/[^\d,-]/g, '').replace(',', '.');
-    const n = parseFloat(limpo);
-    return isNaN(n) ? 0 : n;
-  }
-
-  function extrairAnoMes(dataStr) {
-    if (!dataStr) return null;
-    const s = String(dataStr).trim().split('T')[0];
-    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-      const [ano, mes] = s.split('-');
-      return { ano: +ano, mes: +mes, chave: `${ano}-${mes}`, label: `${mes}/${ano}` };
-    }
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
-      const [dia, mes, ano] = s.split('/');
-      return { ano: +ano, mes: +mes, chave: `${ano}-${mes}`, label: `${mes}/${ano}` };
-    }
-    return null;
-  }
-
-  function salvarCache(data) {
-    try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify({
-        gastos: Array.isArray(data?.gastos) ? data.gastos : [],
-        meta: data?.meta ?? meta
-      }));
-    } catch (e) {}
-  }
-
-  function carregarCacheInicial() {
-    try {
-      const salvo = localStorage.getItem(CACHE_KEY);
-      if (!salvo) return false;
-      const parsed = JSON.parse(salvo);
-      if (parsed && Array.isArray(parsed.gastos)) {
-        aplicarDadosNaTela(parsed);
-        return true;
-      }
-    } catch (e) {}
-    return false;
-  }
-
-  function aplicarDadosNaTela(data) {
-    const lista = Array.isArray(data?.gastos) ? data.gastos : [];
-    gastos = lista.map((g, idx) => ({
-      ...g,
-      rowId: g.rowId ?? idx + 2,
-      desc: String(g.desc ?? 'Sem descrição'),
-      cat: String(g.cat ?? 'Outros'),
-      data: String(g.data ?? ''),
-      valor: parseNumero(g.valor)
-    })).reverse();
-
-    if (data?.meta) {
-      const m = parseNumero(data.meta);
-      if (m > 0) meta = m;
-    }
-    document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-
-    const secFin = !document.getElementById('secaoFinancas').classList.contains('hidden');
-    const secDash = !document.getElementById('secaoDashboards').classList.contains('hidden');
-    const secAlt = !document.getElementById('secaoAlertas').classList.contains('hidden');
-
-    atualizarDashboard(secFin);
-    if (secDash) {
-      atualizarDashboardCategoria();
-      renderGraficoMeses(gastos);
-      popularSeletoresMeses(gastos);
-      renderGraficoComparativoDoisMeses();
-      renderGraficoRitmoAcumulado(gastos);
-    }
-    if (secAlt) renderizarAlvos();
-  }
-
-  async function carregarDados() {
-    const token = getToken();
-    if (!token) { mostrarTelaSenha(false); return; }
-
-    document.getElementById('loadingMsg').classList.remove('hidden');
-    try {
-      const sep = WEBHOOK_URL.includes('?') ? '&' : '?';
-      const res = await fetch(`${WEBHOOK_URL}${sep}token=${encodeURIComponent(token)}`, { cache: 'no-store' });
-      const data = await res.json();
-
-      if (data?.error === 'unauthorized') {
-        clearToken();
-        mostrarTelaSenha(false);
-        mostrarErroSenha('Chave expirou ou foi alterada. Digite novamente.');
+    function instalarPWA() {
+      if (!deferredPrompt) {
+        alert("Para instalar, use o menu do navegador (⋮) → 'Instalar aplicativo' ou 'Adicionar à tela inicial'.\n\nObs.: só funciona se o site estiver em HTTPS.");
         return;
       }
-      salvarCache(data);
-      aplicarDadosNaTela(data);
-    } catch (err) {
-      console.error("Erro ao carregar:", err);
-    } finally {
-      document.getElementById('loadingMsg').classList.add('hidden');
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(choice => {
+        if (choice.outcome === 'accepted') document.getElementById('btnInstalar').classList.add('hidden');
+        deferredPrompt = null;
+      });
     }
-  }
 
-  /* ================= ABAS ================= */
-  function mudarAba(aba) {
-    const btnFin = document.getElementById('tabBtnFinancas');
-    const btnDash = document.getElementById('tabBtnDashboards');
-    const btnAlt = document.getElementById('tabBtnAlertas');
-    const secFin = document.getElementById('secaoFinancas');
-    const secDash = document.getElementById('secaoDashboards');
-    const secAlt = document.getElementById('secaoAlertas');
-
-    const ativo = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow";
-    const inativo = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
-
-    btnFin.className = aba === 'financas' ? ativo : inativo;
-    btnDash.className = aba === 'dashboards' ? ativo : inativo;
-    btnAlt.className = aba === 'alertas' ? ativo : inativo;
-
-    secFin.classList.toggle('hidden', aba !== 'financas');
-    secDash.classList.toggle('hidden', aba !== 'dashboards');
-    secAlt.classList.toggle('hidden', aba !== 'alertas');
-
-    if (aba === 'dashboards') {
-      atualizarDashboardCategoria();
-      renderGraficoMeses(gastos);
-      popularSeletoresMeses(gastos);
-      renderGraficoComparativoDoisMeses();
-      renderGraficoRitmoAcumulado(gastos);
-    } else if (aba === 'alertas') {
-      buscarCotacoesAgora();
-      renderizarAlvos();
-      iniciarIntervalCotacoes();
-    } else {
-      pararIntervalCotacoes();
+    /* ================= TOKEN / LOGIN ================= */
+    function getToken() {
+      return sessionStorage.getItem(TOKEN_KEY_SESSION) || localStorage.getItem(TOKEN_KEY_LOCAL) || '';
     }
-  }
+    function saveToken(t, lembrar) {
+      if (lembrar) {
+        localStorage.setItem(TOKEN_KEY_LOCAL, t);
+        sessionStorage.removeItem(TOKEN_KEY_SESSION);
+      } else {
+        sessionStorage.setItem(TOKEN_KEY_SESSION, t);
+        localStorage.removeItem(TOKEN_KEY_LOCAL);
+      }
+    }
+    function clearToken() {
+      sessionStorage.removeItem(TOKEN_KEY_SESSION);
+      localStorage.removeItem(TOKEN_KEY_LOCAL);
+    }
 
-  /* ================= MODAIS ================= */
-  function abrirModal(id) { document.getElementById(id).classList.remove('hidden'); }
-  function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
+    function toggleSenha() {
+      const inp = document.getElementById('senhaInput');
+      const icon = document.getElementById('olhoIcon');
+      if (inp.type === 'password') { inp.type = 'text'; icon.className = 'fa-solid fa-eye-slash'; }
+      else { inp.type = 'password'; icon.className = 'fa-solid fa-eye'; }
+    }
 
-  /* ================= UPLOAD / GASTOS ================= */
-  function processarArquivo(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    document.getElementById('formConfirmacao').classList.remove('hidden');
-    document.getElementById('descInput').value = file.name.replace(/\.[^/.]+$/, "").substring(0, 25);
-    const reader = new FileReader();
-    reader.onload = (evt) => { arquivoBase64 = evt.target.result; };
-    reader.readAsDataURL(file);
-  }
+    function mostrarErroSenha(msg) {
+      const box = document.getElementById('senhaErro');
+      document.getElementById('senhaErroMsg').innerText = msg;
+      box.classList.remove('hidden');
+      box.classList.add('flex');
+      const card = document.querySelector('#telaSenha > div');
+      card.classList.remove('shake');
+      void card.offsetWidth;
+      card.classList.add('shake');
+    }
 
-  async function enviarPostSeguro(payload) {
-    const token = getToken();
-    if (!token) { mostrarTelaSenha(false); throw new Error("Chave não informada."); }
-    await fetch(WEBHOOK_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...payload, token })
-    });
-  }
+    function esconderTelaSenha() {
+      document.getElementById('telaSenha').style.display = 'none';
+    }
+    function mostrarTelaSenha(editando = false) {
+      const tela = document.getElementById('telaSenha');
+      tela.style.display = 'flex';
+      document.getElementById('senhaErro').classList.add('hidden');
+      const inp = document.getElementById('senhaInput');
+      inp.value = editando ? '' : getToken();
+      document.getElementById('lembrarCheck').checked = !!localStorage.getItem(TOKEN_KEY_LOCAL);
+      setTimeout(() => inp.focus(), 100);
+    }
 
-  async function salvarGasto() {
-    const desc = document.getElementById('descInput').value;
-    const valor = parseFloat(document.getElementById('valorInput').value);
-    const data = document.getElementById('dataInput').value;
-    const cat = document.getElementById('categoriaInput').value;
-    const btn = document.getElementById('btnSalvar');
+    async function validarToken(token) {
+      try {
+        const sep = WEBHOOK_URL.includes('?') ? '&' : '?';
+        const res = await fetch(`${WEBHOOK_URL}${sep}token=${encodeURIComponent(token)}`, { cache: 'no-store' });
+        if (!res.ok) return { ok: false, motivo: 'rede' };
+        const data = await res.json();
+        if (data && data.error === 'unauthorized') return { ok: false, motivo: 'invalido' };
+        return { ok: true, data };
+      } catch (e) {
+        return { ok: false, motivo: 'rede' };
+      }
+    }
 
-    if (!desc || isNaN(valor) || valor <= 0) return alert("Preencha descrição e valor válidos!");
+    async function submeterSenha() {
+      const inp = document.getElementById('senhaInput');
+      const lembrar = document.getElementById('lembrarCheck').checked;
+      const token = inp.value.trim();
+      if (!token) { mostrarErroSenha('Digite a Chave de Acesso.'); return; }
 
-    btn.disabled = true;
-    btn.classList.add('opacity-50', 'cursor-not-allowed');
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+      const btn = document.getElementById('btnEntrar');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Validando...';
 
-    try {
-      await enviarPostSeguro({ data, desc, cat, valor, imagemBase64: arquivoBase64 });
-      document.getElementById('formConfirmacao').classList.add('hidden');
-      document.getElementById('descInput').value = '';
-      document.getElementById('valorInput').value = '';
-      document.getElementById('fileInput').value = '';
-      arquivoBase64 = "";
-      setTimeout(carregarDados, 1500);
-    } catch (err) {
-      alert(err.message || "Erro no envio.");
-    } finally {
+      const r = await validarToken(token);
       btn.disabled = false;
-      btn.classList.remove('opacity-50', 'cursor-not-allowed');
-      btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Confirmar e Enviar para a Planilha';
-    }
-  }
+      btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar';
 
-  async function salvarMeta() {
-    const novaMeta = parseFloat(document.getElementById('novaMetaInput').value);
-    if (novaMeta > 0) {
-      meta = novaMeta;
-      fecharModal('modalMeta');
-      try { await enviarPostSeguro({ action: "updateMeta", meta: novaMeta }); } catch (e) {}
-      setTimeout(carregarDados, 1200);
-    }
-  }
-
-  function abrirEditar(id, desc, val, data, cat) {
-    itemEditandoId = id;
-    document.getElementById('editDesc').value = desc;
-    document.getElementById('editValor').value = val;
-    document.getElementById('editData').value = data;
-    document.getElementById('editCategoria').value = cat;
-    abrirModal('modalEditar');
-  }
-
-  async function salvarEdicao() {
-    if (!itemEditandoId) return;
-    const desc = document.getElementById('editDesc').value;
-    const valor = parseFloat(document.getElementById('editValor').value);
-    const data = document.getElementById('editData').value;
-    const cat = document.getElementById('editCategoria').value;
-    fecharModal('modalEditar');
-    try { await enviarPostSeguro({ action: "update", rowId: itemEditandoId, desc, valor, data, cat }); } catch (e) {}
-    setTimeout(carregarDados, 1500);
-  }
-
-  function abrirExcluir(id, desc, val) {
-    itemExcluindoId = id;
-    document.getElementById('textConfirmExcluir').innerText = `Deseja realmente excluir "${desc}" de R$ ${Number(val).toFixed(2)}?`;
-    abrirModal('modalExcluir');
-  }
-
-  document.getElementById('btnConfirmarExclusao').onclick = async function() {
-    if (!itemExcluindoId) return;
-    fecharModal('modalExcluir');
-    try { await enviarPostSeguro({ action: "delete", rowId: itemExcluindoId }); } catch (e) {}
-    setTimeout(carregarDados, 1500);
-  };
-
-  /* ================= TABELAS ================= */
-  function criarLinhaTabela(g) {
-    const valNum = parseNumero(g.valor);
-    const row = document.createElement('tr');
-    row.className = 'border-b border-slate-800 hover:bg-black/40 transition';
-    const link = g.imagemUrl ? `<a href="${g.imagemUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-400 text-xs font-bold mr-2"><i class="fa-solid fa-paperclip"></i></a>` : '';
-    const descEsc = String(g.desc).replace(/'/g, "\\'");
-    row.innerHTML = `
-      <td class="p-3 text-slate-400 text-xs">${g.data}</td>
-      <td class="p-3 font-semibold text-slate-200">${g.desc}</td>
-      <td class="p-3"><span class="bg-black/60 border border-slate-700 text-xs px-2 py-1 rounded text-indigo-300">${g.cat}</span></td>
-      <td class="p-3 text-right font-extrabold text-red-400">R$ ${valNum.toFixed(2)}</td>
-      <td class="p-3 text-center flex items-center justify-center gap-2">
-        ${link}
-        <button onclick="abrirEditar('${g.rowId}', '${descEsc}', ${valNum}, '${g.data}', '${g.cat}')" class="text-slate-400 hover:text-indigo-400 p-1"><i class="fa-solid fa-pen-to-square"></i></button>
-        <button onclick="abrirExcluir('${g.rowId}', '${descEsc}', ${valNum})" class="text-slate-500 hover:text-red-400 p-1"><i class="fa-solid fa-trash-can"></i></button>
-      </td>`;
-    return row;
-  }
-
-  function renderizarTabela(tbodyId, lista, msgVazio) {
-    const tbody = document.getElementById(tbodyId);
-    tbody.innerHTML = '';
-    if (!lista.length) {
-      tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">${msgVazio}</td></tr>`;
-      return;
-    }
-    const frag = document.createDocumentFragment();
-    lista.forEach(g => frag.appendChild(criarLinhaTabela(g)));
-    tbody.appendChild(frag);
-  }
-
-  /* ================= DASHBOARD PRINCIPAL ================= */
-  function atualizarDashboard(renderGraficos = true) {
-    const agora = new Date();
-    const anoAtual = agora.getFullYear();
-    const mesAtual = agora.getMonth() + 1;
-
-    const gastosDoMes = gastos.filter(g => {
-      const info = extrairAnoMes(g.data);
-      return info && info.ano === anoAtual && info.mes === mesAtual;
-    });
-
-    const total = gastosDoMes.reduce((acc, g) => acc + parseNumero(g.valor), 0);
-    document.getElementById('totalGasto').innerText = 'R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-    document.getElementById('totalLidos').innerText = gastosDoMes.length;
-
-    const pct = Math.min((total / (meta || 1)) * 100, 100);
-    const bar = document.getElementById('barProgress');
-    bar.style.width = pct + '%';
-
-    const alertBox = document.getElementById('budgetAlertBox');
-    alertBox.classList.remove('hidden');
-    if (total > meta) {
-      alertBox.className = 'rounded-2xl p-4 border bg-red-950/60 border-red-500/50 text-red-200 shadow-lg';
-      document.getElementById('alertIconBg').className = 'p-2.5 rounded-xl text-lg flex items-center justify-center bg-red-900/80 text-red-300';
-      document.getElementById('alertIcon').className = 'fa-solid fa-triangle-exclamation';
-      document.getElementById('alertTitle').innerText = 'Orçamento Excedido!';
-      document.getElementById('alertSubtitle').innerText = `Ultrapassou a meta em R$ ${(total - meta).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-      document.getElementById('alertBadge').className = 'text-xs font-extrabold px-3 py-1.5 rounded-lg uppercase bg-red-600 text-white';
-      document.getElementById('alertBadge').innerText = 'Estourado';
-      bar.className = 'bg-red-500 h-full w-0 transition-all duration-500';
-    } else {
-      alertBox.className = 'rounded-2xl p-4 border bg-emerald-950/40 border-emerald-500/30 text-emerald-200 shadow-lg';
-      document.getElementById('alertIconBg').className = 'p-2.5 rounded-xl text-lg flex items-center justify-center bg-emerald-900/60 text-emerald-300';
-      document.getElementById('alertIcon').className = 'fa-solid fa-circle-check';
-      document.getElementById('alertTitle').innerText = 'Orçamento Sob Controle';
-      document.getElementById('alertSubtitle').innerText = `Restam R$ ${(meta - total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} este mês.`;
-      document.getElementById('alertBadge').className = 'text-xs font-extrabold px-3 py-1.5 rounded-lg uppercase bg-emerald-950 border border-emerald-500/40 text-emerald-300';
-      document.getElementById('alertBadge').innerText = 'OK';
-      bar.className = 'bg-indigo-500 h-full w-0 transition-all duration-500';
-    }
-
-    const catTotals = {};
-    gastosDoMes.forEach(g => {
-      const c = g.cat || 'Outros';
-      catTotals[c] = (catTotals[c] || 0) + parseNumero(g.valor);
-    });
-    let maxCat = '-', maxVal = 0;
-    for (const [c, v] of Object.entries(catTotals)) if (v > maxVal) { maxVal = v; maxCat = c; }
-    document.getElementById('topCategoriaName').innerText = maxCat;
-    document.getElementById('topCategoriaValor').innerText = 'R$ ' + maxVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-    document.getElementById('topCategoriaPercent').innerHTML = `Representa <span class="text-indigo-300 font-bold">${total > 0 ? ((maxVal/total)*100).toFixed(1) : 0}%</span> do total`;
-
-    renderizarTabela('tabelaGastos', gastos, 'Nenhum gasto registrado.');
-    if (renderGraficos) renderGrafico(catTotals);
-  }
-
-  /* ================= GRÁFICOS ================= */
-  function renderGrafico(catTotals) {
-    const ctx = document.getElementById('chartCategorias').getContext('2d');
-    const sorted = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
-    if (chartInstance) chartInstance.destroy();
-    if (sorted.length === 0) return;
-    chartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: sorted.map(e => e[0]),
-        datasets: [{ data: sorted.map(e => e[1]), backgroundColor: ['#6366f1','#10b981','#f59e0b','#ec4899','#8b5cf6','#06b6d4','#38bdf8','#ef4444','#64748b','#14b8a6','#a855f7'], borderRadius: 8 }]
-      },
-      options: {
-        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', callback: v => 'R$ ' + v } },
-          y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { weight: '700' } } }
-        }
+      if (!r.ok) {
+        if (r.motivo === 'invalido') mostrarErroSenha('Chave inválida. Verifique e tente novamente.');
+        else mostrarErroSenha('Não foi possível conectar. Verifique sua internet.');
+        return;
       }
-    });
-  }
 
-  function renderGraficoMeses(lista) {
-    const canvas = document.getElementById('chartComparacaoMeses');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (chartComparacaoInstance) chartComparacaoInstance.destroy();
-    if (!lista || !lista.length) return;
+      saveToken(token, lembrar);
+      esconderTelaSenha();
+      aplicarDadosNaTela(r.data);
+      salvarCache(r.data);
+    }
 
-    const catSel = document.getElementById('filtroCategoriaMeses')?.value || 'TODAS';
-    const filtrados = catSel === 'TODAS' ? lista : lista.filter(g => g.cat === catSel);
-
-    const totaisPorMes = {};
-    filtrados.forEach(g => {
-      const info = extrairAnoMes(g.data);
-      if (info) totaisPorMes[info.chave] = { label: info.label, total: (totaisPorMes[info.chave]?.total || 0) + parseNumero(g.valor) };
+    document.getElementById('senhaInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') submeterSenha();
     });
 
-    const chaves = Object.keys(totaisPorMes).sort();
-    chartComparacaoInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: chaves.map(k => totaisPorMes[k].label),
-        datasets: [{
-          label: catSel === 'TODAS' ? 'Total Geral (R$)' : `Total: ${catSel} (R$)`,
-          data: chaves.map(k => totaisPorMes[k].total),
-          backgroundColor: catSel === 'TODAS' ? 'rgba(99,102,241,0.8)' : 'rgba(245,158,11,0.8)',
-          borderColor: catSel === 'TODAS' ? '#6366f1' : '#f59e0b',
-          borderWidth: 2, borderRadius: 8
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: catSel !== 'TODAS' } },
-        scales: {
-          x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#e2e8f0', font: { weight: '700' } } },
-          y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', callback: v => 'R$ ' + v } }
-        }
+    function configurarToken() {
+      mostrarTelaSenha(true);
+    }
+
+    /* ================= CACHE / DADOS ================= */
+    function parseNumero(v) {
+      if (typeof v === 'number') return isFinite(v) ? v : 0;
+      if (!v) return 0;
+      const limpo = String(v).replace(/[^\d,-]/g, '').replace(',', '.');
+      const n = parseFloat(limpo);
+      return isNaN(n) ? 0 : n;
+    }
+
+    function extrairAnoMes(dataStr) {
+      if (!dataStr) return null;
+      const s = String(dataStr).trim().split('T')[0];
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+        const [ano, mes] = s.split('-');
+        return { ano: +ano, mes: +mes, chave: `${ano}-${mes}`, label: `${mes}/${ano}` };
       }
-    });
-  }
-
-  function popularSeletoresMeses(lista) {
-    const selA = document.getElementById('selectMesA');
-    const selB = document.getElementById('selectMesB');
-    if (!selA || !selB) return;
-
-    const mesesMap = {};
-    lista.forEach(g => {
-      const info = extrairAnoMes(g.data);
-      if (info) mesesMap[info.chave] = info.label;
-    });
-    const agora = new Date();
-    const chaveAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
-    mesesMap[chaveAtual] = `${String(agora.getMonth() + 1).padStart(2, '0')}/${agora.getFullYear()}`;
-
-    const chaves = Object.keys(mesesMap).sort().reverse();
-    const vA = selA.value, vB = selB.value;
-    const html = chaves.map(k => `<option value="${k}">${mesesMap[k]}</option>`).join('');
-    selA.innerHTML = html;
-    selB.innerHTML = html;
-    selA.value = chaves.includes(vA) ? vA : (chaves[0] || '');
-    selB.value = chaves.includes(vB) ? vB : (chaves[1] || chaves[0] || '');
-  }
-
-  function renderGraficoComparativoDoisMeses() {
-    const canvas = document.getElementById('chartDoisMeses');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (chartDoisMesesInstance) chartDoisMesesInstance.destroy();
-
-    const mesA = document.getElementById('selectMesA')?.value;
-    const mesB = document.getElementById('selectMesB')?.value;
-    if (!mesA || !mesB) return;
-    const labelA = document.getElementById('selectMesA').selectedOptions[0]?.text || mesA;
-    const labelB = document.getElementById('selectMesB').selectedOptions[0]?.text || mesB;
-
-    const totaisA = {}, totaisB = {}, cats = new Set();
-    gastos.forEach(g => {
-      const info = extrairAnoMes(g.data);
-      if (!info) return;
-      const c = g.cat || 'Outros', v = parseNumero(g.valor);
-      if (info.chave === mesA) { totaisA[c] = (totaisA[c] || 0) + v; cats.add(c); }
-      if (info.chave === mesB) { totaisB[c] = (totaisB[c] || 0) + v; cats.add(c); }
-    });
-
-    const ordenadas = Array.from(cats).sort((a, b) =>
-      ((totaisA[b] || 0) + (totaisB[b] || 0)) - ((totaisA[a] || 0) + (totaisB[a] || 0))
-    );
-    if (!ordenadas.length) return;
-
-    chartDoisMesesInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ordenadas,
-        datasets: [
-          { label: labelA, data: ordenadas.map(c => totaisA[c] || 0), backgroundColor: 'rgba(99,102,241,0.85)', borderColor: '#6366f1', borderWidth: 1, borderRadius: 6 },
-          { label: labelB, data: ordenadas.map(c => totaisB[c] || 0), backgroundColor: 'rgba(16,185,129,0.75)', borderColor: '#10b981', borderWidth: 1, borderRadius: 6 }
-        ]
-      },
-      options: {
-        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: '#e2e8f0', font: { weight: '700' } } } },
-        scales: {
-          x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', callback: v => 'R$ ' + v } },
-          y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { weight: '700' } } }
-        }
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+        const [dia, mes, ano] = s.split('/');
+        return { ano: +ano, mes: +mes, chave: `${ano}-${mes}`, label: `${mes}/${ano}` };
       }
+      return null;
+    }
+
+    function salvarCache(data) {
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+          gastos: Array.isArray(data?.gastos) ? data.gastos : [],
+          meta: data?.meta ?? meta
+        }));
+      } catch (e) {}
+    }
+
+    function carregarCacheInicial() {
+      try {
+        const salvo = localStorage.getItem(CACHE_KEY);
+        if (!salvo) return false;
+        const parsed = JSON.parse(salvo);
+        if (parsed && Array.isArray(parsed.gastos)) {
+          aplicarDadosNaTela(parsed);
+          return true;
+        }
+      } catch (e) {}
+      return false;
+    }
+
+    function aplicarDadosNaTela(data) {
+      const lista = Array.isArray(data?.gastos) ? data.gastos : [];
+      gastos = lista.map((g, idx) => ({
+        ...g,
+        rowId: g.rowId ?? idx + 2,
+        desc: String(g.desc ?? 'Sem descrição'),
+        cat: String(g.cat ?? 'Outros'),
+        data: String(g.data ?? ''),
+        valor: parseNumero(g.valor)
+      })).reverse();
+
+      if (data?.meta) {
+        const m = parseNumero(data.meta);
+        if (m > 0) meta = m;
+      }
+      document.getElementById('metaVal').innerText = meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+      const secFin = !document.getElementById('secaoFinancas').classList.contains('hidden');
+      const secDash = !document.getElementById('secaoDashboards').classList.contains('hidden');
+      const secAlt = !document.getElementById('secaoAlertas').classList.contains('hidden');
+
+      atualizarDashboard(secFin);
+      if (secDash) {
+        atualizarDashboardCategoria();
+        renderGraficoMeses(gastos);
+        popularSeletoresMeses(gastos);
+        renderGraficoComparativoDoisMeses();
+        renderGraficoRitmoAcumulado(gastos);
+      }
+      if (secAlt) renderizarAlvos();
+    }
+
+    async function carregarDados() {
+      const token = getToken();
+      if (!token) { mostrarTelaSenha(false); return; }
+
+      document.getElementById('loadingMsg').classList.remove('hidden');
+      try {
+        const sep = WEBHOOK_URL.includes('?') ? '&' : '?';
+        const res = await fetch(`${WEBHOOK_URL}${sep}token=${encodeURIComponent(token)}`, { cache: 'no-store' });
+        const data = await res.json();
+
+        if (data?.error === 'unauthorized') {
+          clearToken();
+          mostrarTelaSenha(false);
+          mostrarErroSenha('Chave expirou ou foi alterada. Digite novamente.');
+          return;
+        }
+        salvarCache(data);
+        aplicarDadosNaTela(data);
+      } catch (err) {
+        console.error("Erro ao carregar:", err);
+      } finally {
+        document.getElementById('loadingMsg').classList.add('hidden');
+      }
+    }
+
+    /* ================= ABAS ================= */
+    function mudarAba(aba) {
+      const btnFin = document.getElementById('tabBtnFinancas');
+      const btnDash = document.getElementById('tabBtnDashboards');
+      const btnAlt = document.getElementById('tabBtnAlertas');
+      const secFin = document.getElementById('secaoFinancas');
+      const secDash = document.getElementById('secaoDashboards');
+      const secAlt = document.getElementById('secaoAlertas');
+
+      const ativo = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow";
+      const inativo = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
+
+      btnFin.className = aba === 'financas' ? ativo : inativo;
+      btnDash.className = aba === 'dashboards' ? ativo : inativo;
+      btnAlt.className = aba === 'alertas' ? ativo : inativo;
+
+      secFin.classList.toggle('hidden', aba !== 'financas');
+      secDash.classList.toggle('hidden', aba !== 'dashboards');
+      secAlt.classList.toggle('hidden', aba !== 'alertas');
+
+      if (aba === 'dashboards') {
+        atualizarDashboardCategoria();
+        renderGraficoMeses(gastos);
+        popularSeletoresMeses(gastos);
+        renderGraficoComparativoDoisMeses();
+        renderGraficoRitmoAcumulado(gastos);
+      } else if (aba === 'alertas') {
+        buscarCotacoesAgora();
+        renderizarAlvos();
+        iniciarIntervalCotacoes();
+      } else {
+        pararIntervalCotacoes();
+      }
+    }
+
+    /* ================= MODAIS ================= */
+    function abrirModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    /* ================= UPLOAD / GASTOS ================= */
+    function processarArquivo(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('formConfirmacao').classList.remove('hidden');
+      document.getElementById('descInput').value = file.name.replace(/\.[^/.]+$/, "").substring(0, 25);
+      const reader = new FileReader();
+      reader.onload = (evt) => { arquivoBase64 = evt.target.result; };
+      reader.readAsDataURL(file);
+    }
+
+    async function enviarPostSeguro(payload) {
+      const token = getToken();
+      if (!token) { mostrarTelaSenha(false); throw new Error("Chave não informada."); }
+      await fetch(WEBHOOK_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, token })
+      });
+    }
+
+    async function salvarGasto() {
+      const desc = document.getElementById('descInput').value;
+      const valor = parseFloat(document.getElementById('valorInput').value);
+      const data = document.getElementById('dataInput').value;
+      const cat = document.getElementById('categoriaInput').value;
+      const btn = document.getElementById('btnSalvar');
+
+      if (!desc || isNaN(valor) || valor <= 0) return alert("Preencha descrição e valor válidos!");
+
+      btn.disabled = true;
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+
+      try {
+        await enviarPostSeguro({ data, desc, cat, valor, imagemBase64: arquivoBase64 });
+        document.getElementById('formConfirmacao').classList.add('hidden');
+        document.getElementById('descInput').value = '';
+        document.getElementById('valorInput').value = '';
+        document.getElementById('fileInput').value = '';
+        arquivoBase64 = "";
+        setTimeout(carregarDados, 1500);
+      } catch (err) {
+        alert(err.message || "Erro no envio.");
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Confirmar e Enviar para a Planilha';
+      }
+    }
+
+    async function salvarMeta() {
+      const novaMeta = parseFloat(document.getElementById('novaMetaInput').value);
+      if (novaMeta > 0) {
+        meta = novaMeta;
+        fecharModal('modalMeta');
+        try { await enviarPostSeguro({ action: "updateMeta", meta: novaMeta }); } catch (e) {}
+        setTimeout(carregarDados, 1200);
+      }
+    }
+
+    function abrirEditar(id, desc, val, data, cat) {
+      itemEditandoId = id;
+      document.getElementById('editDesc').value = desc;
+      document.getElementById('editValor').value = val;
+      document.getElementById('editData').value = data;
+      document.getElementById('editCategoria').value = cat;
+      abrirModal('modalEditar');
+    }
+
+    async function salvarEdicao() {
+      if (!itemEditandoId) return;
+      const desc = document.getElementById('editDesc').value;
+      const valor = parseFloat(document.getElementById('editValor').value);
+      const data = document.getElementById('editData').value;
+      const cat = document.getElementById('editCategoria').value;
+      fecharModal('modalEditar');
+      try { await enviarPostSeguro({ action: "update", rowId: itemEditandoId, desc, valor, data, cat }); } catch (e) {}
+      setTimeout(carregarDados, 1500);
+    }
+
+    function abrirExcluir(id, desc, val) {
+      itemExcluindoId = id;
+      document.getElementById('textConfirmExcluir').innerText = `Deseja realmente excluir "${desc}" de R$ ${Number(val).toFixed(2)}?`;
+      abrirModal('modalExcluir');
+    }
+
+    document.getElementById('btnConfirmarExclusao').onclick = async function() {
+      if (!itemExcluindoId) return;
+      fecharModal('modalExcluir');
+      try { await enviarPostSeguro({ action: "delete", rowId: itemExcluindoId }); } catch (e) {}
+      setTimeout(carregarDados, 1500);
+    };
+
+    /* ================= TABELAS ================= */
+    function criarLinhaTabela(g) {
+      const valNum = parseNumero(g.valor);
+      const row = document.createElement('tr');
+      row.className = 'border-b border-slate-800 hover:bg-black/40 transition';
+      const link = g.imagemUrl ? `<a href="${g.imagemUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-400 text-xs font-bold mr-2"><i class="fa-solid fa-paperclip"></i></a>` : '';
+      const descEsc = String(g.desc).replace(/'/g, "\\'");
+      row.innerHTML = `
+        <td class="p-3 text-slate-400 text-xs">${g.data}</td>
+        <td class="p-3 font-semibold text-slate-200">${g.desc}</td>
+        <td class="p-3"><span class="bg-black/60 border border-slate-700 text-xs px-2 py-1 rounded text-indigo-300">${g.cat}</span></td>
+        <td class="p-3 text-right font-extrabold text-red-400">R$ ${valNum.toFixed(2)}</td>
+        <td class="p-3 text-center flex items-center justify-center gap-2">
+          ${link}
+          <button onclick="abrirEditar('${g.rowId}', '${descEsc}', ${valNum}, '${g.data}', '${g.cat}')" class="text-slate-400 hover:text-indigo-400 p-1"><i class="fa-solid fa-pen-to-square"></i></button>
+          <button onclick="abrirExcluir('${g.rowId}', '${descEsc}', ${valNum})" class="text-slate-500 hover:text-red-400 p-1"><i class="fa-solid fa-trash-can"></i></button>
+        </td>`;
+      return row;
+    }
+
+    function renderizarTabela(tbodyId, lista, msgVazio) {
+      const tbody = document.getElementById(tbodyId);
+      tbody.innerHTML = '';
+      if (!lista.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">${msgVazio}</td></tr>`;
+        return;
+      }
+      const frag = document.createDocumentFragment();
+      lista.forEach(g => frag.appendChild(criarLinhaTabela(g)));
+      tbody.appendChild(frag);
+    }
+
+    /* ================= DASHBOARD PRINCIPAL ================= */
+    function atualizarDashboard(renderGraficos = true) {
+      const agora = new Date();
+      const anoAtual = agora.getFullYear();
+      const mesAtual = agora.getMonth() + 1;
+
+      const gastosDoMes = gastos.filter(g => {
+        const info = extrairAnoMes(g.data);
+        return info && info.ano === anoAtual && info.mes === mesAtual;
+      });
+
+      const total = gastosDoMes.reduce((acc, g) => acc + parseNumero(g.valor), 0);
+      document.getElementById('totalGasto').innerText = 'R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      document.getElementById('totalLidos').innerText = gastosDoMes.length;
+
+      const pct = Math.min((total / (meta || 1)) * 100, 100);
+      const bar = document.getElementById('barProgress');
+      bar.style.width = pct + '%';
+
+      const alertBox = document.getElementById('budgetAlertBox');
+      alertBox.classList.remove('hidden');
+      if (total > meta) {
+        alertBox.className = 'rounded-2xl p-4 border bg-red-950/60 border-red-500/50 text-red-200 shadow-lg';
+        document.getElementById('alertIconBg').className = 'p-2.5 rounded-xl text-lg flex items-center justify-center bg-red-900/80 text-red-300';
+        document.getElementById('alertIcon').className = 'fa-solid fa-triangle-exclamation';
+        document.getElementById('alertTitle').innerText = 'Orçamento Excedido!';
+        document.getElementById('alertSubtitle').innerText = `Ultrapassou a meta em R$ ${(total - meta).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        document.getElementById('alertBadge').className = 'text-xs font-extrabold px-3 py-1.5 rounded-lg uppercase bg-red-600 text-white';
+        document.getElementById('alertBadge').innerText = 'Estourado';
+        bar.className = 'bg-red-500 h-full w-0 transition-all duration-500';
+      } else {
+        alertBox.className = 'rounded-2xl p-4 border bg-emerald-950/40 border-emerald-500/30 text-emerald-200 shadow-lg';
+        document.getElementById('alertIconBg').className = 'p-2.5 rounded-xl text-lg flex items-center justify-center bg-emerald-900/60 text-emerald-300';
+        document.getElementById('alertIcon').className = 'fa-solid fa-circle-check';
+        document.getElementById('alertTitle').innerText = 'Orçamento Sob Controle';
+        document.getElementById('alertSubtitle').innerText = `Restam R$ ${(meta - total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} este mês.`;
+        document.getElementById('alertBadge').className = 'text-xs font-extrabold px-3 py-1.5 rounded-lg uppercase bg-emerald-950 border border-emerald-500/40 text-emerald-300';
+        document.getElementById('alertBadge').innerText = 'OK';
+        bar.className = 'bg-indigo-500 h-full w-0 transition-all duration-500';
+      }
+
+      const catTotals = {};
+      gastosDoMes.forEach(g => {
+        const c = g.cat || 'Outros';
+        catTotals[c] = (catTotals[c] || 0) + parseNumero(g.valor);
+      });
+      let maxCat = '-', maxVal = 0;
+      for (const [c, v] of Object.entries(catTotals)) if (v > maxVal) { maxVal = v; maxCat = c; }
+      document.getElementById('topCategoriaName').innerText = maxCat;
+      document.getElementById('topCategoriaValor').innerText = 'R$ ' + maxVal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      document.getElementById('topCategoriaPercent').innerHTML = `Representa <span class="text-indigo-300 font-bold">${total > 0 ? ((maxVal/total)*100).toFixed(1) : 0}%</span> do total`;
+
+      renderizarTabela('tabelaGastos', gastos, 'Nenhum gasto registrado.');
+      if (renderGraficos) renderGrafico(catTotals);
+    }
+
+    /* ================= GRÁFICOS ================= */
+    function renderGrafico(catTotals) {
+      const ctx = document.getElementById('chartCategorias').getContext('2d');
+      const sorted = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+      if (chartInstance) chartInstance.destroy();
+      if (sorted.length === 0) return;
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: sorted.map(e => e[0]),
+          datasets: [{ data: sorted.map(e => e[1]), backgroundColor: ['#6366f1','#10b981','#f59e0b','#ec4899','#8b5cf6','#06b6d4','#38bdf8','#ef4444','#64748b','#14b8a6','#a855f7'], borderRadius: 8 }]
+        },
+        options: {
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', callback: v => 'R$ ' + v } },
+            y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { weight: '700' } } }
+          }
+        }
+      });
+    }
+
+    function renderGraficoMeses(lista) {
+      const canvas = document.getElementById('chartComparacaoMeses');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (chartComparacaoInstance) chartComparacaoInstance.destroy();
+      if (!lista || !lista.length) return;
+
+      const catSel = document.getElementById('filtroCategoriaMeses')?.value || 'TODAS';
+      const filtrados = catSel === 'TODAS' ? lista : lista.filter(g => g.cat === catSel);
+
+      const totaisPorMes = {};
+      filtrados.forEach(g => {
+        const info = extrairAnoMes(g.data);
+        if (info) totaisPorMes[info.chave] = { label: info.label, total: (totaisPorMes[info.chave]?.total || 0) + parseNumero(g.valor) };
+      });
+
+      const chaves = Object.keys(totaisPorMes).sort();
+      chartComparacaoInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: chaves.map(k => totaisPorMes[k].label),
+          datasets: [{
+            label: catSel === 'TODAS' ? 'Total Geral (R$)' : `Total: ${catSel} (R$)`,
+            data: chaves.map(k => totaisPorMes[k].total),
+            backgroundColor: catSel === 'TODAS' ? 'rgba(99,102,241,0.8)' : 'rgba(245,158,11,0.8)',
+            borderColor: catSel === 'TODAS' ? '#6366f1' : '#f59e0b',
+            borderWidth: 2, borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: catSel !== 'TODAS' } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#e2e8f0', font: { weight: '700' } } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', callback: v => 'R$ ' + v } }
+          }
+        }
+      });
+    }
+
+    function popularSeletoresMeses(lista) {
+      const selA = document.getElementById('selectMesA');
+      const selB = document.getElementById('selectMesB');
+      if (!selA || !selB) return;
+
+      const mesesMap = {};
+      lista.forEach(g => {
+        const info = extrairAnoMes(g.data);
+        if (info) mesesMap[info.chave] = info.label;
+      });
+      const agora = new Date();
+      const chaveAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
+      mesesMap[chaveAtual] = `${String(agora.getMonth() + 1).padStart(2, '0')}/${agora.getFullYear()}`;
+
+      const chaves = Object.keys(mesesMap).sort().reverse();
+      const vA = selA.value, vB = selB.value;
+      const html = chaves.map(k => `<option value="${k}">${mesesMap[k]}</option>`).join('');
+      selA.innerHTML = html;
+      selB.innerHTML = html;
+      selA.value = chaves.includes(vA) ? vA : (chaves[0] || '');
+      selB.value = chaves.includes(vB) ? vB : (chaves[1] || chaves[0] || '');
+    }
+
+    function renderGraficoComparativoDoisMeses() {
+      const canvas = document.getElementById('chartDoisMeses');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (chartDoisMesesInstance) chartDoisMesesInstance.destroy();
+
+      const mesA = document.getElementById('selectMesA')?.value;
+      const mesB = document.getElementById('selectMesB')?.value;
+      if (!mesA || !mesB) return;
+      const labelA = document.getElementById('selectMesA').selectedOptions[0]?.text || mesA;
+      const labelB = document.getElementById('selectMesB').selectedOptions[0]?.text || mesB;
+
+      const totaisA = {}, totaisB = {}, cats = new Set();
+      gastos.forEach(g => {
+        const info = extrairAnoMes(g.data);
+        if (!info) return;
+        const c = g.cat || 'Outros', v = parseNumero(g.valor);
+        if (info.chave === mesA) { totaisA[c] = (totaisA[c] || 0) + v; cats.add(c); }
+        if (info.chave === mesB) { totaisB[c] = (totaisB[c] || 0) + v; cats.add(c); }
+      });
+
+      const ordenadas = Array.from(cats).sort((a, b) =>
+        ((totaisA[b] || 0) + (totaisB[b] || 0)) - ((totaisA[a] || 0) + (totaisB[a] || 0))
+      );
+      if (!ordenadas.length) return;
+
+      chartDoisMesesInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ordenadas,
+          datasets: [
+            { label: labelA, data: ordenadas.map(c => totaisA[c] || 0), backgroundColor: 'rgba(99,102,241,0.85)', borderColor: '#6366f1', borderWidth: 1, borderRadius: 6 },
+            { label: labelB, data: ordenadas.map(c => totaisB[c] || 0), backgroundColor: 'rgba(16,185,129,0.75)', borderColor: '#10b981', borderWidth: 1, borderRadius: 6 }
+          ]
+        },
+        options: {
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#e2e8f0', font: { weight: '700' } } } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', callback: v => 'R$ ' + v } },
+            y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { weight: '700' } } }
+          }
+        }
+      });
+    }
+
+    function renderGraficoRitmoAcumulado(lista) {
+      const canvas = document.getElementById('chartRitmoAcumulado');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (chartRitmoInstance) chartRitmoInstance.destroy();
+
+      const agora = new Date();
+      const anoAtual = agora.getFullYear(), mesAtual = agora.getMonth() + 1, diaHoje = agora.getDate();
+      const dataAnt = new Date(anoAtual, agora.getMonth() - 1, 1);
+      const anoAnt = dataAnt.getFullYear(), mesAnt = dataAnt.getMonth() + 1;
+      const diasNoMes = new Date(anoAtual, mesAtual, 0).getDate();
+      const labels = Array.from({ length: diasNoMes }, (_, i) => `Dia ${i + 1}`);
+
+      const diarioAtual = new Array(diasNoMes).fill(0);
+      const diarioAnt = new Array(diasNoMes).fill(0);
+      lista.forEach(g => {
+        const info = extrairAnoMes(g.data);
+        if (!info) return;
+        const s = String(g.data).trim().split('T')[0];
+        let dia = 1;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) dia = parseInt(s.split('-')[2], 10);
+        else if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) dia = parseInt(s.split('/')[0], 10);
+        const idx = Math.min(Math.max(dia - 1, 0), diasNoMes - 1);
+        const v = parseNumero(g.valor);
+        if (info.ano === anoAtual && info.mes === mesAtual) diarioAtual[idx] += v;
+        else if (info.ano === anoAnt && info.mes === mesAnt) diarioAnt[idx] += v;
+      });
+
+      const acumA = [], acumB = [], linhaMeta = [];
+      let sA = 0, sB = 0;
+      for (let i = 0; i < diasNoMes; i++) {
+        sA += diarioAtual[i]; sB += diarioAnt[i];
+        acumA.push(i < diaHoje ? sA : null);
+        acumB.push(sB);
+        linhaMeta.push(((meta || 3000) / diasNoMes) * (i + 1));
+      }
+
+      chartRitmoInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Acumulado Este Mês', data: acumA, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.15)', borderWidth: 3, fill: true, tension: 0.25, pointRadius: 3 },
+            { label: 'Acumulado Mês Anterior', data: acumB, borderColor: '#64748b', borderWidth: 2, tension: 0.25, pointRadius: 0 },
+            { label: 'Ritmo Ideal da Meta', data: linhaMeta, borderColor: '#f59e0b', borderDash: [6, 6], borderWidth: 2, pointRadius: 0 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: { legend: { labels: { color: '#e2e8f0', font: { weight: '600' } } } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#94a3b8', maxTicksLimit: 10 } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', callback: v => 'R$ ' + v } }
+          }
+        }
+      });
+    }
+
+    /* ================= DASHBOARD CATEGORIA ================= */
+    function atualizarDashboardCategoria() {
+      const catSel = document.getElementById('filtroCatDashboard')?.value || 'TODAS';
+      const qtdSel = document.getElementById('filtroQtdUltimos')?.value || '20';
+
+      let filtrados = catSel === 'TODAS' ? [...gastos] : gastos.filter(g => String(g.cat).trim() === catSel);
+      if (qtdSel !== 'ALL') {
+        const limite = parseInt(qtdSel, 10);
+        if (!isNaN(limite) && limite > 0) filtrados = filtrados.slice(0, limite);
+      }
+
+      const total = filtrados.reduce((a, g) => a + parseNumero(g.valor), 0);
+      const qtd = filtrados.length;
+      const media = qtd ? total / qtd : 0;
+
+      document.getElementById('catDashTotal').innerText = 'R$ ' + total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+      document.getElementById('catDashQtd').innerText = qtd;
+      document.getElementById('catDashMedia').innerText = 'R$ ' + media.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+      const rotuloQtd = qtdSel === 'ALL' ? 'Todos os pagamentos' : `Últimos ${qtd} pagamentos`;
+      const rotuloCat = catSel === 'TODAS' ? 'Todas as Categorias' : catSel;
+      document.getElementById('tituloListaCategoria').innerText = `${rotuloQtd} • ${rotuloCat}`;
+
+      renderizarTabela('tabelaGastosCategoria', filtrados, `Nenhum pagamento encontrado para "${rotuloCat}".`);
+    }
+
+    /* ================= COTAÇÕES ================= */
+    async function buscarCotacoesAgora() {
+      try {
+        const res = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL,BTC-BRL,ETH-BRL,GBP-BRL,BRL-XAU');
+        const data = await res.json();
+        if (data.USDBRL) { cotacoesAtuais.USD = parseFloat(data.USDBRL.bid); document.getElementById('cotacaoUSD').innerText = 'R$ ' + cotacoesAtuais.USD.toFixed(2); }
+        if (data.EURBRL) { cotacoesAtuais.EUR = parseFloat(data.EURBRL.bid); document.getElementById('cotacaoEUR').innerText = 'R$ ' + cotacoesAtuais.EUR.toFixed(2); }
+        if (data.BTCBRL) { cotacoesAtuais.BTC = parseFloat(data.BTCBRL.bid); document.getElementById('cotacaoBTC').innerText = 'R$ ' + cotacoesAtuais.BTC.toLocaleString('pt-BR', { maximumFractionDigits: 0 }); }
+        if (data.ETHBRL) { cotacoesAtuais.ETH = parseFloat(data.ETHBRL.bid); document.getElementById('cotacaoETH').innerText = 'R$ ' + cotacoesAtuais.ETH.toLocaleString('pt-BR', { maximumFractionDigits: 0 }); }
+        if (data.GBPBRL) { cotacoesAtuais.GBP = parseFloat(data.GBPBRL.bid); document.getElementById('cotacaoGBP').innerText = 'R$ ' + cotacoesAtuais.GBP.toFixed(2); }
+        if (data.BRLXAU) {
+          const onca = 1 / parseFloat(data.BRLXAU.bid);
+          cotacoesAtuais.XAU = onca / 31.1035;
+          document.getElementById('cotacaoXAU').innerText = 'R$ ' + cotacoesAtuais.XAU.toFixed(2);
+        }
+        verificarAlvosEAlertar();
+      } catch (err) {
+        console.error("Erro cotações:", err);
+      }
+    }
+
+    function iniciarIntervalCotacoes() {
+      pararIntervalCotacoes();
+      intervalCotacoes = setInterval(buscarCotacoesAgora, 120000);
+    }
+    function pararIntervalCotacoes() {
+      if (intervalCotacoes) { clearInterval(intervalCotacoes); intervalCotacoes = null; }
+    }
+
+    function verificarAlvosEAlertar() {
+      alvosAlertas.forEach(alvo => {
+        const p = cotacoesAtuais[alvo.ativo];
+        if (!p) return;
+        let ok = false;
+        if (alvo.condicao === 'menor' && p <= alvo.valor) ok = true;
+        if (alvo.condicao === 'maior' && p >= alvo.valor) ok = true;
+        if (ok && !alvo.notificado) {
+          alvo.notificado = true;
+          localStorage.setItem(ALVOS_KEY, JSON.stringify(alvosAlertas));
+          dispararAlertaSonoroVisual(alvo.ativo, p, alvo.valor);
+        }
+      });
+    }
+
+    function dispararAlertaSonoroVisual(ativo, atual, alvo) {
+      const nomes = { USD: 'Dólar', EUR: 'Euro', XAU: 'Ouro por grama', BTC: 'Bitcoin', ETH: 'Ethereum', GBP: 'Libra' };
+      const nome = nomes[ativo] || ativo;
+      tocarAlarmeVoz(nome, atual);
+      document.getElementById('tituloBannerAlerta').innerText = `🚨 Meta Atingida! ${nome} em R$ ${atual.toFixed(2)}`;
+      document.getElementById('descBannerAlerta').innerText = `O valor alvo de R$ ${alvo.toFixed(2)} foi alcançado!`;
+      document.getElementById('bannerAlertaAtingido').classList.remove('hidden');
+    }
+
+    function tocarAlarmeVoz(nome, valor) {
+      if ('speechSynthesis' in window) {
+        const msg = new SpeechSynthesisUtterance(`Atenção Mayone! O ativo ${nome} atingiu ${valor.toFixed(2)} reais. Hora de conferir!`);
+        msg.lang = 'pt-BR'; msg.rate = 1.0;
+        window.speechSynthesis.speak(msg);
+      }
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        for (let i = 0; i < 4; i++) {
+          setTimeout(() => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine'; osc.frequency.value = 880;
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(); setTimeout(() => osc.stop(), 250);
+          }, i * 350);
+        }
+      } catch (e) {}
+    }
+
+    function testarAlarmeVoz() { dispararAlertaSonoroVisual("XAU", 412.50, 415.00); }
+    function fecharBannerAlerta() { document.getElementById('bannerAlertaAtingido').classList.add('hidden'); }
+
+    function adicionarAlvo() {
+      const ativo = document.getElementById('alvoAtivo').value;
+      const condicao = document.getElementById('alvoCondicao').value;
+      const valor = parseFloat(document.getElementById('alvoValor').value);
+      if (isNaN(valor) || valor <= 0) return alert("Preencha um valor alvo válido!");
+      alvosAlertas.push({ id: Date.now(), ativo, condicao, valor, notificado: false });
+      localStorage.setItem(ALVOS_KEY, JSON.stringify(alvosAlertas));
+      document.getElementById('alvoValor').value = '';
+      renderizarAlvos();
+      alert("Alvo cadastrado!");
+    }
+
+    function renderizarAlvos() {
+      const c = document.getElementById('listaAlvos');
+      c.innerHTML = '';
+      if (!alvosAlertas.length) {
+        c.innerHTML = '<p class="text-sm text-slate-500">Nenhum alvo cadastrado no momento.</p>';
+        return;
+      }
+      const nomes = { USD: 'Dólar (USD)', EUR: 'Euro (EUR)', XAU: 'Ouro (Grama)', BTC: 'Bitcoin (BTC)', ETH: 'Ethereum (ETH)', GBP: 'Libra (GBP)' };
+      const frag = document.createDocumentFragment();
+      alvosAlertas.forEach(a => {
+        const div = document.createElement('div');
+        div.className = 'bg-black/60 border border-slate-800 p-3 rounded-xl flex justify-between items-center';
+        div.innerHTML = `
+          <div>
+            <span class="font-bold text-indigo-300 uppercase">${nomes[a.ativo] || a.ativo}</span>
+            <span class="text-xs text-slate-400">se ${a.condicao === 'menor' ? 'ficar abaixo de' : 'ficar acima de'}</span>
+            <span class="font-extrabold text-emerald-400">R$ ${a.valor.toFixed(2)}</span>
+            <p class="text-[11px] text-slate-500"><i class="fa-solid fa-volume-high text-amber-400"></i> Alarme de Voz Ativo</p>
+          </div>
+          <button onclick="removerAlvo(${a.id})" class="text-slate-500 hover:text-red-400 p-2"><i class="fa-solid fa-trash-can"></i></button>`;
+        frag.appendChild(div);
+      });
+      c.appendChild(frag);
+    }
+
+    function removerAlvo(id) {
+      alvosAlertas = alvosAlertas.filter(a => a.id !== id);
+      localStorage.setItem(ALVOS_KEY, JSON.stringify(alvosAlertas));
+      renderizarAlvos();
+    }
+
+    /* ================= RESIZE / INIT ================= */
+    window.addEventListener('resize', () => {
+      clearTimeout(chartResizeTimer);
+      chartResizeTimer = setTimeout(() => {
+        if (!document.getElementById('secaoDashboards').classList.contains('hidden')) {
+          renderGraficoMeses(gastos);
+          renderGraficoComparativoDoisMeses();
+          renderGraficoRitmoAcumulado(gastos);
+        }
+      }, 300);
     });
-  }
 
-  function renderGraficoRitmoAcumulado(lista) {
-    const canvas = document.getElementById('chartRitmoAcumulado');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (chartRitmoInstance) chartRitmoInstance.destroy();
-
-    const agora = new Date();
-    const anoAtual = agora.getFullYear(), mesAtual = agora.getMonth() + 1, diaHoje = agora.getDate();
-    const dataAnt = new Date(anoAtual, agora.getMonth() - 1, 1);
-    const anoAnt = dataAnt.getFullYear(), mesAnt = dataAnt.getMonth() + 1;
-    const dias
-
-  
+    (function init() {
+      const temCache = carregarCacheInicial();
+      const token = getToken();
+      if (!token) {
+        mostrarTelaSenha(false);
+      } else {
+        esconderTelaSenha();
+        carregarDados();
+      }
+      // Se não tem token mas tem cache, não carrega cotações até validar (evita chamadas desnecessárias)
+      if (token) {
+        buscarCotacoesAgora();
+      }
+    })();
+  </script>
+</body>
+</html>
