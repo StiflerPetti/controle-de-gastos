@@ -23,10 +23,62 @@
     input, select, textarea { font-size: 16px !important; }
     .chart-box { position: relative; width: 100%; height: 300px; }
     .chart-box.tall { height: 380px; }
+    #telaSenha { animation: fadeIn .25s ease; }
+    @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+    .shake { animation: shake .35s; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0) }
+      25% { transform: translateX(-6px) }
+      75% { transform: translateX(6px) }
+    }
   </style>
 </head>
 <body class="bg-water-union text-slate-100 min-h-screen pb-12">
 
+  <!-- ================= TELA DE SENHA ================= -->
+  <div id="telaSenha" class="fixed inset-0 z-[100] bg-water-union flex items-center justify-center p-4">
+    <div class="w-full max-w-sm bg-[#111827]/95 backdrop-blur border border-slate-800 rounded-2xl p-7 shadow-2xl space-y-5">
+      <div class="flex flex-col items-center text-center space-y-2">
+        <div class="bg-gradient-to-tr from-indigo-600 to-violet-500 p-3 rounded-2xl text-white shadow-md shadow-indigo-500/30">
+          <i class="fa-solid fa-lock text-2xl"></i>
+        </div>
+        <h1 class="text-xl font-extrabold tracking-tight text-indigo-400">Finanças MaRa</h1>
+        <p class="text-xs text-slate-400 font-medium">Mayone & Rafaella • Acesso protegido</p>
+      </div>
+
+      <div class="space-y-3">
+        <label for="senhaInput" class="text-xs font-bold text-slate-300 uppercase tracking-wide">Chave de acesso (API_TOKEN)</label>
+        <div class="relative">
+          <input id="senhaInput" type="password" autocomplete="off" autocapitalize="off" spellcheck="false"
+                 placeholder="Digite sua chave"
+                 class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 pr-11 outline-none focus:border-indigo-500 transition">
+          <button type="button" onclick="toggleSenha()" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-300 p-2" tabindex="-1" aria-label="Mostrar/ocultar senha">
+            <i id="olhoIcon" class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+
+        <label class="flex items-center gap-2 text-xs text-slate-400 font-medium select-none cursor-pointer">
+          <input id="lembrarCheck" type="checkbox" class="w-4 h-4 accent-indigo-600">
+          Lembrar neste dispositivo
+        </label>
+
+        <p id="senhaErro" class="hidden text-xs text-red-400 font-semibold flex items-center gap-1.5">
+          <i class="fa-solid fa-triangle-exclamation"></i> <span id="senhaErroMsg">Chave inválida.</span>
+        </p>
+
+        <button id="btnEntrar" onclick="submeterSenha()"
+                class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
+          <i class="fa-solid fa-right-to-bracket"></i> Entrar
+        </button>
+
+        <p class="text-[11px] text-slate-500 text-center leading-relaxed">
+          A chave é validada direto na nuvem e não fica salva no código do site.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= HEADER ================= -->
   <header class="bg-black/85 backdrop-blur-md border-b border-indigo-500/20 sticky top-0 z-50 shadow-xl">
     <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col items-center justify-center text-center space-y-2 relative">
       <div class="flex items-center space-x-2">
@@ -306,33 +358,4 @@
 
       <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
         <h3 class="text-base font-bold text-indigo-300 flex items-center gap-2"><i class="fa-solid fa-bullseye text-indigo-400"></i> Configurar Meta de Preço e Alarme por Voz</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <select id="alvoAtivo" class="bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none">
-            <option value="USD">Dólar Comercial (USD)</option><option value="EUR">Euro (EUR)</option><option value="XAU">Ouro por Grama (XAU em R$)</option><option value="BTC">Bitcoin (BTC)</option><option value="ETH">Ethereum (ETH)</option><option value="GBP">Libra Esterlina (GBP)</option>
-          </select>
-          <select id="alvoCondicao" class="bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none">
-            <option value="menor">Ficar abaixo de (<)</option><option value="maior">Ficar acima de (>)</option>
-          </select>
-          <input type="number" step="0.01" id="alvoValor" placeholder="Preço Alvo (Ex: 5.20 ou 410.00)" class="bg-black border border-slate-700 text-emerald-400 font-bold rounded-xl p-3 outline-none">
-        </div>
-        <div class="flex gap-3 pt-2">
-          <button onclick="adicionarAlvo()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-sm transition shadow-lg"><i class="fa-solid fa-plus"></i> Salvar Alvo de Monitoramento</button>
-          <button onclick="testarAlarmeVoz()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 px-5 py-3 rounded-xl text-sm font-bold transition border border-amber-500/30"><i class="fa-solid fa-volume-high"></i> Testar Alarme de Voz</button>
-        </div>
-      </div>
-
-      <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-        <h3 class="text-base font-bold text-indigo-300">Seus Ativos e Metas em Acompanhamento</h3>
-        <div id="listaAlvos" class="space-y-2"><p class="text-sm text-slate-500">Nenhum alvo cadastrado no momento.</p></div>
-      </div>
-    </div>
-  </main>
-
-  <!-- Modais -->
-  <div id="modalMeta" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-      <h3 class="text-lg font-bold text-indigo-300"><i class="fa-solid fa-bullseye"></i> Definir Meta Mensal</h3>
-      <input type="number" step="0.01" id="novaMetaInput" placeholder="3000,00" class="w-full bg-black border border-slate-700 text-emerald-400 font-extrabold text-base rounded-xl p-3 outline-none">
-      <div class="flex gap-2 justify-end">
-        <button onclick="fecharModal('modalMeta')" class="px-4 py-2 text-xs font-bold text-slate-400">Cancelar</button>
-        <button onclick="salvarMeta()" class="px-5 py-2 text-xs font-bold bg-indigo
+        <div class="grid grid-cols-1
