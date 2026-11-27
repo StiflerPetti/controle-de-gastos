@@ -58,6 +58,7 @@ input,select,textarea{font-size:16px!important}
 <button onclick="mudarAba('financas')" id="tabBtnFinancas" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow"><i class="fa-solid fa-chart-pie mr-1"></i> Finanças</button>
 <button onclick="mudarAba('dashboards')" id="tabBtnDashboards" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white"><i class="fa-solid fa-chart-column mr-1"></i> Dashboards</button>
 <button onclick="mudarAba('alertas')" id="tabBtnAlertas" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white"><i class="fa-solid fa-bell mr-1"></i> Alertas de Voz & Ativos</button>
+<button onclick="mudarAba('investimentos')" id="tabBtnInvestimentos" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white"><i class="fa-solid fa-chart-line mr-1"></i> Investimentos</button>
 </div>
 <div class="mt-2 md:mt-0 md:absolute md:right-4 md:top-4 flex flex-wrap items-center justify-center gap-2">
 <button id="btnInstalar" onclick="instalarPWA()" class="hidden text-xs text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 px-3 py-2 rounded-xl hover:bg-emerald-900/50 transition flex items-center gap-1.5 font-bold"><i class="fa-solid fa-download text-xs"></i> Instalar App</button>
@@ -239,6 +240,43 @@ input,select,textarea{font-size:16px!important}
 <div id="listaAlvos" class="space-y-2"><p class="text-sm text-slate-500">Nenhum alvo cadastrado.</p></div>
 </div>
 </div>
+
+<div id="secaoInvestimentos" class="space-y-6 hidden">
+  <div class="bg-[#111827]/90 backdrop-blur border border-emerald-500/20 rounded-2xl p-6 shadow-xl space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div><h2 class="text-lg font-extrabold text-emerald-300 flex items-center gap-2"><i class="fa-solid fa-chart-line"></i> Carteira de Investimentos</h2><p class="text-xs text-slate-400 mt-1">Aportes, operações e comprovantes armazenados separadamente dos gastos.</p></div>
+      <button onclick="carregarInvestimentos()" class="text-xs bg-emerald-950 border border-emerald-500/30 text-emerald-300 px-3 py-2 rounded-xl font-bold"><i class="fa-solid fa-rotate mr-1"></i> Atualizar carteira</button>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div class="bg-black/60 border border-slate-800 rounded-xl p-4"><p class="text-xs text-slate-400">Total líquido aportado</p><p id="invTotalAportado" class="text-2xl font-extrabold text-emerald-300 mt-1">R$ 0,00</p></div>
+      <div class="bg-black/60 border border-slate-800 rounded-xl p-4"><p class="text-xs text-slate-400">Operações registradas</p><p id="invQtdOperacoes" class="text-2xl font-extrabold text-indigo-300 mt-1">0</p></div>
+      <div class="bg-black/60 border border-slate-800 rounded-xl p-4"><p class="text-xs text-slate-400">Comprovantes salvos</p><p id="invQtdComprovantes" class="text-2xl font-extrabold text-amber-300 mt-1">0</p></div>
+    </div>
+    <div class="bg-black/50 border border-slate-800 rounded-xl p-4"><div class="flex justify-between items-center mb-2"><h3 class="text-sm font-bold text-indigo-200">Distribuição por ativo (valores líquidos aportados)</h3><span class="text-[10px] text-slate-500">Não representa cotação atual</span></div><div class="chart-box" style="height:230px"><canvas id="chartInvestimentos"></canvas></div></div>
+  </div>
+
+  <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+    <div><h3 class="text-base font-bold text-emerald-300"><i class="fa-solid fa-circle-plus mr-1"></i> Registrar operação</h3><p class="text-xs text-slate-400 mt-1">Registre compras, vendas ou resgates. Anexe o print ou PDF da confirmação da corretora.</p></div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div><label class="block text-xs text-slate-400 mb-1">Data da operação</label><input type="date" id="invData" class="w-full bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none"></div>
+      <div><label class="block text-xs text-slate-400 mb-1">Tipo de operação</label><select id="invTipo" class="w-full bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none"><option value="Compra">Compra / Aporte</option><option value="Venda">Venda</option><option value="Resgate">Resgate</option></select></div>
+      <div class="sm:col-span-2"><label class="block text-xs text-slate-400 mb-1">Ativo</label><input id="invAtivo" list="invAtivosLista" value="VWRA11" placeholder="Ex.: VWRA11 ou Tesouro RendA+ 2065" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none"><datalist id="invAtivosLista"><option value="VWRA11"><option value="Tesouro RendA+ 2060"><option value="Tesouro RendA+ 2065"><option value="Tesouro IPCA+"></datalist></div>
+      <div><label class="block text-xs text-slate-400 mb-1">Valor total da operação (R$)</label><input type="number" min="0.01" step="0.01" id="invValor" placeholder="Ex.: 300,00" class="w-full bg-black border border-slate-700 text-emerald-300 font-bold rounded-xl p-3 outline-none"></div>
+      <div><label class="block text-xs text-slate-400 mb-1">Quantidade (opcional)</label><input type="number" min="0" step="0.000001" id="invQuantidade" placeholder="Quantidade de cotas/títulos" class="w-full bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none"></div>
+      <div><label class="block text-xs text-slate-400 mb-1">Preço unitário (opcional)</label><input type="number" min="0" step="0.0001" id="invPreco" placeholder="Preço por cota/unidade" class="w-full bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none"></div>
+      <div><label class="block text-xs text-slate-400 mb-1">Custos/taxas (opcional)</label><input type="number" min="0" step="0.01" id="invCustos" value="0" class="w-full bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none"></div>
+      <div class="sm:col-span-2"><label class="block text-xs text-slate-400 mb-1">Observações (opcional)</label><input id="invObs" maxlength="250" placeholder="Ex.: primeiro aporte da carteira" class="w-full bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none"></div>
+      <div class="sm:col-span-2"><label class="block text-xs text-slate-400 mb-1">Comprovante (imagem ou PDF, até 8 MB)</label><input type="file" id="invComprovante" accept="image/jpeg,image/png,image/webp,application/pdf" class="w-full text-xs text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-900 file:px-3 file:py-2 file:text-emerald-200"><p id="invArquivoNome" class="text-[11px] text-slate-500 mt-1">Nenhum arquivo selecionado. O comprovante ficará privado no seu Google Drive.</p></div>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-2"><button id="btnSalvarInvestimento" onclick="salvarInvestimento()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Salvar operação e comprovante</button><button onclick="limparFormInvestimento()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-3 rounded-xl text-xs font-bold">Limpar</button></div>
+    <p class="text-[11px] text-slate-500">Atenção: o painel registra os valores informados por você. A rentabilidade e a cotação atual não são calculadas automaticamente nesta primeira versão.</p>
+  </div>
+
+  <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4"><div><h3 class="text-base font-bold text-indigo-300">Histórico de investimentos</h3><p class="text-xs text-slate-400">Cada comprovante pode ser aberto pelo link na tabela.</p></div><span id="invStatus" class="text-[11px] text-slate-500">Aguardando dados</span></div>
+    <div class="overflow-x-auto"><table class="w-full text-left text-xs text-slate-300"><thead class="bg-black/60 text-slate-400 uppercase"><tr><th class="p-3">Data</th><th class="p-3">Operação / Ativo</th><th class="p-3 text-right">Valor</th><th class="p-3 text-right">Quantidade</th><th class="p-3 text-center">Comprovante</th><th class="p-3 text-center">Ação</th></tr></thead><tbody id="tabelaInvestimentos"><tr><td colspan="6" class="p-4 text-center text-slate-500">Nenhuma operação registrada.</td></tr></tbody></table></div>
+  </div>
+</div>
 </main>
 
 <div id="modalMeta" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
@@ -288,6 +326,7 @@ const TK_S="mara_api_token";
 const TK_L="mara_api_token_local";
 const ALVOS_KEY="alvosAlertas_mara";
 let gastos=[],meta=3000;
+let investimentos=[],arquivoInvestimentoBase64="",chartInvestimentos=null;
 let chartInstance=null,chartComparacaoInstance=null,chartDoisMesesInstance=null,chartRitmoInstance=null;
 let arquivoBase64="",itemEditandoId=null,itemExcluindoId=null;
 let alvosAlertas=JSON.parse(localStorage.getItem(ALVOS_KEY)||'[]');
@@ -446,7 +485,7 @@ function extrairAnoMes(dataStr){
 }
 
 function salvarCache(data){
-  try{localStorage.setItem(CACHE_KEY,JSON.stringify({gastos:Array.isArray(data?.gastos)?data.gastos:[],meta:data?.meta??meta}))}catch(e){}
+  try{localStorage.setItem(CACHE_KEY,JSON.stringify({gastos:Array.isArray(data?.gastos)?data.gastos:[],investimentos:Array.isArray(data?.investimentos)?data.investimentos:[],meta:data?.meta??meta}))}catch(e){}
 }
 
 function carregarCacheInicial(){
@@ -465,6 +504,7 @@ function aplicarDadosNaTela(data){
   if(data?.meta){const m=parseNumero(data.meta);if(m>0)meta=m}
   document.getElementById('metaVal').innerText=meta.toLocaleString('pt-BR',{minimumFractionDigits:2});
   atualizarDashboard(true);
+  aplicarInvestimentosNaTela(Array.isArray(data?.investimentos)?data.investimentos:[]);
   if(!document.getElementById('secaoDashboards').classList.contains('hidden')){
     atualizarDashboardCategoria();
     renderGraficoMeses(gastos);
@@ -493,19 +533,70 @@ async function carregarDados(){
 }
 
 function mudarAba(aba){
-  const bF=document.getElementById('tabBtnFinancas'),bD=document.getElementById('tabBtnDashboards'),bA=document.getElementById('tabBtnAlertas');
-  const sF=document.getElementById('secaoFinancas'),sD=document.getElementById('secaoDashboards'),sA=document.getElementById('secaoAlertas');
-  const at="px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow";
-  const ina="px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
-  bF.className=aba==='financas'?at:ina;bD.className=aba==='dashboards'?at:ina;bA.className=aba==='alertas'?at:ina;
-  sF.classList.toggle('hidden',aba!=='financas');sD.classList.toggle('hidden',aba!=='dashboards');sA.classList.toggle('hidden',aba!=='alertas');
+  const abas=['financas','dashboards','alertas','investimentos'];
+  abas.forEach(a=>{
+    const btn=document.getElementById('tabBtn'+a.charAt(0).toUpperCase()+a.slice(1));
+    const sec=document.getElementById('secao'+a.charAt(0).toUpperCase()+a.slice(1));
+    if(btn)btn.className=aba===a?"px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow":"px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
+    if(sec)sec.classList.toggle('hidden',aba!==a);
+  });
   if(aba==='dashboards'){
     atualizarDashboardCategoria();renderGraficoMeses(gastos);popularSeletoresMeses(gastos);
     renderGraficoComparativoDoisMeses();renderGraficoRitmoAcumulado(gastos);
   }else if(aba==='alertas'){
     buscarCotacoesAgora();renderizarAlvos();iniciarIntervalCotacoes();
+  }else if(aba==='investimentos'){
+    pararIntervalCotacoes();renderizarInvestimentos();
   }else{pararIntervalCotacoes()}
 }
+
+function formatarBRL(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+function dataHojeISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+document.getElementById('invData').value=dataHojeISO();
+document.getElementById('invComprovante').addEventListener('change',e=>{
+  const f=e.target.files[0];arquivoInvestimentoBase64="";
+  if(!f){document.getElementById('invArquivoNome').innerText='Nenhum arquivo selecionado.';return}
+  if(f.size>8*1024*1024){e.target.value='';document.getElementById('invArquivoNome').innerText='Arquivo acima de 8 MB. Escolha um arquivo menor.';alert('O comprovante deve ter no máximo 8 MB.');return}
+  if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(f.type)){e.target.value='';alert('Formato não suportado. Use JPG, PNG, WEBP ou PDF.');return}
+  document.getElementById('invArquivoNome').innerText=f.name+' • '+(f.size/1024/1024).toFixed(2)+' MB';
+  const r=new FileReader();r.onload=ev=>{arquivoInvestimentoBase64=ev.target.result};r.onerror=()=>alert('Não foi possível ler o arquivo.');r.readAsDataURL(f);
+});
+function aplicarInvestimentosNaTela(lista){investimentos=Array.isArray(lista)?lista:[];renderizarInvestimentos();}
+function renderizarInvestimentos(){
+  const tbody=document.getElementById('tabelaInvestimentos');if(!tbody)return;
+  const ordenados=[...investimentos].sort((a,b)=>String(b.data||'').localeCompare(String(a.data||'')));
+  let saldo=0;const porAtivo={};let comprovantes=0;
+  ordenados.forEach(op=>{const valor=Number(op.valor)||0;const custos=Number(op.custos)||0;const liquido=op.tipo==='Compra'?valor+custos:Math.max(0,valor-custos);const sinal=op.tipo==='Compra'?1:-1;saldo+=liquido*sinal;porAtivo[op.ativo]=(porAtivo[op.ativo]||0)+liquido*sinal;if(op.comprovanteUrl)comprovantes++});
+  document.getElementById('invTotalAportado').innerText=formatarBRL(saldo);
+  document.getElementById('invQtdOperacoes').innerText=String(investimentos.length);
+  document.getElementById('invQtdComprovantes').innerText=String(comprovantes);
+  tbody.innerHTML='';
+  if(!ordenados.length){tbody.innerHTML='<tr><td colspan="6" class="p-4 text-center text-slate-500">Nenhuma operação registrada. Cadastre seu primeiro aporte acima.</td></tr>'}
+  else ordenados.forEach(op=>{
+    const tr=document.createElement('tr');tr.className='border-b border-slate-800 hover:bg-black/30';
+    const link=op.comprovanteUrl?`<a href="${escapeAttr(op.comprovanteUrl)}" target="_blank" rel="noopener noreferrer" class="text-emerald-300 hover:text-emerald-200" title="Abrir comprovante"><i class="fa-solid fa-paperclip"></i> Abrir</a>`:'<span class="text-slate-600">—</span>';
+    const tipoClass=op.tipo==='Compra'?'text-emerald-300':'text-amber-300';
+    tr.innerHTML=`<td class="p-3 whitespace-nowrap text-slate-400">${escapeHtml(op.data||'')}</td><td class="p-3"><span class="${tipoClass} font-bold">${escapeHtml(op.tipo||'Compra')}</span><br><span class="text-slate-200 font-semibold">${escapeHtml(op.ativo||'')}</span>${op.observacoes?`<br><span class="text-[10px] text-slate-500">${escapeHtml(op.observacoes)}</span>`:''}</td><td class="p-3 text-right font-bold ${tipoClass}">${formatarBRL(op.valor)}</td><td class="p-3 text-right">${op.quantidade?Number(op.quantidade).toLocaleString('pt-BR',{maximumFractionDigits:6}):'—'}</td><td class="p-3 text-center">${link}</td><td class="p-3 text-center"><button onclick="excluirInvestimento('${escapeAttr(op.id)}')" class="text-slate-500 hover:text-red-400" title="Excluir registro"><i class="fa-solid fa-trash-can"></i></button></td>`;
+    tbody.appendChild(tr);
+  });
+  const ativos=Object.entries(porAtivo).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
+  const canvas=document.getElementById('chartInvestimentos');
+  if(canvas){if(chartInvestimentos)chartInvestimentos.destroy();chartInvestimentos=new Chart(canvas.getContext('2d'),{type:'doughnut',data:{labels:ativos.map(x=>x[0]),datasets:[{data:ativos.map(x=>x[1]),backgroundColor:['#10b981','#6366f1','#f59e0b','#06b6d4','#a78bfa','#f472b6'],borderColor:'#111827',borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#cbd5e1',padding:16}}}}});}
+  document.getElementById('invStatus').innerText='Atualizado em '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function escapeAttr(v){return escapeHtml(v).replace(/`/g,'&#96;');}
+function limparFormInvestimento(){['invValor','invQuantidade','invPreco','invObs'].forEach(id=>document.getElementById(id).value='');document.getElementById('invTipo').value='Compra';document.getElementById('invAtivo').value='VWRA11';document.getElementById('invCustos').value='0';document.getElementById('invData').value=dataHojeISO();document.getElementById('invComprovante').value='';document.getElementById('invArquivoNome').innerText='Nenhum arquivo selecionado.';arquivoInvestimentoBase64='';}
+async function salvarInvestimento(){
+  const data=document.getElementById('invData').value,tipo=document.getElementById('invTipo').value,ativo=document.getElementById('invAtivo').value.trim();
+  const valor=Number(document.getElementById('invValor').value),quantidade=Number(document.getElementById('invQuantidade').value)||0,preco=Number(document.getElementById('invPreco').value)||0,custos=Number(document.getElementById('invCustos').value)||0,observacoes=document.getElementById('invObs').value.trim();
+  if(!data||!ativo||!Number.isFinite(valor)||valor<=0){alert('Informe a data, o ativo e um valor total válido.');return}
+  if(document.getElementById('invComprovante').files[0]&&!arquivoInvestimentoBase64){alert('Aguarde o carregamento do comprovante ou selecione o arquivo novamente.');return}
+  const btn=document.getElementById('btnSalvarInvestimento');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+  try{await enviarPostSeguro({action:'investimentoCreate',data,tipo,ativo,valor,quantidade,preco,custos,observacoes,comprovanteBase64:arquivoInvestimentoBase64,comprovanteNome:document.getElementById('invComprovante').files[0]?.name||''});alert('Operação enviada. O painel será atualizado após a sincronização com a planilha.');limparFormInvestimento();setTimeout(carregarDados,1800)}catch(e){alert(e.message||'Não foi possível salvar a operação.')}finally{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-cloud-arrow-up mr-1"></i> Salvar operação e comprovante';}
+}
+async function excluirInvestimento(id){if(!confirm('Excluir este registro de investimento? O arquivo do comprovante também será enviado para a lixeira do Drive.'))return;try{await enviarPostSeguro({action:'investimentoDelete',id});setTimeout(carregarDados,1500)}catch(e){alert(e.message||'Não foi possível excluir o registro.')}}
+async function carregarInvestimentos(){await carregarDados();}
 
 function abrirModal(id){document.getElementById(id).classList.remove('hidden')}
 function fecharModal(id){document.getElementById(id).classList.add('hidden')}
