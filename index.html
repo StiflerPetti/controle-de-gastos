@@ -1,322 +1,885 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#050507">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Finanças MaRa</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-body{font-family:'Plus Jakarta Sans',sans-serif;background:#000;-webkit-text-size-adjust:100%}
-.bg-water-union{background-image:linear-gradient(to bottom,rgba(0,0,0,.88),rgba(0,0,0,.96)),url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1920&q=80');background-size:cover;background-position:center}
-input,select,textarea{font-size:16px!important}
-.chart-box{position:relative;width:100%;height:300px}
-.chart-box.tall{height:380px}
-#telaSenha{animation:fadeIn .25s ease}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.shake{animation:shake .35s}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+:root {
+  --bg-canvas: #050507;
+  --bg-surface: #0b0c10;
+  --bg-elevated: #12141b;
+  --bg-input: #08090d;
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-hover: rgba(255, 255, 255, 0.14);
+  --border-accent: rgba(129, 140, 248, 0.35);
+  --accent-primary: #818cf8;
+  --accent-emerald: #34d399;
+  --accent-amber: #fbbf24;
+  --accent-rose: #fb7185;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-canvas);
+  color: #f4f4f6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+.font-editorial {
+  font-family: 'Instrument Serif', Georgia, serif;
+}
+
+.font-mono-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "cv02" 1, "cv03" 1;
+}
+
+/* Fundo atmosférico sutil com iluminação radial */
+.bg-atelier {
+  background-color: var(--bg-canvas);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(99, 102, 241, 0.12), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 85% 15%, rgba(16, 185, 129, 0.05), transparent 60%);
+}
+
+/* Superfície estilo Emil Kowalski: borda 1px + hairline superior especular */
+.surface-card {
+  background: linear-gradient(180deg, rgba(18, 20, 27, 0.85) 0%, rgba(11, 12, 16, 0.92) 100%);
+  border: 1px solid var(--border-subtle);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+    0 20px 40px -20px rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: border-color 0.25s var(--ease-out-expo), transform 0.25s var(--ease-out-expo);
+}
+
+.surface-card-interactive:hover {
+  border-color: var(--border-hover);
+}
+
+.surface-inset {
+  background: rgba(5, 5, 7, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Inputs refinados */
+.field-input {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: #f4f4f6;
+  font-size: 16px !important;
+  transition: border-color 0.2s var(--ease-out-expo), box-shadow 0.2s var(--ease-out-expo), background-color 0.2s ease;
+}
+
+.field-input:hover {
+  border-color: var(--border-hover);
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: rgba(129, 140, 248, 0.55);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.14);
+  background-color: #0b0d13;
+}
+
+/* Botões táteis com física de compressão */
+.btn-tactile {
+  transition: transform 0.16s var(--ease-spring), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  user-select: none;
+}
+
+.btn-tactile:active:not(:disabled) {
+  transform: scale(0.975);
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
+  border: 1px solid rgba(165, 180, 252, 0.28);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.22),
+    0 8px 20px -6px rgba(79, 70, 229, 0.55);
+  color: #ffffff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #6d70f5 0%, #564de8 100%);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.28),
+    0 12px 24px -6px rgba(99, 102, 241, 0.65);
+}
+
+.btn-emerald {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+  border: 1px solid rgba(110, 231, 183, 0.28);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.22),
+    0 8px 20px -6px rgba(16, 185, 129, 0.45);
+  color: #ffffff;
+}
+
+.btn-emerald:hover:not(:disabled) {
+  background: linear-gradient(180deg, #16c78c 0%, #06a372 100%);
+}
+
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  color: #cbd5e1;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--border-hover);
+  color: #ffffff;
+}
+
+/* Animações calibradas */
+.chart-box { position: relative; width: 100%; height: 290px; }
+.chart-box.tall { height: 370px; }
+
+#telaSenha { animation: modalBackdropIn 0.32s var(--ease-out-expo) forwards; }
+.modal-card-enter { animation: modalCardIn 0.36s var(--ease-spring) forwards; }
+.section-enter { animation: sectionReveal 0.38s var(--ease-out-expo) forwards; }
+
+@keyframes modalBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalCardIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.975); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes sectionReveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.shake { animation: shake 0.36s var(--ease-spring); }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  45% { transform: translateX(6px); }
+  70% { transform: translateX(-3px); }
+  90% { transform: translateX(3px); }
+}
+
+/* Scrollbar discreta */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.22); }
 </style>
 </head>
-<body class="bg-water-union text-slate-100 min-h-screen pb-12">
+<body class="bg-atelier min-h-screen pb-16 selection:bg-indigo-500/30 selection:text-indigo-200">
 
-<div id="telaSenha" class="fixed inset-0 z-[100] bg-water-union flex items-center justify-center p-4">
-<div class="w-full max-w-sm bg-[#111827]/95 backdrop-blur border border-slate-800 rounded-2xl p-7 shadow-2xl space-y-5">
-<div class="flex flex-col items-center text-center space-y-2">
-<div class="bg-gradient-to-tr from-indigo-600 to-violet-500 p-3 rounded-2xl text-white shadow-md shadow-indigo-500/30"><i class="fa-solid fa-lock text-2xl"></i></div>
-<h1 class="text-xl font-extrabold tracking-tight text-indigo-400">Finanças MaRa</h1>
-<p class="text-xs text-slate-400 font-medium">Mayone & Rafaella • Acesso protegido</p>
-</div>
-<div class="space-y-3">
-<label for="senhaInput" class="text-xs font-bold text-slate-300 uppercase tracking-wide">Chave de Acesso</label>
-<div class="relative">
-<input id="senhaInput" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Digite sua chave" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 pr-11 outline-none focus:border-indigo-500 transition">
-<button type="button" id="btnOlho" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-300 p-2" tabindex="-1" aria-label="Mostrar/ocultar senha"><i id="olhoIcon" class="fa-solid fa-eye"></i></button>
-</div>
-<label class="flex items-center gap-2 text-xs text-slate-400 font-medium select-none cursor-pointer">
-<input id="lembrarCheck" type="checkbox" class="w-4 h-4 accent-indigo-600">Lembrar neste dispositivo
-</label>
-<p id="senhaErro" class="hidden text-xs text-red-400 font-semibold items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i><span id="senhaErroMsg">Chave inválida.</span></p>
-<button id="btnEntrar" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2"><i class="fa-solid fa-right-to-bracket"></i> Entrar</button>
-<p class="text-[11px] text-slate-500 text-center leading-relaxed">A chave é validada direto na nuvem e não fica salva no código do site.</p>
-</div>
-</div>
+<!-- TELA DE AUTENTICAÇÃO -->
+<div id="telaSenha" class="fixed inset-0 z-[100] bg-[#050507]/95 backdrop-blur-xl flex items-center justify-center p-4">
+  <div class="w-full max-w-[390px] surface-card rounded-3xl p-8 space-y-6 modal-card-enter">
+    <div class="flex flex-col items-center text-center space-y-3">
+      <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-400/25 flex items-center justify-center text-indigo-300 shadow-inner">
+        <i class="fa-solid fa-lock text-lg"></i>
+      </div>
+      <div class="space-y-1">
+        <h1 class="font-editorial italic text-3xl tracking-tight text-white">Finanças MaRa</h1>
+        <p class="text-xs text-zinc-400 tracking-wide">Mayone & Rafaella <span class="text-zinc-600 mx-1">•</span> Cofre Privado</p>
+      </div>
+    </div>
+
+    <div class="space-y-4">
+      <div class="space-y-1.5">
+        <label for="senhaInput" class="block text-[11px] font-medium text-zinc-400 uppercase tracking-widest">Chave de Acesso</label>
+        <div class="relative">
+          <input id="senhaInput" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="••••••••••••" class="field-input w-full rounded-xl px-3.5 py-3 pr-11 text-sm">
+          <button type="button" id="btnOlho" class="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-200 p-2 transition-colors" tabindex="-1" aria-label="Mostrar/ocultar senha">
+            <i id="olhoIcon" class="fa-solid fa-eye text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <label class="flex items-center gap-2.5 text-xs text-zinc-400 select-none cursor-pointer group">
+        <input id="lembrarCheck" type="checkbox" class="w-4 h-4 rounded border-zinc-700 bg-zinc-900 accent-indigo-500">
+        <span class="group-hover:text-zinc-300 transition-colors">Manter sessão neste dispositivo</span>
+      </label>
+
+      <p id="senhaErro" class="hidden text-xs text-rose-400 font-medium items-center gap-2 bg-rose-950/40 border border-rose-500/25 rounded-xl px-3 py-2.5">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span id="senhaErroMsg">Chave inválida.</span>
+      </p>
+
+      <button id="btnEntrar" class="btn-tactile btn-primary w-full font-semibold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2">
+        <span>Desbloquear Painel</span>
+        <i class="fa-solid fa-arrow-right text-xs opacity-80"></i>
+      </button>
+
+      <p class="text-[11px] text-zinc-500 text-center leading-relaxed pt-1">
+        Validação criptografada diretamente na planilha privada.
+      </p>
+    </div>
+  </div>
 </div>
 
-<header class="bg-black/85 backdrop-blur-md border-b border-indigo-500/20 sticky top-0 z-50 shadow-xl">
-<div class="max-w-5xl mx-auto px-4 py-4 flex flex-col items-center justify-center text-center space-y-2 relative">
-<div class="flex items-center space-x-2">
-<div class="bg-gradient-to-tr from-indigo-600 to-violet-500 p-2 rounded-xl text-white shadow-md shadow-indigo-500/30"><i class="fa-solid fa-wallet text-lg"></i></div>
-<h1 class="text-xl font-extrabold tracking-tight text-indigo-400">Finanças MaRa</h1>
-</div>
-<p class="text-xs text-slate-400 font-medium">Mayone & Rafaella • Nuvem Sincronizada</p>
-<div class="flex flex-wrap justify-center bg-black/60 border border-slate-800 p-1 rounded-xl gap-1 mt-2">
-<button onclick="mudarAba('financas')" id="tabBtnFinancas" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow"><i class="fa-solid fa-chart-pie mr-1"></i> Finanças</button>
-<button onclick="mudarAba('dashboards')" id="tabBtnDashboards" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white"><i class="fa-solid fa-chart-column mr-1"></i> Dashboards</button>
-<button onclick="mudarAba('alertas')" id="tabBtnAlertas" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white"><i class="fa-solid fa-bell mr-1"></i> Alertas de Voz & Ativos</button>
-<button onclick="mudarAba('investimentos')" id="tabBtnInvestimentos" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white"><i class="fa-solid fa-chart-line mr-1"></i> Investimentos</button>
-</div>
-<div class="mt-2 md:mt-0 md:absolute md:right-4 md:top-4 flex flex-wrap items-center justify-center gap-2">
-<button id="btnInstalar" onclick="instalarPWA()" class="hidden text-xs text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 px-3 py-2 rounded-xl hover:bg-emerald-900/50 transition flex items-center gap-1.5 font-bold"><i class="fa-solid fa-download text-xs"></i> Instalar App</button>
-<button onclick="configurarToken()" class="text-xs text-slate-300 bg-slate-900 border border-slate-700 px-3 py-2 rounded-xl hover:bg-slate-800 transition flex items-center gap-1.5 font-bold"><i class="fa-solid fa-key text-xs text-amber-400"></i> Chave</button>
-<button onclick="carregarDados()" class="text-xs text-indigo-300 bg-indigo-950/80 border border-indigo-500/30 px-3 py-2 rounded-xl hover:bg-indigo-900/50 transition flex items-center gap-1.5 font-bold"><i class="fa-solid fa-rotate text-xs"></i> Atualizar</button>
-</div>
-</div>
+<!-- HEADER EDITORIAL STICKY -->
+<header class="sticky top-0 z-40 bg-[#050507]/80 backdrop-blur-xl border-b border-white/[0.06]">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <!-- Identidade -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-400/25 flex items-center justify-center text-indigo-300">
+            <i class="fa-solid fa-wallet text-sm"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="font-editorial italic text-2xl leading-none text-white tracking-tight">Finanças MaRa</h1>
+              <span class="inline-flex items-center gap-1.5 text-[10px] font-medium text-emerald-300/90 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Sync
+              </span>
+            </div>
+            <p class="text-[11px] text-zinc-500 mt-0.5">Mayone & Rafaella</p>
+          </div>
+        </div>
+
+        <!-- Ações rápidas no mobile -->
+        <div class="flex md:hidden items-center gap-1.5">
+          <button id="btnInstalarMobile" onclick="instalarPWA()" class="hidden btn-tactile text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 p-2 rounded-lg" title="Instalar App">
+            <i class="fa-solid fa-download"></i>
+          </button>
+          <button onclick="configurarToken()" class="btn-tactile btn-ghost p-2 rounded-lg text-xs" title="Chave">
+            <i class="fa-solid fa-key text-amber-400/90"></i>
+          </button>
+          <button onclick="carregarDados()" class="btn-tactile btn-ghost p-2 rounded-lg text-xs" title="Atualizar">
+            <i class="fa-solid fa-rotate text-indigo-300"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Navegação Segmented Control -->
+      <nav class="flex items-center bg-white/[0.03] border border-white/[0.07] p-1 rounded-xl overflow-x-auto no-scrollbar">
+        <button onclick="mudarAba('financas')" id="tabBtnFinancas" class="btn-tactile px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap bg-white/[0.1] text-white shadow-sm border border-white/[0.08]">
+          Finanças
+        </button>
+        <button onclick="mudarAba('dashboards')" id="tabBtnDashboards" class="btn-tactile px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap text-zinc-400 hover:text-zinc-200">
+          Dashboards
+        </button>
+        <button onclick="mudarAba('alertas')" id="tabBtnAlertas" class="btn-tactile px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap text-zinc-400 hover:text-zinc-200">
+          Alertas & Cotações
+        </button>
+        <button onclick="mudarAba('investimentos')" id="tabBtnInvestimentos" class="btn-tactile px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap text-zinc-400 hover:text-zinc-200">
+          Investimentos
+        </button>
+      </nav>
+
+      <!-- Ações Desktop -->
+      <div class="hidden md:flex items-center gap-2">
+        <button id="btnInstalar" onclick="instalarPWA()" class="hidden btn-tactile text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-3 py-1.5 rounded-lg hover:bg-emerald-500/15 flex items-center gap-1.5 font-medium">
+          <i class="fa-solid fa-download text-[11px]"></i> App
+        </button>
+        <button onclick="configurarToken()" class="btn-tactile btn-ghost text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium">
+          <i class="fa-solid fa-key text-[11px] text-amber-400/90"></i> Chave
+        </button>
+        <button onclick="carregarDados()" class="btn-tactile btn-ghost text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium">
+          <i class="fa-solid fa-rotate text-[11px] text-indigo-300"></i> Sincronizar
+        </button>
+      </div>
+    </div>
+  </div>
 </header>
 
-<main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
-<div id="bannerAlertaAtingido" class="hidden bg-amber-950/90 border-2 border-amber-500/80 rounded-2xl p-5 shadow-2xl">
-<div class="flex flex-col md:flex-row items-center justify-between gap-4">
-<div class="flex items-center gap-3">
-<div class="p-3 bg-amber-600/30 text-amber-400 rounded-xl text-2xl animate-bounce"><i class="fa-solid fa-volume-high font-bold"></i></div>
-<div><h3 class="text-base font-extrabold text-amber-200" id="tituloBannerAlerta">Meta Atingida!</h3><p class="text-xs text-amber-300" id="descBannerAlerta">O valor alvo foi atingido.</p></div>
-</div>
-<button onclick="fecharBannerAlerta()" class="bg-black/80 hover:bg-black text-amber-300 border border-amber-500/40 px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg">Silenciar Alarme</button>
-</div>
-</div>
+<main class="max-w-5xl mx-auto px-4 sm:px-6 py-7 space-y-6">
 
-<div id="secaoFinancas" class="space-y-6">
-<div id="budgetAlertBox" class="hidden rounded-2xl p-4 border transition-all duration-300">
-<div class="flex items-center justify-between">
-<div class="flex items-center gap-3">
-<div id="alertIconBg" class="p-2.5 rounded-xl text-lg flex items-center justify-center"><i id="alertIcon" class="fa-solid"></i></div>
-<div><h4 id="alertTitle" class="text-sm font-bold tracking-wide"></h4><p id="alertSubtitle" class="text-xs opacity-90 font-medium"></p></div>
-</div>
-<span id="alertBadge" class="text-xs font-extrabold px-3 py-1.5 rounded-lg uppercase tracking-wider"></span>
-</div>
-</div>
-
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-<div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
-<div><p class="text-xs font-semibold text-slate-400 mb-1">Total Gasto (Este Mês)</p><p class="text-3xl font-extrabold text-red-500" id="totalGasto">R$ 0,00</p></div>
-<div class="mt-4"><div class="bg-black rounded-full h-2 overflow-hidden border border-slate-800"><div id="barProgress" class="bg-indigo-500 h-full w-0 transition-all duration-500"></div></div><p class="text-[11px] text-slate-400 mt-2 flex justify-between font-medium"><span>Meta: <span class="text-emerald-400 font-semibold">R$ <span id="metaVal">3.000,00</span></span></span><button onclick="abrirModal('modalMeta')" class="text-indigo-400 hover:text-indigo-300 underline font-semibold">Editar Meta</button></p></div>
-</div>
-<div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
-<div><p class="text-xs font-semibold text-slate-400 mb-1">Maior Categoria de Gasto</p><p class="text-xs font-bold text-indigo-400 uppercase tracking-wide" id="topCategoriaName">-</p><p class="text-3xl font-extrabold text-amber-400 mt-1" id="topCategoriaValor">R$ 0,00</p></div>
-<p class="text-[11px] text-slate-400 mt-4 font-medium" id="topCategoriaPercent">Representa <span class="text-indigo-300 font-bold">0%</span> do total</p>
-</div>
-<div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
-<div><p class="text-xs font-semibold text-slate-400 mb-1">Comprovantes & Registros</p><p class="text-3xl font-extrabold text-emerald-400" id="totalLidos">0</p></div>
-<p class="text-[11px] text-slate-400 mt-4 font-medium flex items-center gap-1.5"><i class="fa-solid fa-cloud-check text-emerald-400"></i> Sincronizados na nuvem MaRa</p>
-</div>
-</div>
-
-<div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl">
-<h2 class="text-lg font-bold text-indigo-300 mb-2 flex items-center gap-2"><i class="fa-solid fa-file-invoice-dollar text-indigo-400"></i> Importar Print, Foto ou PDF</h2>
-<div class="border-2 border-dashed border-indigo-500/40 hover:border-indigo-400 rounded-2xl p-8 text-center transition cursor-pointer bg-black/60 flex flex-col items-center justify-center" onclick="document.getElementById('fileInput').click()">
-<input type="file" id="fileInput" accept="image/*,.pdf" class="hidden" onchange="processarArquivo(event)">
-<div class="bg-indigo-950/60 p-4 rounded-full text-indigo-400 mb-3 border border-indigo-500/30"><i class="fa-solid fa-file-arrow-up text-3xl"></i></div>
-<p class="text-base font-bold text-indigo-300">Escolher Imagem ou Arquivo PDF</p>
-</div>
-<div id="formConfirmacao" class="hidden mt-6 bg-black/80 border border-indigo-500/30 rounded-2xl p-5 shadow-lg space-y-4">
-<div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-<input type="text" id="descInput" placeholder="Descrição / Loja" class="bg-[#111827] border border-slate-700 text-slate-100 rounded-xl p-3 outline-none">
-<input type="number" step="0.01" id="valorInput" placeholder="Valor (R$)" class="bg-[#111827] border border-slate-700 text-red-400 font-bold rounded-xl p-3 outline-none">
-<input type="date" id="dataInput" class="bg-[#111827] border border-slate-700 text-slate-200 rounded-xl p-3 outline-none">
-<select id="categoriaInput" class="bg-[#111827] border border-slate-700 text-slate-200 rounded-xl p-3 outline-none">
-<option>Alimentação</option><option>Supermercado</option><option>Transporte</option><option>Lazer</option><option>Saúde</option><option>Farmácia</option><option>Cartão de Crédito</option><option>Educação</option><option>Moradia</option><option>Doações</option><option>Outros</option>
-</select>
-</div>
-<button onclick="salvarGasto()" id="btnSalvar" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> Confirmar e Enviar para a Planilha</button>
-</div>
-</div>
-
-<div class="space-y-6">
-<div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg">
-<div class="flex justify-between items-center mb-4"><h3 class="text-base font-bold text-indigo-300">Histórico do Mês</h3><span id="loadingMsg" class="text-xs text-indigo-400 hidden"><i class="fa-solid fa-spinner fa-spin"></i> Sincronizando...</span></div>
-<div class="overflow-x-auto max-h-[500px] overflow-y-auto pr-1">
-<table class="w-full text-left text-sm text-slate-300">
-<thead class="text-xs uppercase bg-black/60 border-b border-slate-800 text-slate-400 sticky top-0 z-10"><tr><th class="p-3">Data</th><th class="p-3">Descrição</th><th class="p-3">Categoria</th><th class="p-3 text-right">Valor</th><th class="p-3 text-center">Ações</th></tr></thead>
-<tbody id="tabelaGastos"><tr><td colspan="5" class="p-4 text-center text-slate-500">Carregando dados...</td></tr></tbody>
-</table>
-</div>
-</div>
-<div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
-<h3 class="text-base font-bold text-indigo-300 mb-4">Ranking de Gastos por Categoria</h3>
-<div class="chart-box"><canvas id="chartCategorias"></canvas></div>
-</div>
-</div>
-</div>
-
-<div id="secaoDashboards" class="space-y-6 hidden">
-<div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-<div><h2 class="text-lg font-bold text-indigo-300 flex items-center gap-2"><i class="fa-solid fa-layer-group text-indigo-400"></i> Pagamentos por Categoria</h2><p class="text-xs text-slate-400">Escolha uma categoria e veja os últimos lançamentos</p></div>
-<div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-<select id="filtroCatDashboard" onchange="atualizarDashboardCategoria()" class="bg-black border border-slate-700 text-indigo-300 text-sm rounded-xl px-3.5 py-2.5 outline-none font-bold">
-<option value="TODAS">Todas as Categorias</option><option>Alimentação</option><option>Supermercado</option><option>Transporte</option><option>Lazer</option><option>Saúde</option><option>Farmácia</option><option>Cartão de Crédito</option><option>Educação</option><option>Moradia</option><option>Doações</option><option>Outros</option>
-</select>
-<select id="filtroQtdUltimos" onchange="atualizarDashboardCategoria()" class="bg-black border border-slate-700 text-emerald-300 text-sm rounded-xl px-3.5 py-2.5 outline-none font-bold">
-<option value="10">Últimos 10</option><option value="20" selected>Últimos 20</option><option value="50">Últimos 50</option><option value="ALL">Todos da Categoria</option>
-</select>
-</div>
-</div>
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-<div class="bg-black/60 border border-slate-800 rounded-2xl p-4"><p class="text-xs text-slate-400 font-semibold">Total na Seleção</p><p id="catDashTotal" class="text-2xl font-extrabold text-red-400 mt-1">R$ 0,00</p></div>
-<div class="bg-black/60 border border-slate-800 rounded-2xl p-4"><p class="text-xs text-slate-400 font-semibold">Pagamentos Exibidos</p><p id="catDashQtd" class="text-2xl font-extrabold text-indigo-300 mt-1">0</p></div>
-<div class="bg-black/60 border border-slate-800 rounded-2xl p-4"><p class="text-xs text-slate-400 font-semibold">Média por Lançamento</p><p id="catDashMedia" class="text-2xl font-extrabold text-emerald-400 mt-1">R$ 0,00</p></div>
-</div>
-</div>
-<div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-lg">
-<h3 class="text-base font-bold text-indigo-300 mb-4" id="tituloListaCategoria">Últimos Pagamentos</h3>
-<div class="overflow-x-auto max-h-[550px] overflow-y-auto pr-1">
-<table class="w-full text-left text-sm text-slate-300">
-<thead class="text-xs uppercase bg-black/60 border-b border-slate-800 text-slate-400 sticky top-0 z-10"><tr><th class="p-3">Data</th><th class="p-3">Descrição</th><th class="p-3">Categoria</th><th class="p-3 text-right">Valor</th><th class="p-3 text-center">Ações</th></tr></thead>
-<tbody id="tabelaGastosCategoria"><tr><td colspan="5" class="p-4 text-center text-slate-500">Selecione uma categoria.</td></tr></tbody>
-</table>
-</div>
-</div>
-<div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-<h3 class="text-base font-bold text-indigo-300 flex items-center gap-2"><i class="fa-solid fa-chart-column text-indigo-400"></i> Evolução Mês a Mês</h3>
-<div class="flex items-center gap-2 w-full sm:w-auto">
-<label for="filtroCategoriaMeses" class="text-xs text-slate-400 font-semibold whitespace-nowrap">Filtrar:</label>
-<select id="filtroCategoriaMeses" onchange="renderGraficoMeses(gastos)" class="bg-black border border-slate-700 text-indigo-300 text-xs rounded-xl px-3 py-1.5 outline-none w-full sm:w-auto font-bold">
-<option value="TODAS">Todas (Total)</option><option>Alimentação</option><option>Supermercado</option><option>Transporte</option><option>Lazer</option><option>Saúde</option><option>Farmácia</option><option>Cartão de Crédito</option><option>Educação</option><option>Moradia</option><option>Doações</option><option>Outros</option>
-</select>
-</div>
-</div>
-<div class="chart-box"><canvas id="chartComparacaoMeses"></canvas></div>
-</div>
-<div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
-<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
-<div><h3 class="text-base font-bold text-indigo-300 flex items-center gap-2"><i class="fa-solid fa-code-compare text-emerald-400"></i> Comparativo por Categoria (2 Meses)</h3><p class="text-xs text-slate-400">Compare dois meses lado a lado</p></div>
-<div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-<select id="selectMesA" onchange="renderGraficoComparativoDoisMeses()" class="bg-black border border-slate-700 text-indigo-300 text-xs rounded-xl px-3 py-1.5 outline-none font-bold flex-1 md:flex-none"></select>
-<span class="text-xs text-slate-500 font-bold">vs</span>
-<select id="selectMesB" onchange="renderGraficoComparativoDoisMeses()" class="bg-black border border-slate-700 text-emerald-300 text-xs rounded-xl px-3 py-1.5 outline-none font-bold flex-1 md:flex-none"></select>
-</div>
-</div>
-<div class="chart-box tall"><canvas id="chartDoisMeses"></canvas></div>
-</div>
-<div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-lg">
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
-<div><h3 class="text-base font-bold text-indigo-300 flex items-center gap-2"><i class="fa-solid fa-chart-line text-amber-400"></i> Ritmo de Gasto Acumulado vs. Meta</h3><p class="text-xs text-slate-400">Evolução diária comparada à meta e ao mês passado</p></div>
-</div>
-<div class="chart-box"><canvas id="chartRitmoAcumulado"></canvas></div>
-</div>
-</div>
-
-<div id="secaoAlertas" class="space-y-6 hidden">
-<div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-<div class="flex justify-between items-center">
-<h2 class="text-lg font-bold text-indigo-300 flex items-center gap-2"><i class="fa-solid fa-coins text-amber-400"></i> Cotações em Tempo Real</h2>
-<div class="flex items-center gap-2">
-<span id="statusMonitor" class="text-[11px] text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-500/30 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-circle text-[8px] mr-1"></i> Monitor Ativo</span>
-<button onclick="buscarCotacoesAgora()" class="text-xs bg-indigo-950 border border-indigo-500/40 text-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-900 transition font-bold"><i class="fa-solid fa-arrows-rotate"></i> Atualizar</button>
-</div>
-</div>
-<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-<div class="bg-black/60 border border-slate-800 p-3 rounded-xl text-center"><p class="text-[11px] text-slate-400 flex items-center justify-center gap-1"><i class="fa-solid fa-dollar-sign text-emerald-400"></i> USD</p><p id="cotacaoUSD" class="text-xl font-extrabold text-emerald-400 mt-1">...</p></div>
-<div class="bg-black/60 border border-slate-800 p-3 rounded-xl text-center"><p class="text-[11px] text-slate-400 flex items-center justify-center gap-1"><i class="fa-solid fa-euro-sign text-indigo-400"></i> EUR</p><p id="cotacaoEUR" class="text-xl font-extrabold text-indigo-400 mt-1">...</p></div>
-<div class="bg-black/60 border border-slate-800 p-3 rounded-xl text-center border-amber-500/30"><p class="text-[11px] text-amber-400 font-bold flex items-center justify-center gap-1"><i class="fa-solid fa-cubes-stacked text-amber-400"></i> XAU/g</p><p id="cotacaoXAU" class="text-xl font-extrabold text-amber-400 mt-1">...</p></div>
-<div class="bg-black/60 border border-slate-800 p-3 rounded-xl text-center"><p class="text-[11px] text-slate-400 flex items-center justify-center gap-1"><i class="fa-brands fa-bitcoin text-amber-500"></i> BTC</p><p id="cotacaoBTC" class="text-xl font-extrabold text-amber-500 mt-1">...</p></div>
-<div class="bg-black/60 border border-slate-800 p-3 rounded-xl text-center"><p class="text-[11px] text-slate-400 flex items-center justify-center gap-1"><i class="fa-brands fa-ethereum text-purple-400"></i> ETH</p><p id="cotacaoETH" class="text-xl font-extrabold text-purple-400 mt-1">...</p></div>
-<div class="bg-black/60 border border-slate-800 p-3 rounded-xl text-center"><p class="text-[11px] text-slate-400 flex items-center justify-center gap-1"><i class="fa-solid fa-sterling-sign text-sky-400"></i> GBP</p><p id="cotacaoGBP" class="text-xl font-extrabold text-sky-400 mt-1">...</p></div>
-</div>
-</div>
-<div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-<h3 class="text-base font-bold text-indigo-300 flex items-center gap-2"><i class="fa-solid fa-bullseye text-indigo-400"></i> Configurar Meta de Preço e Alarme por Voz</h3>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-<select id="alvoAtivo" class="bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none">
-<option value="USD">Dólar (USD)</option><option value="EUR">Euro (EUR)</option><option value="XAU">Ouro/grama</option><option value="BTC">Bitcoin</option><option value="ETH">Ethereum</option><option value="GBP">Libra</option>
-</select>
-<select id="alvoCondicao" class="bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none">
-<option value="menor">Abaixo de (<)</option><option value="maior">Acima de (>)</option>
-</select>
-<input type="number" step="0.01" id="alvoValor" placeholder="Preço Alvo" class="bg-black border border-slate-700 text-emerald-400 font-bold rounded-xl p-3 outline-none">
-</div>
-<div class="flex gap-3 pt-2">
-<button onclick="adicionarAlvo()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-sm transition shadow-lg"><i class="fa-solid fa-plus"></i> Salvar Alvo</button>
-<button onclick="testarAlarmeVoz()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 px-5 py-3 rounded-xl text-sm font-bold transition border border-amber-500/30"><i class="fa-solid fa-volume-high"></i> Testar</button>
-</div>
-</div>
-<div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-<h3 class="text-base font-bold text-indigo-300">Ativos em Acompanhamento</h3>
-<div id="listaAlvos" class="space-y-2"><p class="text-sm text-slate-500">Nenhum alvo cadastrado.</p></div>
-</div>
-</div>
-
-<div id="secaoInvestimentos" class="space-y-6 hidden">
-  <div class="bg-[#111827]/90 backdrop-blur border border-emerald-500/20 rounded-2xl p-6 shadow-xl space-y-4">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div><h2 class="text-lg font-extrabold text-emerald-300 flex items-center gap-2"><i class="fa-solid fa-chart-line"></i> Carteira de Investimentos</h2><p class="text-xs text-slate-400 mt-1">Aportes, operações e comprovantes armazenados separadamente dos gastos.</p></div>
-      <button onclick="carregarInvestimentos()" class="text-xs bg-emerald-950 border border-emerald-500/30 text-emerald-300 px-3 py-2 rounded-xl font-bold"><i class="fa-solid fa-rotate mr-1"></i> Atualizar carteira</button>
+  <!-- BANNER DE ALERTA SONORO ATINGIDO -->
+  <div id="bannerAlertaAtingido" class="hidden surface-card border-amber-500/40 rounded-2xl p-5 section-enter">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-volume-high animate-pulse"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-amber-200" id="tituloBannerAlerta">Meta Atingida!</h3>
+          <p class="text-xs text-zinc-400 mt-0.5" id="descBannerAlerta">O valor alvo foi atingido.</p>
+        </div>
+      </div>
+      <button onclick="fecharBannerAlerta()" class="btn-tactile btn-ghost text-amber-200 border-amber-500/30 px-4 py-2 rounded-xl font-medium text-xs">
+        Silenciar Alarme
+      </button>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-      <div class="bg-black/60 border border-slate-800 rounded-xl p-4"><p class="text-xs text-slate-400">Total líquido aportado</p><p id="invTotalAportado" class="text-2xl font-extrabold text-emerald-300 mt-1">R$ 0,00</p></div>
-      <div class="bg-black/60 border border-slate-800 rounded-xl p-4"><p class="text-xs text-slate-400">Operações registradas</p><p id="invQtdOperacoes" class="text-2xl font-extrabold text-indigo-300 mt-1">0</p></div>
-      <div class="bg-black/60 border border-slate-800 rounded-xl p-4"><p class="text-xs text-slate-400">Comprovantes salvos</p><p id="invQtdComprovantes" class="text-2xl font-extrabold text-amber-300 mt-1">0</p></div>
-    </div>
-    <div class="bg-black/50 border border-slate-800 rounded-xl p-4"><div class="flex justify-between items-center mb-2"><h3 class="text-sm font-bold text-indigo-200">Distribuição por ativo (valores líquidos aportados)</h3><span class="text-[10px] text-slate-500">Não representa cotação atual</span></div><div class="chart-box" style="height:230px"><canvas id="chartInvestimentos"></canvas></div></div>
   </div>
 
-  <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-    <div><h3 class="text-base font-bold text-emerald-300"><i class="fa-solid fa-circle-plus mr-1"></i> Registrar operação</h3><p class="text-xs text-slate-400 mt-1">Registre compras, vendas ou resgates. Anexe o print ou PDF da confirmação da corretora.</p></div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <div><label class="block text-xs text-slate-400 mb-1">Data da operação</label><input type="date" id="invData" class="w-full bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none"></div>
-      <div><label class="block text-xs text-slate-400 mb-1">Tipo de operação</label><select id="invTipo" class="w-full bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none"><option value="Compra">Compra / Aporte</option><option value="Venda">Venda</option><option value="Resgate">Resgate</option></select></div>
-      <div class="sm:col-span-2"><label class="block text-xs text-slate-400 mb-1">Ativo</label><input id="invAtivo" list="invAtivosLista" value="VWRA11" placeholder="Ex.: VWRA11 ou Tesouro RendA+ 2065" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none"><datalist id="invAtivosLista"><option value="VWRA11"><option value="Tesouro RendA+ 2060"><option value="Tesouro RendA+ 2065"><option value="Tesouro IPCA+"></datalist></div>
-      <div><label class="block text-xs text-slate-400 mb-1">Valor total da operação (R$)</label><input type="number" min="0.01" step="0.01" id="invValor" placeholder="Ex.: 300,00" class="w-full bg-black border border-slate-700 text-emerald-300 font-bold rounded-xl p-3 outline-none"></div>
-      <div><label class="block text-xs text-slate-400 mb-1">Quantidade (opcional)</label><input type="number" min="0" step="0.000001" id="invQuantidade" placeholder="Quantidade de cotas/títulos" class="w-full bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none"></div>
-      <div><label class="block text-xs text-slate-400 mb-1">Preço unitário (opcional)</label><input type="number" min="0" step="0.0001" id="invPreco" placeholder="Preço por cota/unidade" class="w-full bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none"></div>
-      <div><label class="block text-xs text-slate-400 mb-1">Custos/taxas (opcional)</label><input type="number" min="0" step="0.01" id="invCustos" value="0" class="w-full bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none"></div>
-      <div class="sm:col-span-2"><label class="block text-xs text-slate-400 mb-1">Observações (opcional)</label><input id="invObs" maxlength="250" placeholder="Ex.: primeiro aporte da carteira" class="w-full bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none"></div>
-      <div class="sm:col-span-2"><label class="block text-xs text-slate-400 mb-1">Comprovante (imagem ou PDF, até 8 MB)</label><input type="file" id="invComprovante" accept="image/jpeg,image/png,image/webp,application/pdf" class="w-full text-xs text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-900 file:px-3 file:py-2 file:text-emerald-200"><p id="invArquivoNome" class="text-[11px] text-slate-500 mt-1">Nenhum arquivo selecionado. O comprovante ficará privado no seu Google Drive.</p></div>
+  <!-- ========================================================= -->
+  <!-- ABA 1: FINANÇAS                                           -->
+  <!-- ========================================================= -->
+  <div id="secaoFinancas" class="space-y-6 section-enter">
+
+    <!-- Status do Orçamento -->
+    <div id="budgetAlertBox" class="hidden rounded-2xl p-4 border transition-all duration-300">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div id="alertIconBg" class="w-9 h-9 rounded-xl text-sm flex items-center justify-center shrink-0">
+            <i id="alertIcon" class="fa-solid"></i>
+          </div>
+          <div>
+            <h4 id="alertTitle" class="text-sm font-semibold tracking-tight"></h4>
+            <p id="alertSubtitle" class="text-xs opacity-80 mt-0.5"></p>
+          </div>
+        </div>
+        <span id="alertBadge" class="text-[11px] font-semibold px-2.5 py-1 rounded-md uppercase tracking-wider shrink-0"></span>
+      </div>
     </div>
-    <div class="flex flex-col sm:flex-row gap-2"><button id="btnSalvarInvestimento" onclick="salvarInvestimento()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Salvar operação e comprovante</button><button onclick="limparFormInvestimento()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-3 rounded-xl text-xs font-bold">Limpar</button></div>
-    <p class="text-[11px] text-slate-500">Atenção: o painel registra os valores informados por você. A rentabilidade e a cotação atual não são calculadas automaticamente nesta primeira versão.</p>
+
+    <!-- KPIs Principais -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Total Gasto -->
+      <div class="surface-card surface-card-interactive rounded-2xl p-5 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-medium text-zinc-400">Total Gasto <span class="text-zinc-600">• Mês atual</span></p>
+            <span class="w-2 h-2 rounded-full bg-rose-400/80"></span>
+          </div>
+          <p class="text-3xl font-semibold tracking-tight text-white font-mono-num mt-2" id="totalGasto">R$ 0,00</p>
+        </div>
+        <div class="mt-5 space-y-2">
+          <div class="bg-white/[0.05] rounded-full h-1.5 overflow-hidden">
+            <div id="barProgress" class="bg-indigo-400 h-full w-0 rounded-full transition-all duration-700 ease-out"></div>
+          </div>
+          <div class="text-[11px] text-zinc-400 flex items-center justify-between">
+            <span>Teto: <strong class="text-zinc-200 font-mono-num font-medium">R$ <span id="metaVal">3.000,00</span></strong></span>
+            <button onclick="abrirModal('modalMeta')" class="text-indigo-300 hover:text-indigo-200 font-medium transition-colors">Ajustar teto</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Maior Categoria -->
+      <div class="surface-card surface-card-interactive rounded-2xl p-5 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-medium text-zinc-400">Maior Concentração</p>
+            <span class="text-[11px] font-medium text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-md" id="topCategoriaName">-</span>
+          </div>
+          <p class="text-3xl font-semibold tracking-tight text-white font-mono-num mt-2" id="topCategoriaValor">R$ 0,00</p>
+        </div>
+        <p class="text-[11px] text-zinc-400 mt-5" id="topCategoriaPercent">
+          Representa <span class="text-zinc-200 font-semibold font-mono-num">0%</span> do orçamento mensal
+        </p>
+      </div>
+
+      <!-- Comprovantes -->
+      <div class="surface-card surface-card-interactive rounded-2xl p-5 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-medium text-zinc-400">Lançamentos no Mês</p>
+            <i class="fa-solid fa-receipt text-xs text-zinc-600"></i>
+          </div>
+          <p class="text-3xl font-semibold tracking-tight text-white font-mono-num mt-2" id="totalLidos">0</p>
+        </div>
+        <p class="text-[11px] text-zinc-400 mt-5 flex items-center gap-1.5">
+          <i class="fa-solid fa-check text-emerald-400 text-[10px]"></i>
+          <span>Armazenados na nuvem MaRa</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Importação de Comprovante / Novo Gasto -->
+    <div class="surface-card rounded-2xl p-6 space-y-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-semibold text-white flex items-center gap-2">
+            <i class="fa-solid fa-file-invoice-dollar text-indigo-400 text-xs"></i>
+            Novo Registro & Comprovante
+          </h2>
+          <p class="text-xs text-zinc-500 mt-0.5">Anexe um print, foto ou PDF para catalogar automaticamente</p>
+        </div>
+      </div>
+
+      <div class="group border border-dashed border-white/[0.12] hover:border-indigo-400/50 rounded-2xl p-7 text-center transition-all cursor-pointer bg-white/[0.015] hover:bg-indigo-500/[0.03] flex flex-col items-center justify-center" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept="image/*,.pdf" class="hidden" onchange="processarArquivo(event)">
+        <div class="w-11 h-11 rounded-xl bg-white/[0.04] border border-white/[0.08] group-hover:border-indigo-400/30 group-hover:text-indigo-300 text-zinc-400 flex items-center justify-center mb-3 transition-colors">
+          <i class="fa-solid fa-arrow-up-from-bracket text-base"></i>
+        </div>
+        <p class="text-sm font-medium text-zinc-200 group-hover:text-white transition-colors">Selecionar imagem ou PDF</p>
+        <p class="text-[11px] text-zinc-500 mt-1">Toque para abrir a câmera ou galeria</p>
+      </div>
+
+      <div id="formConfirmacao" class="hidden surface-inset rounded-2xl p-5 space-y-4 section-enter">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div>
+            <label class="block text-[11px] font-medium text-zinc-400 mb-1">Estabelecimento / Descrição</label>
+            <input type="text" id="descInput" placeholder="Ex.: Supermercado" class="field-input w-full rounded-xl px-3 py-2.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-zinc-400 mb-1">Valor (R$)</label>
+            <input type="number" step="0.01" id="valorInput" placeholder="0,00" class="field-input w-full rounded-xl px-3 py-2.5 text-sm font-semibold text-rose-300 font-mono-num">
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-zinc-400 mb-1">Data</label>
+            <input type="date" id="dataInput" class="field-input w-full rounded-xl px-3 py-2.5 text-sm font-mono-num">
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-zinc-400 mb-1">Categoria</label>
+            <select id="categoriaInput" class="field-input w-full rounded-xl px-3 py-2.5 text-sm">
+              <option>Alimentação</option><option>Supermercado</option><option>Transporte</option><option>Lazer</option><option>Saúde</option><option>Farmácia</option><option>Cartão de Crédito</option><option>Educação</option><option>Moradia</option><option>Doações</option><option>Outros</option>
+            </select>
+          </div>
+        </div>
+        <button onclick="salvarGasto()" id="btnSalvar" class="btn-tactile btn-primary w-full font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+          <span>Confirmar e Enviar para Planilha</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Histórico & Ranking -->
+    <div class="space-y-6">
+      <div class="surface-card rounded-2xl p-5">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h3 class="text-sm font-semibold text-white">Histórico de Lançamentos</h3>
+            <p class="text-xs text-zinc-500 mt-0.5">Registros recentes sincronizados</p>
+          </div>
+          <span id="loadingMsg" class="text-xs text-indigo-300 hidden flex items-center gap-1.5">
+            <i class="fa-solid fa-spinner fa-spin"></i> Sincronizando
+          </span>
+        </div>
+        <div class="overflow-x-auto max-h-[480px] overflow-y-auto rounded-xl border border-white/[0.05]">
+          <table class="w-full text-left text-sm text-zinc-300 border-collapse">
+            <thead class="text-[11px] uppercase tracking-wider bg-[#08090d] border-b border-white/[0.06] text-zinc-500 sticky top-0 z-10">
+              <tr>
+                <th class="py-3 px-3.5 font-medium">Data</th>
+                <th class="py-3 px-3.5 font-medium">Descrição</th>
+                <th class="py-3 px-3.5 font-medium">Categoria</th>
+                <th class="py-3 px-3.5 font-medium text-right">Valor</th>
+                <th class="py-3 px-3.5 font-medium text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaGastos" class="divide-y divide-white/[0.04]">
+              <tr><td colspan="5" class="p-6 text-center text-xs text-zinc-500">Carregando dados...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="surface-card rounded-2xl p-6">
+        <div class="mb-4">
+          <h3 class="text-sm font-semibold text-white">Distribuição por Categoria</h3>
+          <p class="text-xs text-zinc-500 mt-0.5">Ranking de despesas no mês vigente</p>
+        </div>
+        <div class="chart-box"><canvas id="chartCategorias"></canvas></div>
+      </div>
+    </div>
   </div>
 
-  <div class="bg-[#111827]/90 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4"><div><h3 class="text-base font-bold text-indigo-300">Histórico de investimentos</h3><p class="text-xs text-slate-400">Cada comprovante pode ser aberto pelo link na tabela.</p></div><span id="invStatus" class="text-[11px] text-slate-500">Aguardando dados</span></div>
-    <div class="overflow-x-auto"><table class="w-full text-left text-xs text-slate-300"><thead class="bg-black/60 text-slate-400 uppercase"><tr><th class="p-3">Data</th><th class="p-3">Operação / Ativo</th><th class="p-3 text-right">Valor</th><th class="p-3 text-right">Quantidade</th><th class="p-3 text-center">Comprovante</th><th class="p-3 text-center">Ação</th></tr></thead><tbody id="tabelaInvestimentos"><tr><td colspan="6" class="p-4 text-center text-slate-500">Nenhuma operação registrada.</td></tr></tbody></table></div>
+  <!-- ========================================================= -->
+  <!-- ABA 2: DASHBOARDS ANALÍTICOS                              -->
+  <!-- ========================================================= -->
+  <div id="secaoDashboards" class="space-y-6 hidden section-enter">
+    <div class="surface-card rounded-2xl p-6 space-y-5">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-sm font-semibold text-white flex items-center gap-2">
+            <i class="fa-solid fa-layer-group text-indigo-400 text-xs"></i>
+            Análise por Categoria
+          </h2>
+          <p class="text-xs text-zinc-500 mt-0.5">Filtre lançamentos específicos e observe a média por ticket</p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto">
+          <select id="filtroCatDashboard" onchange="atualizarDashboardCategoria()" class="field-input text-xs rounded-xl px-3.5 py-2 font-medium">
+            <option value="TODAS">Todas as Categorias</option><option>Alimentação</option><option>Supermercado</option><option>Transporte</option><option>Lazer</option><option>Saúde</option><option>Farmácia</option><option>Cartão de Crédito</option><option>Educação</option><option>Moradia</option><option>Doações</option><option>Outros</option>
+          </select>
+          <select id="filtroQtdUltimos" onchange="atualizarDashboardCategoria()" class="field-input text-xs rounded-xl px-3.5 py-2 font-medium text-emerald-300">
+            <option value="10">Últimos 10</option><option value="20" selected>Últimos 20</option><option value="50">Últimos 50</option><option value="ALL">Todos da Categoria</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <div class="surface-inset rounded-xl p-4">
+          <p class="text-[11px] text-zinc-500 font-medium">Total na Seleção</p>
+          <p id="catDashTotal" class="text-2xl font-semibold text-rose-300 font-mono-num mt-1">R$ 0,00</p>
+        </div>
+        <div class="surface-inset rounded-xl p-4">
+          <p class="text-[11px] text-zinc-500 font-medium">Lançamentos Exibidos</p>
+          <p id="catDashQtd" class="text-2xl font-semibold text-white font-mono-num mt-1">0</p>
+        </div>
+        <div class="surface-inset rounded-xl p-4">
+          <p class="text-[11px] text-zinc-500 font-medium">Ticket Médio</p>
+          <p id="catDashMedia" class="text-2xl font-semibold text-emerald-300 font-mono-num mt-1">R$ 0,00</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="surface-card rounded-2xl p-5">
+      <h3 class="text-sm font-semibold text-white mb-4" id="tituloListaCategoria">Últimos Pagamentos</h3>
+      <div class="overflow-x-auto max-h-[500px] overflow-y-auto rounded-xl border border-white/[0.05]">
+        <table class="w-full text-left text-sm text-zinc-300 border-collapse">
+          <thead class="text-[11px] uppercase tracking-wider bg-[#08090d] border-b border-white/[0.06] text-zinc-500 sticky top-0 z-10">
+            <tr>
+              <th class="py-3 px-3.5 font-medium">Data</th>
+              <th class="py-3 px-3.5 font-medium">Descrição</th>
+              <th class="py-3 px-3.5 font-medium">Categoria</th>
+              <th class="py-3 px-3.5 font-medium text-right">Valor</th>
+              <th class="py-3 px-3.5 font-medium text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaGastosCategoria" class="divide-y divide-white/[0.04]">
+            <tr><td colspan="5" class="p-6 text-center text-xs text-zinc-500">Selecione uma categoria.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="surface-card rounded-2xl p-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
+        <div>
+          <h3 class="text-sm font-semibold text-white">Evolução Mensal</h3>
+          <p class="text-xs text-zinc-500 mt-0.5">Histórico consolidado mês a mês</p>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <label for="filtroCategoriaMeses" class="text-xs text-zinc-500 whitespace-nowrap">Categoria:</label>
+          <select id="filtroCategoriaMeses" onchange="renderGraficoMeses(gastos)" class="field-input text-xs rounded-xl px-3 py-1.5 w-full sm:w-auto font-medium">
+            <option value="TODAS">Todas (Total)</option><option>Alimentação</option><option>Supermercado</option><option>Transporte</option><option>Lazer</option><option>Saúde</option><option>Farmácia</option><option>Cartão de Crédito</option><option>Educação</option><option>Moradia</option><option>Doações</option><option>Outros</option>
+          </select>
+        </div>
+      </div>
+      <div class="chart-box"><canvas id="chartComparacaoMeses"></canvas></div>
+    </div>
+
+    <div class="surface-card rounded-2xl p-6">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-5">
+        <div>
+          <h3 class="text-sm font-semibold text-white">Comparativo Lado a Lado</h3>
+          <p class="text-xs text-zinc-500 mt-0.5">Contraste entre dois períodos selecionados</p>
+        </div>
+        <div class="flex items-center gap-2 w-full md:w-auto">
+          <select id="selectMesA" onchange="renderGraficoComparativoDoisMeses()" class="field-input text-indigo-300 text-xs rounded-xl px-3 py-1.5 font-medium flex-1 md:flex-none"></select>
+          <span class="text-xs text-zinc-600 font-medium">vs</span>
+          <select id="selectMesB" onchange="renderGraficoComparativoDoisMeses()" class="field-input text-emerald-300 text-xs rounded-xl px-3 py-1.5 font-medium flex-1 md:flex-none"></select>
+        </div>
+      </div>
+      <div class="chart-box tall"><canvas id="chartDoisMeses"></canvas></div>
+    </div>
+
+    <div class="surface-card rounded-2xl p-6">
+      <div class="mb-5">
+        <h3 class="text-sm font-semibold text-white">Curva de Queima Diária vs. Teto</h3>
+        <p class="text-xs text-zinc-500 mt-0.5">Ritmo acumulado comparado à projeção ideal e ao mês anterior</p>
+      </div>
+      <div class="chart-box"><canvas id="chartRitmoAcumulado"></canvas></div>
+    </div>
   </div>
-</div>
+
+  <!-- ========================================================= -->
+  <!-- ABA 3: ALERTAS DE VOZ & COTAÇÕES                          -->
+  <!-- ========================================================= -->
+  <div id="secaoAlertas" class="space-y-6 hidden section-enter">
+    <div class="surface-card rounded-2xl p-6 space-y-5">
+      <div class="flex flex-wrap justify-between items-center gap-3">
+        <div>
+          <h2 class="text-sm font-semibold text-white flex items-center gap-2">
+            <i class="fa-solid fa-coins text-amber-400 text-xs"></i>
+            Monitor de Câmbio & Metais
+          </h2>
+          <p class="text-xs text-zinc-500 mt-0.5">Cotações atualizadas a cada 2 minutos</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="statusMonitor" class="inline-flex items-center gap-1.5 text-[11px] text-emerald-300 font-medium bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Ativo
+          </span>
+          <button onclick="buscarCotacoesAgora()" class="btn-tactile btn-ghost text-xs px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5">
+            <i class="fa-solid fa-arrows-rotate text-[11px]"></i> Atualizar
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div class="surface-inset p-3.5 rounded-xl">
+          <p class="text-[11px] text-zinc-500 flex items-center justify-between"><span>USD</span><i class="fa-solid fa-dollar-sign text-emerald-400/70"></i></p>
+          <p id="cotacaoUSD" class="text-lg font-semibold text-white font-mono-num mt-1.5">...</p>
+        </div>
+        <div class="surface-inset p-3.5 rounded-xl">
+          <p class="text-[11px] text-zinc-500 flex items-center justify-between"><span>EUR</span><i class="fa-solid fa-euro-sign text-indigo-400/70"></i></p>
+          <p id="cotacaoEUR" class="text-lg font-semibold text-white font-mono-num mt-1.5">...</p>
+        </div>
+        <div class="surface-inset p-3.5 rounded-xl border-amber-500/25">
+          <p class="text-[11px] text-amber-300/90 font-medium flex items-center justify-between"><span>XAU / g</span><i class="fa-solid fa-cubes-stacked text-amber-400"></i></p>
+          <p id="cotacaoXAU" class="text-lg font-semibold text-amber-300 font-mono-num mt-1.5">...</p>
+        </div>
+        <div class="surface-inset p-3.5 rounded-xl">
+          <p class="text-[11px] text-zinc-500 flex items-center justify-between"><span>BTC</span><i class="fa-brands fa-bitcoin text-amber-500/70"></i></p>
+          <p id="cotacaoBTC" class="text-lg font-semibold text-white font-mono-num mt-1.5">...</p>
+        </div>
+        <div class="surface-inset p-3.5 rounded-xl">
+          <p class="text-[11px] text-zinc-500 flex items-center justify-between"><span>ETH</span><i class="fa-brands fa-ethereum text-purple-400/70"></i></p>
+          <p id="cotacaoETH" class="text-lg font-semibold text-white font-mono-num mt-1.5">...</p>
+        </div>
+        <div class="surface-inset p-3.5 rounded-xl">
+          <p class="text-[11px] text-zinc-500 flex items-center justify-between"><span>GBP</span><i class="fa-solid fa-sterling-sign text-sky-400/70"></i></p>
+          <p id="cotacaoGBP" class="text-lg font-semibold text-white font-mono-num mt-1.5">...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="surface-card rounded-2xl p-6 space-y-4">
+      <div>
+        <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+          <i class="fa-solid fa-bullseye text-indigo-400 text-xs"></i>
+          Gatilho de Preço & Alarme de Voz
+        </h3>
+        <p class="text-xs text-zinc-500 mt-0.5">Receba um aviso falado assim que o ativo cruzar o patamar desejado</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <select id="alvoAtivo" class="field-input rounded-xl px-3.5 py-2.5 text-sm">
+          <option value="USD">Dólar (USD)</option><option value="EUR">Euro (EUR)</option><option value="XAU">Ouro / grama</option><option value="BTC">Bitcoin</option><option value="ETH">Ethereum</option><option value="GBP">Libra</option>
+        </select>
+        <select id="alvoCondicao" class="field-input rounded-xl px-3.5 py-2.5 text-sm">
+          <option value="menor">Cair abaixo de (&lt;)</option><option value="maior">Subir acima de (&gt;)</option>
+        </select>
+        <input type="number" step="0.01" id="alvoValor" placeholder="Preço Alvo (R$)" class="field-input text-emerald-300 font-semibold font-mono-num rounded-xl px-3.5 py-2.5 text-sm">
+      </div>
+
+      <div class="flex gap-2.5 pt-1">
+        <button onclick="adicionarAlvo()" class="btn-tactile btn-primary flex-1 font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2">
+          <i class="fa-solid fa-plus text-xs"></i> Criar Alerta
+        </button>
+        <button onclick="testarAlarmeVoz()" class="btn-tactile btn-ghost text-amber-300 px-5 py-3 rounded-xl text-sm font-medium flex items-center gap-2">
+          <i class="fa-solid fa-volume-high text-xs"></i> Testar Voz
+        </button>
+      </div>
+    </div>
+
+    <div class="surface-card rounded-2xl p-6 space-y-4">
+      <h3 class="text-sm font-semibold text-white">Alertas Configurados</h3>
+      <div id="listaAlvos" class="space-y-2.5">
+        <p class="text-xs text-zinc-500">Nenhum alvo cadastrado.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- ABA 4: INVESTIMENTOS                                      -->
+  <!-- ========================================================= -->
+  <div id="secaoInvestimentos" class="space-y-6 hidden section-enter">
+    <div class="surface-card rounded-2xl p-6 space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-semibold text-white flex items-center gap-2">
+            <i class="fa-solid fa-chart-line text-emerald-400 text-xs"></i>
+            Carteira de Investimentos
+          </h2>
+          <p class="text-xs text-zinc-500 mt-0.5">Aportes, resgates e notas de corretagem isolados das despesas</p>
+        </div>
+        <button onclick="carregarInvestimentos()" class="btn-tactile btn-ghost text-emerald-300 text-xs px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5 self-start sm:self-auto">
+          <i class="fa-solid fa-rotate text-[11px]"></i> Atualizar carteira
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <div class="surface-inset rounded-xl p-4">
+          <p class="text-[11px] text-zinc-500 font-medium">Capital Líquido Aportado</p>
+          <p id="invTotalAportado" class="text-2xl font-semibold text-emerald-300 font-mono-num mt-1">R$ 0,00</p>
+        </div>
+        <div class="surface-inset rounded-xl p-4">
+          <p class="text-[11px] text-zinc-500 font-medium">Operações Executadas</p>
+          <p id="invQtdOperacoes" class="text-2xl font-semibold text-white font-mono-num mt-1">0</p>
+        </div>
+        <div class="surface-inset rounded-xl p-4">
+          <p class="text-[11px] text-zinc-500 font-medium">Notas Arquivadas</p>
+          <p id="invQtdComprovantes" class="text-2xl font-semibold text-amber-300 font-mono-num mt-1">0</p>
+        </div>
+      </div>
+
+      <div class="surface-inset rounded-2xl p-5">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-xs font-semibold text-zinc-200">Alocação por Ativo (Custo de Aquisição)</h3>
+          <span class="text-[10px] text-zinc-500">Baseado nos aportes líquidos</span>
+        </div>
+        <div class="chart-box" style="height:230px"><canvas id="chartInvestimentos"></canvas></div>
+      </div>
+    </div>
+
+    <div class="surface-card rounded-2xl p-6 space-y-5">
+      <div>
+        <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+          <i class="fa-solid fa-circle-plus text-emerald-400 text-xs"></i>
+          Registrar Nova Operação
+        </h3>
+        <p class="text-xs text-zinc-500 mt-0.5">Cadastre compras ou resgates e anexe a confirmação da corretora</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div>
+          <label class="block text-[11px] font-medium text-zinc-400 mb-1">Data da operação</label>
+          <input type="date" id="invData" class="field-input w-full rounded-xl px-3.5 py-2.5 text-sm font-mono-num">
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-zinc-400 mb-1">Natureza</label>
+          <select id="invTipo" class="field-input w-full rounded-xl px-3.5 py-2.5 text-sm">
+            <option value="Compra">Compra / Aporte</option>
+            <option value="Venda">Venda</option>
+            <option value="Resgate">Resgate</option>
+          </select>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-[11px] font-medium text-zinc-400 mb-1">Ativo / Título</label>
+          <input id="invAtivo" list="invAtivosLista" value="VWRA11" placeholder="Ex.: VWRA11 ou Tesouro RendA+ 2065" class="field-input w-full rounded-xl px-3.5 py-2.5 text-sm">
+          <datalist id="invAtivosLista">
+            <option value="VWRA11"><option value="Tesouro RendA+ 2060"><option value="Tesouro RendA+ 2065"><option value="Tesouro IPCA+">
+          </datalist>
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-zinc-400 mb-1">Valor total (R$)</label>
+          <input type="number" min="0.01" step="0.01" id="invValor" placeholder="Ex.: 300,00" class="field-input w-full text-emerald-300 font-semibold font-mono-num rounded-xl px-3.5 py-2.5 text-sm">
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-zinc-400 mb-1">Quantidade (opcional)</label>
+          <input type="number" min="0" step="0.000001" id="invQuantidade" placeholder="Cotas ou frações" class="field-input w-full font-mono-num rounded-xl px-3.5 py-2.5 text-sm">
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-zinc-400 mb-1">Preço unitário (opcional)</label>
+          <input type="number" min="0" step="0.0001" id="invPreco" placeholder="Valor por cota" class="field-input w-full font-mono-num rounded-xl px-3.5 py-2.5 text-sm">
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-zinc-400 mb-1">Taxas / Emolumentos (opcional)</label>
+          <input type="number" min="0" step="0.01" id="invCustos" value="0" class="field-input w-full font-mono-num rounded-xl px-3.5 py-2.5 text-sm">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-[11px] font-medium text-zinc-400 mb-1">Observações (opcional)</label>
+          <input id="invObs" maxlength="250" placeholder="Ex.: aporte mensal recorrente" class="field-input w-full rounded-xl px-3.5 py-2.5 text-sm">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-[11px] font-medium text-zinc-400 mb-1">Comprovante (imagem ou PDF, até 8 MB)</label>
+          <input type="file" id="invComprovante" accept="image/jpeg,image/png,image/webp,application/pdf" class="w-full text-xs text-zinc-400 file:mr-3 file:rounded-lg file:border file:border-emerald-500/25 file:bg-emerald-500/10 file:px-3.5 file:py-2 file:text-emerald-300 file:font-medium hover:file:bg-emerald-500/20 file:transition-colors file:cursor-pointer">
+          <p id="invArquivoNome" class="text-[11px] text-zinc-500 mt-1.5">Nenhum arquivo selecionado. O comprovante ficará privado no Google Drive.</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-2.5 pt-1">
+        <button id="btnSalvarInvestimento" onclick="salvarInvestimento()" class="btn-tactile btn-emerald flex-1 font-semibold py-3 rounded-xl text-sm flex items-center justify-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up text-xs"></i> Salvar Operação e Comprovante
+        </button>
+        <button onclick="limparFormInvestimento()" class="btn-tactile btn-ghost px-5 py-3 rounded-xl text-xs font-medium">
+          Limpar Campos
+        </button>
+      </div>
+    </div>
+
+    <div class="surface-card rounded-2xl p-5">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+        <div>
+          <h3 class="text-sm font-semibold text-white">Livro de Operações</h3>
+          <p class="text-xs text-zinc-500 mt-0.5">Comprovantes acessíveis diretamente pelo anexo</p>
+        </div>
+        <span id="invStatus" class="text-[11px] text-zinc-500 font-mono-num">Aguardando dados</span>
+      </div>
+      <div class="overflow-x-auto rounded-xl border border-white/[0.05]">
+        <table class="w-full text-left text-xs text-zinc-300 border-collapse">
+          <thead class="text-[11px] uppercase tracking-wider bg-[#08090d] border-b border-white/[0.06] text-zinc-500">
+            <tr>
+              <th class="py-3 px-3.5 font-medium">Data</th>
+              <th class="py-3 px-3.5 font-medium">Operação / Ativo</th>
+              <th class="py-3 px-3.5 font-medium text-right">Valor</th>
+              <th class="py-3 px-3.5 font-medium text-right">Qtd.</th>
+              <th class="py-3 px-3.5 font-medium text-center">Anexo</th>
+              <th class="py-3 px-3.5 font-medium text-center">Ação</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaInvestimentos" class="divide-y divide-white/[0.04]">
+            <tr><td colspan="6" class="p-6 text-center text-zinc-500">Nenhuma operação registrada.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </main>
 
-<div id="modalMeta" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-<div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-<h3 class="text-lg font-bold text-indigo-300"><i class="fa-solid fa-bullseye"></i> Definir Meta Mensal</h3>
-<input type="number" step="0.01" id="novaMetaInput" placeholder="3000,00" class="w-full bg-black border border-slate-700 text-emerald-400 font-extrabold text-base rounded-xl p-3 outline-none">
-<div class="flex gap-2 justify-end">
-<button onclick="fecharModal('modalMeta')" class="px-4 py-2 text-xs font-bold text-slate-400">Cancelar</button>
-<button onclick="salvarMeta()" class="px-5 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl">Salvar</button>
-</div>
-</div>
-</div>
-
-<div id="modalEditar" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-<div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
-<h3 class="text-lg font-bold text-indigo-300"><i class="fa-solid fa-pen-to-square"></i> Editar Lançamento</h3>
-<input type="text" id="editDesc" placeholder="Descrição" class="w-full bg-black border border-slate-700 text-slate-100 rounded-xl p-3 outline-none">
-<div class="grid grid-cols-2 gap-3">
-<input type="number" step="0.01" id="editValor" placeholder="Valor" class="w-full bg-black border border-slate-700 text-red-400 font-bold rounded-xl p-3 outline-none">
-<input type="date" id="editData" class="w-full bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none">
-</div>
-<select id="editCategoria" class="w-full bg-black border border-slate-700 text-slate-200 rounded-xl p-3 outline-none">
-<option>Alimentação</option><option>Supermercado</option><option>Transporte</option><option>Lazer</option><option>Saúde</option><option>Farmácia</option><option>Cartão de Crédito</option><option>Educação</option><option>Moradia</option><option>Doações</option><option>Outros</option>
-</select>
-<div class="flex gap-2 justify-end">
-<button onclick="fecharModal('modalEditar')" class="px-4 py-2 text-xs font-bold text-slate-400">Cancelar</button>
-<button onclick="salvarEdicao()" class="px-5 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl">Salvar</button>
-</div>
-</div>
+<!-- MODAL: EDITAR META -->
+<div id="modalMeta" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+  <div class="surface-card rounded-2xl p-6 max-w-sm w-full space-y-4 modal-card-enter">
+    <div class="space-y-1">
+      <h3 class="text-base font-semibold text-white flex items-center gap-2">
+        <i class="fa-solid fa-bullseye text-indigo-400 text-xs"></i> Teto Mensal
+      </h3>
+      <p class="text-xs text-zinc-500">Defina o limite de despesas para o mês atual</p>
+    </div>
+    <input type="number" step="0.01" id="novaMetaInput" placeholder="3000,00" class="field-input w-full text-emerald-300 font-semibold font-mono-num text-base rounded-xl px-3.5 py-3">
+    <div class="flex gap-2 justify-end pt-1">
+      <button onclick="fecharModal('modalMeta')" class="btn-tactile btn-ghost px-4 py-2 text-xs font-medium rounded-xl">Cancelar</button>
+      <button onclick="salvarMeta()" class="btn-tactile btn-primary px-5 py-2 text-xs font-semibold rounded-xl">Salvar Teto</button>
+    </div>
+  </div>
 </div>
 
-<div id="modalExcluir" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-<div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-<h3 class="text-lg font-bold text-white"><i class="fa-solid fa-triangle-exclamation text-red-400"></i> Confirmar Exclusão</h3>
-<p class="text-sm text-slate-300" id="textConfirmExcluir">Tem certeza?</p>
-<div class="flex gap-2 justify-end">
-<button onclick="fecharModal('modalExcluir')" class="px-4 py-2 text-xs font-bold text-slate-400">Cancelar</button>
-<button id="btnConfirmarExclusao" class="px-5 py-2 text-xs font-bold bg-red-600 text-white rounded-xl">Excluir</button>
+<!-- MODAL: EDITAR LANÇAMENTO -->
+<div id="modalEditar" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+  <div class="surface-card rounded-2xl p-6 max-w-md w-full space-y-4 modal-card-enter">
+    <h3 class="text-base font-semibold text-white flex items-center gap-2">
+      <i class="fa-solid fa-pen-to-square text-indigo-400 text-xs"></i> Editar Lançamento
+    </h3>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-[11px] font-medium text-zinc-400 mb-1">Descrição</label>
+        <input type="text" id="editDesc" placeholder="Descrição" class="field-input w-full rounded-xl px-3.5 py-2.5 text-sm">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-[11px] font-medium text-zinc-400 mb-1">Valor (R$)</label>
+          <input type="number" step="0.01" id="editValor" placeholder="Valor" class="field-input w-full text-rose-300 font-semibold font-mono-num rounded-xl px-3.5 py-2.5 text-sm">
+        </div>
+        <div>
+          <label class="block text-[11px] font-medium text-zinc-400 mb-1">Data</label>
+          <input type="date" id="editData" class="field-input w-full font-mono-num rounded-xl px-3.5 py-2.5 text-sm">
+        </div>
+      </div>
+      <div>
+        <label class="block text-[11px] font-medium text-zinc-400 mb-1">Categoria</label>
+        <select id="editCategoria" class="field-input w-full rounded-xl px-3.5 py-2.5 text-sm">
+          <option>Alimentação</option><option>Supermercado</option><option>Transporte</option><option>Lazer</option><option>Saúde</option><option>Farmácia</option><option>Cartão de Crédito</option><option>Educação</option><option>Moradia</option><option>Doações</option><option>Outros</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex gap-2 justify-end pt-1">
+      <button onclick="fecharModal('modalEditar')" class="btn-tactile btn-ghost px-4 py-2 text-xs font-medium rounded-xl">Cancelar</button>
+      <button onclick="salvarEdicao()" class="btn-tactile btn-primary px-5 py-2 text-xs font-semibold rounded-xl">Salvar Alterações</button>
+    </div>
+  </div>
 </div>
-</div>
+
+<!-- MODAL: EXCLUIR LANÇAMENTO -->
+<div id="modalExcluir" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+  <div class="surface-card rounded-2xl p-6 max-w-sm w-full space-y-4 modal-card-enter">
+    <h3 class="text-base font-semibold text-white flex items-center gap-2">
+      <i class="fa-solid fa-triangle-exclamation text-rose-400 text-xs"></i> Confirmar Exclusão
+    </h3>
+    <p class="text-xs text-zinc-400 leading-relaxed" id="textConfirmExcluir">Tem certeza?</p>
+    <div class="flex gap-2 justify-end pt-1">
+      <button onclick="fecharModal('modalExcluir')" class="btn-tactile btn-ghost px-4 py-2 text-xs font-medium rounded-xl">Cancelar</button>
+      <button id="btnConfirmarExclusao" class="btn-tactile px-5 py-2 text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white rounded-xl">Excluir Registro</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -334,9 +897,24 @@ let cotacoesAtuais={};
 let intervalCotacoes=null;
 let deferredPrompt=null;
 let chartResizeTimer=null;
+
+// Configuração global refinada para Chart.js
+Chart.defaults.font.family = "'Inter', -apple-system, sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#71717a';
+Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(9, 10, 15, 0.96)';
+Chart.defaults.plugins.tooltip.titleColor = '#f4f4f6';
+Chart.defaults.plugins.tooltip.bodyColor = '#d4d4d8';
+Chart.defaults.plugins.tooltip.borderColor = 'rgba(255, 255, 255, 0.1)';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.padding = 10;
+Chart.defaults.plugins.tooltip.cornerRadius = 10;
+Chart.defaults.plugins.tooltip.displayColors = true;
+Chart.defaults.plugins.tooltip.boxPadding = 4;
+
 document.getElementById('dataInput').valueAsDate=new Date();
+
 (function setupPWA(){
-  // 1. Cria o Manifesto apontando para a sua imagem física
   const manifest = {
     name: "Finanças MaRa",
     short_name: "Finanças MaRa",
@@ -345,45 +923,30 @@ document.getElementById('dataInput').valueAsDate=new Date();
     scope: ".",
     display: "minimal-ui",
     orientation: "portrait",
-    background_color: "#000000",
-    theme_color: "#000000",
+    background_color: "#050507",
+    theme_color: "#050507",
     icons: [
-      {
-        src: "icon-512.jpg",
-        sizes: "192x192",
-        type: "image/jpeg",
-        purpose: "any maskable"
-      },
-      {
-        src: "icon-512.jpg",
-        sizes: "512x512",
-        type: "image/jpeg",
-        purpose: "any maskable"
-      }
+      { src: "icon-512.jpg", sizes: "192x192", type: "image/jpeg", purpose: "any maskable" },
+      { src: "icon-512.jpg", sizes: "512x512", type: "image/jpeg", purpose: "any maskable" }
     ]
   };
-
-  // 2. Injeta o Manifesto no HTML
   const mBlob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
   const link = document.createElement('link');
   link.rel = 'manifest';
   link.href = URL.createObjectURL(mBlob);
   document.head.appendChild(link);
 
-  // 3. Injeta o ícone para dispositivos Apple (iPad/iPhone)
   const apple = document.createElement('link');
   apple.rel = 'apple-touch-icon';
   apple.href = 'icon-512.jpg';
   document.head.appendChild(apple);
 
-  // 4. Injeta o Favicon padrão
   const favicon = document.createElement('link');
   favicon.rel = 'icon';
   favicon.type = 'image/jpeg';
   favicon.href = 'icon-512.jpg';
   document.head.appendChild(favicon);
 
-  // 5. Service Worker (mantido igual para funcionar offline)
   if('serviceWorker' in navigator){
     const sw = `const C='mara-pwa-v1';self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(clients.claim())});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{const c=res.clone();caches.open(C).then(ca=>ca.put(e.request,c)).catch(()=>{});return res}).catch(()=>caches.match(e.request))))})`;
     const swUrl = URL.createObjectURL(new Blob([sw], {type:'application/javascript'}));
@@ -391,12 +954,26 @@ document.getElementById('dataInput').valueAsDate=new Date();
   }
 })();
 
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('btnInstalar').classList.remove('hidden')});
-window.addEventListener('appinstalled',()=>{deferredPrompt=null;document.getElementById('btnInstalar').classList.add('hidden')});
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredPrompt=e;
+  document.getElementById('btnInstalar')?.classList.remove('hidden');
+  document.getElementById('btnInstalarMobile')?.classList.remove('hidden');
+});
+window.addEventListener('appinstalled',()=>{
+  deferredPrompt=null;
+  document.getElementById('btnInstalar')?.classList.add('hidden');
+  document.getElementById('btnInstalarMobile')?.classList.add('hidden');
+});
 function instalarPWA(){
   if(!deferredPrompt){alert("Use o menu do navegador (⋮) → 'Instalar aplicativo'.\nSó funciona em HTTPS.");return}
   deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(c=>{if(c.outcome==='accepted')document.getElementById('btnInstalar').classList.add('hidden');deferredPrompt=null});
+  deferredPrompt.userChoice.then(c=>{
+    if(c.outcome==='accepted'){
+      document.getElementById('btnInstalar')?.classList.add('hidden');
+      document.getElementById('btnInstalarMobile')?.classList.add('hidden');
+    }
+    deferredPrompt=null;
+  });
 }
 
 function getToken(){return sessionStorage.getItem(TK_S)||localStorage.getItem(TK_L)||''}
@@ -409,8 +986,8 @@ function clearToken(){sessionStorage.removeItem(TK_S);localStorage.removeItem(TK
 function toggleSenha(){
   const inp=document.getElementById('senhaInput');
   const icon=document.getElementById('olhoIcon');
-  if(inp.type==='password'){inp.type='text';icon.className='fa-solid fa-eye-slash'}
-  else{inp.type='password';icon.className='fa-solid fa-eye'}
+  if(inp.type==='password'){inp.type='text';icon.className='fa-solid fa-eye-slash text-xs'}
+  else{inp.type='password';icon.className='fa-solid fa-eye text-xs'}
 }
 
 function mostrarErroSenha(msg){
@@ -449,9 +1026,9 @@ async function submeterSenha(){
   const token=inp.value.trim();
   if(!token){mostrarErroSenha('Digite a Chave de Acesso.');return}
   const btn=document.getElementById('btnEntrar');
-  btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Validando...';
+  btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin text-xs"></i><span>Validando...</span>';
   const r=await validarToken(token);
-  btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-right-to-bracket"></i> Entrar';
+  btn.disabled=false;btn.innerHTML='<span>Desbloquear Painel</span><i class="fa-solid fa-arrow-right text-xs opacity-80"></i>';
   if(!r.ok){
     if(r.motivo==='invalido')mostrarErroSenha('Chave inválida. Tente novamente.');
     else mostrarErroSenha('Não foi possível conectar. Verifique a internet.');
@@ -537,8 +1114,15 @@ function mudarAba(aba){
   abas.forEach(a=>{
     const btn=document.getElementById('tabBtn'+a.charAt(0).toUpperCase()+a.slice(1));
     const sec=document.getElementById('secao'+a.charAt(0).toUpperCase()+a.slice(1));
-    if(btn)btn.className=aba===a?"px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow":"px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
-    if(sec)sec.classList.toggle('hidden',aba!==a);
+    if(btn){
+      btn.className=aba===a
+        ?"btn-tactile px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap bg-white/[0.1] text-white shadow-sm border border-white/[0.08]"
+        :"btn-tactile px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap text-zinc-400 hover:text-zinc-200";
+    }
+    if(sec){
+      sec.classList.toggle('hidden',aba!==a);
+      if(aba===a){sec.classList.remove('section-enter');void sec.offsetWidth;sec.classList.add('section-enter')}
+    }
   });
   if(aba==='dashboards'){
     atualizarDashboardCategoria();renderGraficoMeses(gastos);popularSeletoresMeses(gastos);
@@ -553,6 +1137,7 @@ function mudarAba(aba){
 function formatarBRL(v){return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
 function dataHojeISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 document.getElementById('invData').value=dataHojeISO();
+
 document.getElementById('invComprovante').addEventListener('change',e=>{
   const f=e.target.files[0];arquivoInvestimentoBase64="";
   if(!f){document.getElementById('invArquivoNome').innerText='Nenhum arquivo selecionado.';return}
@@ -561,6 +1146,7 @@ document.getElementById('invComprovante').addEventListener('change',e=>{
   document.getElementById('invArquivoNome').innerText=f.name+' • '+(f.size/1024/1024).toFixed(2)+' MB';
   const r=new FileReader();r.onload=ev=>{arquivoInvestimentoBase64=ev.target.result};r.onerror=()=>alert('Não foi possível ler o arquivo.');r.readAsDataURL(f);
 });
+
 function aplicarInvestimentosNaTela(lista){investimentos=Array.isArray(lista)?lista:[];renderizarInvestimentos();}
 function renderizarInvestimentos(){
   const tbody=document.getElementById('tabelaInvestimentos');if(!tbody)return;
@@ -571,29 +1157,53 @@ function renderizarInvestimentos(){
   document.getElementById('invQtdOperacoes').innerText=String(investimentos.length);
   document.getElementById('invQtdComprovantes').innerText=String(comprovantes);
   tbody.innerHTML='';
-  if(!ordenados.length){tbody.innerHTML='<tr><td colspan="6" class="p-4 text-center text-slate-500">Nenhuma operação registrada. Cadastre seu primeiro aporte acima.</td></tr>'}
+  if(!ordenados.length){tbody.innerHTML='<tr><td colspan="6" class="p-6 text-center text-zinc-500">Nenhuma operação registrada. Cadastre seu primeiro aporte acima.</td></tr>'}
   else ordenados.forEach(op=>{
-    const tr=document.createElement('tr');tr.className='border-b border-slate-800 hover:bg-black/30';
-    const link=op.comprovanteUrl?`<a href="${escapeAttr(op.comprovanteUrl)}" target="_blank" rel="noopener noreferrer" class="text-emerald-300 hover:text-emerald-200" title="Abrir comprovante"><i class="fa-solid fa-paperclip"></i> Abrir</a>`:'<span class="text-slate-600">—</span>';
+    const tr=document.createElement('tr');tr.className='hover:bg-white/[0.02] transition-colors';
+    const link=op.comprovanteUrl?`<a href="${escapeAttr(op.comprovanteUrl)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-emerald-300 hover:text-emerald-200 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md text-[11px]" title="Abrir comprovante"><i class="fa-solid fa-paperclip text-[10px]"></i> Nota</a>`:'<span class="text-zinc-600">—</span>';
     const tipoClass=op.tipo==='Compra'?'text-emerald-300':'text-amber-300';
-    tr.innerHTML=`<td class="p-3 whitespace-nowrap text-slate-400">${escapeHtml(op.data||'')}</td><td class="p-3"><span class="${tipoClass} font-bold">${escapeHtml(op.tipo||'Compra')}</span><br><span class="text-slate-200 font-semibold">${escapeHtml(op.ativo||'')}</span>${op.observacoes?`<br><span class="text-[10px] text-slate-500">${escapeHtml(op.observacoes)}</span>`:''}</td><td class="p-3 text-right font-bold ${tipoClass}">${formatarBRL(op.valor)}</td><td class="p-3 text-right">${op.quantidade?Number(op.quantidade).toLocaleString('pt-BR',{maximumFractionDigits:6}):'—'}</td><td class="p-3 text-center">${link}</td><td class="p-3 text-center"><button onclick="excluirInvestimento('${escapeAttr(op.id)}')" class="text-slate-500 hover:text-red-400" title="Excluir registro"><i class="fa-solid fa-trash-can"></i></button></td>`;
+    tr.innerHTML=`<td class="py-3 px-3.5 whitespace-nowrap text-zinc-400 font-mono-num">${escapeHtml(op.data||'')}</td><td class="py-3 px-3.5"><span class="${tipoClass} font-semibold text-[11px] uppercase tracking-wider">${escapeHtml(op.tipo||'Compra')}</span><div class="text-zinc-100 font-medium mt-0.5">${escapeHtml(op.ativo||'')}</div>${op.observacoes?`<div class="text-[11px] text-zinc-500 mt-0.5">${escapeHtml(op.observacoes)}</div>`:''}</td><td class="py-3 px-3.5 text-right font-semibold font-mono-num ${tipoClass}">${formatarBRL(op.valor)}</td><td class="py-3 px-3.5 text-right font-mono-num text-zinc-300">${op.quantidade?Number(op.quantidade).toLocaleString('pt-BR',{maximumFractionDigits:6}):'—'}</td><td class="py-3 px-3.5 text-center">${link}</td><td class="py-3 px-3.5 text-center"><button onclick="excluirInvestimento('${escapeAttr(op.id)}')" class="text-zinc-500 hover:text-rose-400 p-1.5 transition-colors" title="Excluir registro"><i class="fa-solid fa-trash-can"></i></button></td>`;
     tbody.appendChild(tr);
   });
   const ativos=Object.entries(porAtivo).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
   const canvas=document.getElementById('chartInvestimentos');
-  if(canvas){if(chartInvestimentos)chartInvestimentos.destroy();chartInvestimentos=new Chart(canvas.getContext('2d'),{type:'doughnut',data:{labels:ativos.map(x=>x[0]),datasets:[{data:ativos.map(x=>x[1]),backgroundColor:['#10b981','#6366f1','#f59e0b','#06b6d4','#a78bfa','#f472b6'],borderColor:'#111827',borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#cbd5e1',padding:16}}}}});}
-  document.getElementById('invStatus').innerText='Atualizado em '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  if(canvas){
+    if(chartInvestimentos)chartInvestimentos.destroy();
+    chartInvestimentos=new Chart(canvas.getContext('2d'),{
+      type:'doughnut',
+      data:{
+        labels:ativos.map(x=>x[0]),
+        datasets:[{
+          data:ativos.map(x=>x[1]),
+          backgroundColor:['#34d399','#818cf8','#fbbf24','#38bdf8','#c084fc','#fb7185'],
+          borderColor:'#0b0c10',
+          borderWidth:3,
+          hoverOffset:4
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        cutout:'68%',
+        plugins:{
+          legend:{position:'bottom',labels:{color:'#a1a1aa',padding:16,usePointStyle:true,pointStyle:'circle'}}
+        }
+      }
+    });
+  }
+  document.getElementById('invStatus').innerText='Sync '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 }
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function escapeAttr(v){return escapeHtml(v).replace(/`/g,'&#96;');}
 function limparFormInvestimento(){['invValor','invQuantidade','invPreco','invObs'].forEach(id=>document.getElementById(id).value='');document.getElementById('invTipo').value='Compra';document.getElementById('invAtivo').value='VWRA11';document.getElementById('invCustos').value='0';document.getElementById('invData').value=dataHojeISO();document.getElementById('invComprovante').value='';document.getElementById('invArquivoNome').innerText='Nenhum arquivo selecionado.';arquivoInvestimentoBase64='';}
+
 async function salvarInvestimento(){
   const data=document.getElementById('invData').value,tipo=document.getElementById('invTipo').value,ativo=document.getElementById('invAtivo').value.trim();
   const valor=Number(document.getElementById('invValor').value),quantidade=Number(document.getElementById('invQuantidade').value)||0,preco=Number(document.getElementById('invPreco').value)||0,custos=Number(document.getElementById('invCustos').value)||0,observacoes=document.getElementById('invObs').value.trim();
   if(!data||!ativo||!Number.isFinite(valor)||valor<=0){alert('Informe a data, o ativo e um valor total válido.');return}
   if(document.getElementById('invComprovante').files[0]&&!arquivoInvestimentoBase64){alert('Aguarde o carregamento do comprovante ou selecione o arquivo novamente.');return}
-  const btn=document.getElementById('btnSalvarInvestimento');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
-  try{await enviarPostSeguro({action:'investimentoCreate',data,tipo,ativo,valor,quantidade,preco,custos,observacoes,comprovanteBase64:arquivoInvestimentoBase64,comprovanteNome:document.getElementById('invComprovante').files[0]?.name||''});alert('Operação enviada. O painel será atualizado após a sincronização com a planilha.');limparFormInvestimento();setTimeout(carregarDados,1800)}catch(e){alert(e.message||'Não foi possível salvar a operação.')}finally{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-cloud-arrow-up mr-1"></i> Salvar operação e comprovante';}
+  const btn=document.getElementById('btnSalvarInvestimento');btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin text-xs"></i><span>Salvando...</span>';
+  try{await enviarPostSeguro({action:'investimentoCreate',data,tipo,ativo,valor,quantidade,preco,custos,observacoes,comprovanteBase64:arquivoInvestimentoBase64,comprovanteNome:document.getElementById('invComprovante').files[0]?.name||''});alert('Operação enviada. O painel será atualizado após a sincronização com a planilha.');limparFormInvestimento();setTimeout(carregarDados,1800)}catch(e){alert(e.message||'Não foi possível salvar a operação.')}finally{btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-cloud-arrow-up text-xs"></i> Salvar Operação e Comprovante';}
 }
 async function excluirInvestimento(id){if(!confirm('Excluir este registro de investimento? O arquivo do comprovante também será enviado para a lixeira do Drive.'))return;try{await enviarPostSeguro({action:'investimentoDelete',id});setTimeout(carregarDados,1500)}catch(e){alert(e.message||'Não foi possível excluir o registro.')}}
 async function carregarInvestimentos(){await carregarDados();}
@@ -624,7 +1234,7 @@ async function salvarGasto(){
   const btn=document.getElementById('btnSalvar');
   if(!desc||isNaN(valor)||valor<=0)return alert("Preencha descrição e valor válidos!");
   btn.disabled=true;btn.classList.add('opacity-50','cursor-not-allowed');
-  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin text-xs"></i><span>Enviando...</span>';
   try{
     await enviarPostSeguro({data,desc,cat,valor,imagemBase64:arquivoBase64});
     document.getElementById('formConfirmacao').classList.add('hidden');
@@ -636,7 +1246,7 @@ async function salvarGasto(){
   }catch(err){alert(err.message||"Erro no envio.")}
   finally{
     btn.disabled=false;btn.classList.remove('opacity-50','cursor-not-allowed');
-    btn.innerHTML='<i class="fa-solid fa-cloud-arrow-up"></i> Confirmar e Enviar para a Planilha';
+    btn.innerHTML='<i class="fa-solid fa-cloud-arrow-up text-xs"></i><span>Confirmar e Enviar para Planilha</span>';
   }
 }
 
@@ -671,7 +1281,7 @@ async function salvarEdicao(){
 
 function abrirExcluir(id,desc,val){
   itemExcluindoId=id;
-  document.getElementById('textConfirmExcluir').innerText=`Deseja excluir "${desc}" de R$ ${Number(val).toFixed(2)}?`;
+  document.getElementById('textConfirmExcluir').innerText=`Deseja excluir "${desc}" no valor de R$ ${Number(val).toFixed(2)}?`;
   abrirModal('modalExcluir');
 }
 
@@ -685,17 +1295,17 @@ document.getElementById('btnConfirmarExclusao').onclick=async function(){
 function criarLinhaTabela(g){
   const valNum=parseNumero(g.valor);
   const row=document.createElement('tr');
-  row.className='border-b border-slate-800 hover:bg-black/40 transition';
-  const link=g.imagemUrl?`<a href="${g.imagemUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-400 text-xs font-bold mr-2"><i class="fa-solid fa-paperclip"></i></a>`:'';
+  row.className='hover:bg-white/[0.02] transition-colors';
+  const link=g.imagemUrl?`<a href="${g.imagemUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-300 hover:text-indigo-200 text-xs p-1 transition-colors" title="Ver comprovante"><i class="fa-solid fa-paperclip"></i></a>`:'';
   const descEsc=String(g.desc).replace(/'/g,"\\'");
-  row.innerHTML=`<td class="p-3 text-slate-400 text-xs">${g.data}</td><td class="p-3 font-semibold text-slate-200">${g.desc}</td><td class="p-3"><span class="bg-black/60 border border-slate-700 text-xs px-2 py-1 rounded text-indigo-300">${g.cat}</span></td><td class="p-3 text-right font-extrabold text-red-400">R$ ${valNum.toFixed(2)}</td><td class="p-3 text-center flex items-center justify-center gap-2">${link}<button onclick="abrirEditar('${g.rowId}','${descEsc}',${valNum},'${g.data}','${g.cat}')" class="text-slate-400 hover:text-indigo-400 p-1"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="abrirExcluir('${g.rowId}','${descEsc}',${valNum})" class="text-slate-500 hover:text-red-400 p-1"><i class="fa-solid fa-trash-can"></i></button></td>`;
+  row.innerHTML=`<td class="py-3 px-3.5 text-zinc-500 text-xs font-mono-num whitespace-nowrap">${g.data}</td><td class="py-3 px-3.5 font-medium text-zinc-100">${g.desc}</td><td class="py-3 px-3.5"><span class="bg-white/[0.04] border border-white/[0.07] text-[11px] px-2.5 py-0.5 rounded-md text-zinc-300">${g.cat}</span></td><td class="py-3 px-3.5 text-right font-semibold text-rose-300 font-mono-num whitespace-nowrap">R$ ${valNum.toFixed(2)}</td><td class="py-3 px-3.5 text-center"><div class="inline-flex items-center justify-center gap-1.5">${link}<button onclick="abrirEditar('${g.rowId}','${descEsc}',${valNum},'${g.data}','${g.cat}')" class="text-zinc-500 hover:text-indigo-300 p-1 transition-colors" title="Editar"><i class="fa-solid fa-pen-to-square text-xs"></i></button><button onclick="abrirExcluir('${g.rowId}','${descEsc}',${valNum})" class="text-zinc-500 hover:text-rose-400 p-1 transition-colors" title="Excluir"><i class="fa-solid fa-trash-can text-xs"></i></button></div></td>`;
   return row;
 }
 
 function renderizarTabela(tbodyId,lista,msgVazio){
   const tbody=document.getElementById(tbodyId);
   tbody.innerHTML='';
-  if(!lista.length){tbody.innerHTML=`<tr><td colspan="5" class="p-4 text-center text-slate-500">${msgVazio}</td></tr>`;return}
+  if(!lista.length){tbody.innerHTML=`<tr><td colspan="5" class="p-6 text-center text-xs text-zinc-500">${msgVazio}</td></tr>`;return}
   const frag=document.createDocumentFragment();
   lista.forEach(g=>frag.appendChild(criarLinhaTabela(g)));
   tbody.appendChild(frag);
@@ -714,23 +1324,23 @@ function atualizarDashboard(renderGraficos){
   const alertBox=document.getElementById('budgetAlertBox');
   alertBox.classList.remove('hidden');
   if(total>meta){
-    alertBox.className='rounded-2xl p-4 border bg-red-950/60 border-red-500/50 text-red-200 shadow-lg';
-    document.getElementById('alertIconBg').className='p-2.5 rounded-xl text-lg flex items-center justify-center bg-red-900/80 text-red-300';
+    alertBox.className='rounded-2xl p-4 border bg-rose-950/35 border-rose-500/30 text-rose-200 backdrop-blur-md';
+    document.getElementById('alertIconBg').className='w-9 h-9 rounded-xl text-sm flex items-center justify-center shrink-0 bg-rose-500/15 border border-rose-500/30 text-rose-300';
     document.getElementById('alertIcon').className='fa-solid fa-triangle-exclamation';
-    document.getElementById('alertTitle').innerText='Orçamento Excedido!';
-    document.getElementById('alertSubtitle').innerText=`Ultrapassou a meta em R$ ${(total-meta).toLocaleString('pt-BR',{minimumFractionDigits:2})}`;
-    document.getElementById('alertBadge').className='text-xs font-extrabold px-3 py-1.5 rounded-lg uppercase bg-red-600 text-white';
-    document.getElementById('alertBadge').innerText='Estourado';
-    bar.className='bg-red-500 h-full w-0 transition-all duration-500';
+    document.getElementById('alertTitle').innerText='Orçamento Excedido';
+    document.getElementById('alertSubtitle').innerText=`Ultrapassou o teto em R$ ${(total-meta).toLocaleString('pt-BR',{minimumFractionDigits:2})}`;
+    document.getElementById('alertBadge').className='text-[11px] font-semibold px-2.5 py-1 rounded-md uppercase tracking-wider shrink-0 bg-rose-500/20 border border-rose-500/30 text-rose-200';
+    document.getElementById('alertBadge').innerText='Acima';
+    bar.className='bg-rose-400 h-full w-0 rounded-full transition-all duration-700 ease-out';
   }else{
-    alertBox.className='rounded-2xl p-4 border bg-emerald-950/40 border-emerald-500/30 text-emerald-200 shadow-lg';
-    document.getElementById('alertIconBg').className='p-2.5 rounded-xl text-lg flex items-center justify-center bg-emerald-900/60 text-emerald-300';
-    document.getElementById('alertIcon').className='fa-solid fa-circle-check';
+    alertBox.className='rounded-2xl p-4 border bg-emerald-950/25 border-emerald-500/25 text-emerald-200 backdrop-blur-md';
+    document.getElementById('alertIconBg').className='w-9 h-9 rounded-xl text-sm flex items-center justify-center shrink-0 bg-emerald-500/15 border border-emerald-500/25 text-emerald-300';
+    document.getElementById('alertIcon').className='fa-solid fa-check';
     document.getElementById('alertTitle').innerText='Orçamento Sob Controle';
-    document.getElementById('alertSubtitle').innerText=`Restam R$ ${(meta-total).toLocaleString('pt-BR',{minimumFractionDigits:2})} este mês.`;
-    document.getElementById('alertBadge').className='text-xs font-extrabold px-3 py-1.5 rounded-lg uppercase bg-emerald-950 border border-emerald-500/40 text-emerald-300';
+    document.getElementById('alertSubtitle').innerText=`Disponível: R$ ${(meta-total).toLocaleString('pt-BR',{minimumFractionDigits:2})} neste mês`;
+    document.getElementById('alertBadge').className='text-[11px] font-semibold px-2.5 py-1 rounded-md uppercase tracking-wider shrink-0 bg-emerald-500/15 border border-emerald-500/25 text-emerald-300';
     document.getElementById('alertBadge').innerText='OK';
-    bar.className='bg-indigo-500 h-full w-0 transition-all duration-500';
+    bar.className='bg-indigo-400 h-full w-0 rounded-full transition-all duration-700 ease-out';
   }
   const catTotals={};
   gastosDoMes.forEach(g=>{const c=g.cat||'Outros';catTotals[c]=(catTotals[c]||0)+parseNumero(g.valor)});
@@ -738,7 +1348,7 @@ function atualizarDashboard(renderGraficos){
   for(const[c,v]of Object.entries(catTotals))if(v>maxVal){maxVal=v;maxCat=c}
   document.getElementById('topCategoriaName').innerText=maxCat;
   document.getElementById('topCategoriaValor').innerText='R$ '+maxVal.toLocaleString('pt-BR',{minimumFractionDigits:2});
-  document.getElementById('topCategoriaPercent').innerHTML=`Representa <span class="text-indigo-300 font-bold">${total>0?((maxVal/total)*100).toFixed(1):0}%</span> do total`;
+  document.getElementById('topCategoriaPercent').innerHTML=`Representa <span class="text-zinc-200 font-semibold font-mono-num">${total>0?((maxVal/total)*100).toFixed(1):0}%</span> do orçamento mensal`;
   renderizarTabela('tabelaGastos',gastos,'Nenhum gasto registrado.');
   if(renderGraficos!==false)renderGrafico(catTotals);
 }
@@ -748,7 +1358,28 @@ function renderGrafico(catTotals){
   const sorted=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
   if(chartInstance)chartInstance.destroy();
   if(!sorted.length)return;
-  chartInstance=new Chart(ctx,{type:'bar',data:{labels:sorted.map(e=>e[0]),datasets:[{data:sorted.map(e=>e[1]),backgroundColor:['#6366f1','#10b981','#f59e0b','#ec4899','#8b5cf6','#06b6d4','#38bdf8','#ef4444','#64748b','#14b8a6','#a855f7'],borderRadius:8}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#94a3b8',callback:v=>'R$ '+v}},y:{grid:{display:false},ticks:{color:'#e2e8f0',font:{weight:'700'}}}}}});
+  chartInstance=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:sorted.map(e=>e[0]),
+      datasets:[{
+        data:sorted.map(e=>e[1]),
+        backgroundColor:['#818cf8','#34d399','#fbbf24','#fb7185','#a78bfa','#38bdf8','#f472b6','#94a3b8','#2dd4bf','#c084fc','#60a5fa'],
+        borderRadius:6,
+        barThickness:18
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},border:{display:false},ticks:{color:'#71717a',callback:v=>'R$ '+v}},
+        y:{grid:{display:false},border:{display:false},ticks:{color:'#e4e4e7',font:{weight:'500'}}}
+      }
+    }
+  });
 }
 
 function renderGraficoMeses(lista){
@@ -761,7 +1392,28 @@ function renderGraficoMeses(lista){
   const totaisPorMes={};
   filtrados.forEach(g=>{const i=extrairAnoMes(g.data);if(i)totaisPorMes[i.chave]={label:i.label,total:(totaisPorMes[i.chave]?.total||0)+parseNumero(g.valor)}});
   const chaves=Object.keys(totaisPorMes).sort();
-  chartComparacaoInstance=new Chart(ctx,{type:'bar',data:{labels:chaves.map(k=>totaisPorMes[k].label),datasets:[{label:catSel==='TODAS'?'Total Geral (R$)':`Total: ${catSel}`,data:chaves.map(k=>totaisPorMes[k].total),backgroundColor:catSel==='TODAS'?'rgba(99,102,241,0.8)':'rgba(245,158,11,0.8)',borderColor:catSel==='TODAS'?'#6366f1':'#f59e0b',borderWidth:2,borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:catSel!=='TODAS'}},scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#e2e8f0',font:{weight:'700'}}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#94a3b8',callback:v=>'R$ '+v}}}}});
+  chartComparacaoInstance=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:chaves.map(k=>totaisPorMes[k].label),
+      datasets:[{
+        label:catSel==='TODAS'?'Total Geral (R$)':`Total: ${catSel}`,
+        data:chaves.map(k=>totaisPorMes[k].total),
+        backgroundColor:catSel==='TODAS'?'rgba(129,140,248,0.85)':'rgba(251,191,36,0.85)',
+        borderRadius:6,
+        maxBarThickness:36
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{display:catSel!=='TODAS',labels:{color:'#d4d4d8'}}},
+      scales:{
+        x:{grid:{display:false},border:{display:false},ticks:{color:'#d4d4d8',font:{weight:'500'}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},border:{display:false},ticks:{color:'#71717a',callback:v=>'R$ '+v}}
+      }
+    }
+  });
 }
 
 function popularSeletoresMeses(lista){
@@ -792,7 +1444,26 @@ function renderGraficoComparativoDoisMeses(){
   gastos.forEach(g=>{const i=extrairAnoMes(g.data);if(!i)return;const c=g.cat||'Outros',v=parseNumero(g.valor);if(i.chave===mesA){totaisA[c]=(totaisA[c]||0)+v;cats.add(c)}if(i.chave===mesB){totaisB[c]=(totaisB[c]||0)+v;cats.add(c)}});
   const ordenadas=Array.from(cats).sort((a,b)=>((totaisA[b]||0)+(totaisB[b]||0))-((totaisA[a]||0)+(totaisB[a]||0)));
   if(!ordenadas.length)return;
-  chartDoisMesesInstance=new Chart(ctx,{type:'bar',data:{labels:ordenadas,datasets:[{label:labelA,data:ordenadas.map(c=>totaisA[c]||0),backgroundColor:'rgba(99,102,241,0.85)',borderColor:'#6366f1',borderWidth:1,borderRadius:6},{label:labelB,data:ordenadas.map(c=>totaisB[c]||0),backgroundColor:'rgba(16,185,129,0.75)',borderColor:'#10b981',borderWidth:1,borderRadius:6}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#e2e8f0',font:{weight:'700'}}}},scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#94a3b8',callback:v=>'R$ '+v}},y:{grid:{display:false},ticks:{color:'#e2e8f0',font:{weight:'700'}}}}}});
+  chartDoisMesesInstance=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:ordenadas,
+      datasets:[
+        {label:labelA,data:ordenadas.map(c=>totaisA[c]||0),backgroundColor:'rgba(129,140,248,0.88)',borderRadius:5},
+        {label:labelB,data:ordenadas.map(c=>totaisB[c]||0),backgroundColor:'rgba(52,211,153,0.78)',borderRadius:5}
+      ]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#e4e4e7',usePointStyle:true,pointStyle:'circle'}}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},border:{display:false},ticks:{color:'#71717a',callback:v=>'R$ '+v}},
+        y:{grid:{display:false},border:{display:false},ticks:{color:'#e4e4e7',font:{weight:'500'}}}
+      }
+    }
+  });
 }
 
 function renderGraficoRitmoAcumulado(lista){
@@ -809,7 +1480,27 @@ function renderGraficoRitmoAcumulado(lista){
   lista.forEach(g=>{const i=extrairAnoMes(g.data);if(!i)return;const s=String(g.data).trim().split('T')[0];let dia=1;if(/^\d{4}-\d{2}-\d{2}$/.test(s))dia=parseInt(s.split('-')[2],10);else if(/^\d{2}\/\d{2}\/\d{4}$/.test(s))dia=parseInt(s.split('/')[0],10);const idx=Math.min(Math.max(dia-1,0),diasNoMes-1);const v=parseNumero(g.valor);if(i.ano===anoAtual&&i.mes===mesAtual)diarioAtual[idx]+=v;else if(i.ano===anoAnt&&i.mes===mesAnt)diarioAnt[idx]+=v});
   const acumA=[],acumB=[],linhaMeta=[];let sA=0,sB=0;
   for(let i=0;i<diasNoMes;i++){sA+=diarioAtual[i];sB+=diarioAnt[i];acumA.push(i<diaHoje?sA:null);acumB.push(sB);linhaMeta.push(((meta||3000)/diasNoMes)*(i+1))}
-  chartRitmoInstance=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Acumulado Este Mês',data:acumA,borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,0.15)',borderWidth:3,fill:true,tension:0.25,pointRadius:3},{label:'Acumulado Mês Anterior',data:acumB,borderColor:'#64748b',borderWidth:2,tension:0.25,pointRadius:0},{label:'Ritmo Ideal da Meta',data:linhaMeta,borderColor:'#f59e0b',borderDash:[6,6],borderWidth:2,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#e2e8f0',font:{weight:'600'}}}},scales:{x:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#94a3b8',maxTicksLimit:10}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#94a3b8',callback:v=>'R$ '+v}}}}});
+  chartRitmoInstance=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:'Acumulado Este Mês',data:acumA,borderColor:'#818cf8',backgroundColor:'rgba(129,140,248,0.12)',borderWidth:2.5,fill:true,tension:0.3,pointRadius:2.5,pointHoverRadius:5},
+        {label:'Acumulado Mês Anterior',data:acumB,borderColor:'#52525b',borderWidth:1.75,tension:0.3,pointRadius:0},
+        {label:'Ritmo Ideal do Teto',data:linhaMeta,borderColor:'#fbbf24',borderDash:[5,5],borderWidth:1.75,pointRadius:0}
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{color:'#e4e4e7',usePointStyle:true,pointStyle:'circle'}}},
+      scales:{
+        x:{grid:{display:false},border:{display:false},ticks:{color:'#71717a',maxTicksLimit:10}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},border:{display:false},ticks:{color:'#71717a',callback:v=>'R$ '+v}}
+      }
+    }
+  });
 }
 
 function atualizarDashboardCategoria(){
@@ -860,8 +1551,8 @@ function dispararAlertaSonoroVisual(ativo,atual,alvo){
   const nomes={USD:'Dólar',EUR:'Euro',XAU:'Ouro por grama',BTC:'Bitcoin',ETH:'Ethereum',GBP:'Libra'};
   const nome=nomes[ativo]||ativo;
   tocarAlarmeVoz(nome,atual);
-  document.getElementById('tituloBannerAlerta').innerText=`🚨 Meta Atingida! ${nome} em R$ ${atual.toFixed(2)}`;
-  document.getElementById('descBannerAlerta').innerText=`O valor alvo de R$ ${alvo.toFixed(2)} foi alcançado!`;
+  document.getElementById('tituloBannerAlerta').innerText=`Meta Atingida • ${nome} em R$ ${atual.toFixed(2)}`;
+  document.getElementById('descBannerAlerta').innerText=`O valor alvo de R$ ${alvo.toFixed(2)} foi alcançado.`;
   document.getElementById('bannerAlertaAtingido').classList.remove('hidden');
 }
 
@@ -893,13 +1584,13 @@ function adicionarAlvo(){
 
 function renderizarAlvos(){
   const c=document.getElementById('listaAlvos');c.innerHTML='';
-  if(!alvosAlertas.length){c.innerHTML='<p class="text-sm text-slate-500">Nenhum alvo cadastrado.</p>';return}
+  if(!alvosAlertas.length){c.innerHTML='<p class="text-xs text-zinc-500">Nenhum alvo cadastrado.</p>';return}
   const nomes={USD:'Dólar (USD)',EUR:'Euro (EUR)',XAU:'Ouro (Grama)',BTC:'Bitcoin (BTC)',ETH:'Ethereum (ETH)',GBP:'Libra (GBP)'};
   const frag=document.createDocumentFragment();
   alvosAlertas.forEach(a=>{
     const div=document.createElement('div');
-    div.className='bg-black/60 border border-slate-800 p-3 rounded-xl flex justify-between items-center';
-    div.innerHTML=`<div><span class="font-bold text-indigo-300 uppercase">${nomes[a.ativo]||a.ativo}</span> <span class="text-xs text-slate-400">se ${a.condicao==='menor'?'ficar abaixo de':'ficar acima de'}</span> <span class="font-extrabold text-emerald-400">R$ ${a.valor.toFixed(2)}</span><p class="text-[11px] text-slate-500"><i class="fa-solid fa-volume-high text-amber-400"></i> Alarme Ativo</p></div><button onclick="removerAlvo(${a.id})" class="text-slate-500 hover:text-red-400 p-2"><i class="fa-solid fa-trash-can"></i></button>`;
+    div.className='surface-inset p-3.5 rounded-xl flex justify-between items-center';
+    div.innerHTML=`<div><span class="font-semibold text-zinc-100 text-xs">${nomes[a.ativo]||a.ativo}</span> <span class="text-xs text-zinc-500">se ${a.condicao==='menor'?'cair abaixo de':'subir acima de'}</span> <span class="font-semibold text-emerald-300 font-mono-num text-xs">R$ ${a.valor.toFixed(2)}</span><p class="text-[11px] text-zinc-500 mt-0.5 flex items-center gap-1.5"><i class="fa-solid fa-volume-high text-amber-400/80 text-[10px]"></i> Alarme de voz armado</p></div><button onclick="removerAlvo(${a.id})" class="text-zinc-500 hover:text-rose-400 p-2 transition-colors"><i class="fa-solid fa-trash-can text-xs"></i></button>`;
     frag.appendChild(div);
   });
   c.appendChild(frag);
