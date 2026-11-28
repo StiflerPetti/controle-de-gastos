@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg-canvas: #050507;
@@ -192,9 +192,529 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.22); }
+
+
+/* ============================================================
+   MaRa / VISUAL SYSTEM 02 — AURORA NEON
+   Direção: fintech editorial, contraste profundo e luz contida.
+   Motion funcional; dados e gráficos permanecem estáveis.
+   ============================================================ */
+:root {
+  --bg-canvas: #070910;
+  --bg-surface: #0d111b;
+  --bg-elevated: #121a28;
+  --bg-input: #090e18;
+  --border-subtle: rgba(148, 180, 210, .11);
+  --border-hover: rgba(86, 226, 255, .30);
+  --border-accent: rgba(72, 220, 255, .38);
+  --accent-primary: #62e6ff;
+  --accent-emerald: #6bf5c4;
+  --accent-amber: #ffd27a;
+  --accent-rose: #ff7caa;
+  --ease-out-expo: cubic-bezier(.23, 1, .32, 1);
+  --ease-spring: cubic-bezier(.22, 1, .36, 1);
+  --neon-cyan: #62e6ff;
+  --neon-violet: #9b8cff;
+}
+html { scroll-behavior: smooth; }
+body {
+  background-color: #070910 !important;
+  background-image:
+    radial-gradient(ellipse 68% 38% at 12% -8%, rgba(29, 160, 190, .17), transparent 68%),
+    radial-gradient(ellipse 52% 36% at 92% 4%, rgba(112, 83, 220, .15), transparent 70%),
+    linear-gradient(rgba(105, 151, 185, .025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(105, 151, 185, .025) 1px, transparent 1px) !important;
+  background-size: auto, auto, 44px 44px, 44px 44px !important;
+  background-attachment: fixed !important;
+  color: #edf5ff;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(ellipse at 50% 48%, transparent 30%, rgba(3, 5, 11, .38) 100%);
+}
+::selection { background: rgba(98, 230, 255, .25); color: #fff; }
+
+/* Barra superior: mais leve, com separação luminosa discreta. */
+header.sticky {
+  background: rgba(7, 9, 16, .78) !important;
+  border-bottom: 1px solid rgba(126, 190, 220, .13) !important;
+  box-shadow: 0 12px 38px rgba(0, 0, 0, .18), 0 1px 0 rgba(98, 230, 255, .035);
+}
+header .w-9.h-9 {
+  background: linear-gradient(145deg, rgba(98, 230, 255, .17), rgba(155, 140, 255, .12)) !important;
+  border-color: rgba(98, 230, 255, .30) !important;
+  color: #8cecff !important;
+  box-shadow: 0 0 24px rgba(44, 203, 232, .12), inset 0 1px 0 rgba(255,255,255,.12);
+}
+header h1 { letter-spacing: -.045em !important; }
+header nav {
+  background: rgba(11, 17, 28, .78) !important;
+  border-color: rgba(139, 184, 210, .14) !important;
+  border-radius: 14px !important;
+}
+header nav button { transition: color .18s ease, background-color .18s ease, box-shadow .18s ease, transform .14s ease !important; }
+header nav button:active { transform: scale(.975); }
+header nav button[id^="tabBtn"]:hover { color: #e9fbff !important; }
+header nav button[id^="tabBtn"].bg-white\/\[0\.1\] {
+  background: linear-gradient(110deg, rgba(98, 230, 255, .15), rgba(155, 140, 255, .13)) !important;
+  color: #eafcff !important;
+  border: 1px solid rgba(98, 230, 255, .22) !important;
+  box-shadow: 0 0 18px rgba(53, 196, 225, .10), inset 0 1px 0 rgba(255,255,255,.09) !important;
+}
+
+/* Abertura editorial */
+.mara-intro {
+  position: relative;
+  overflow: hidden;
+  padding: 22px 24px 20px;
+  border: 1px solid rgba(116, 195, 220, .14);
+  border-radius: 22px;
+  background: linear-gradient(112deg, rgba(15, 27, 40, .88), rgba(15, 17, 34, .72));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.055), 0 22px 55px -38px rgba(0,0,0,.9);
+}
+.mara-intro::after {
+  content: "";
+  position: absolute;
+  width: 260px; height: 260px;
+  right: -75px; top: -155px;
+  border-radius: 50%;
+  background: rgba(69, 215, 244, .15);
+  filter: blur(52px);
+  pointer-events: none;
+}
+.mara-intro-kicker {
+  display: inline-flex; align-items: center; gap: 9px;
+  color: #79eaff; font-size: 9px; font-weight: 700;
+  letter-spacing: .19em; text-transform: uppercase;
+}
+.mara-intro-kicker::before {
+  content: ""; width: 18px; height: 1px; background: #62e6ff;
+  box-shadow: 0 0 9px rgba(98,230,255,.8);
+}
+.mara-intro h2 {
+  margin-top: 9px; color: #f4fbff; font-size: clamp(24px, 4vw, 34px);
+  line-height: 1.05; letter-spacing: -.045em; font-weight: 600;
+}
+.mara-intro p { margin-top: 8px; color: #8fa5b9; font-size: 12px; line-height: 1.6; }
+
+/* Cartões com profundidade e luz de borda — sem brilho excessivo. */
+.surface-card {
+  position: relative;
+  background: linear-gradient(145deg, rgba(17, 25, 39, .94), rgba(10, 14, 24, .96)) !important;
+  border: 1px solid rgba(137, 179, 207, .13) !important;
+  border-radius: 19px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.055), 0 18px 44px -30px rgba(0,0,0,.95), 0 1px 0 rgba(98,230,255,.025) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  transition: border-color .22s ease, box-shadow .22s ease, transform .22s var(--ease-out-expo) !important;
+}
+@media (hover:hover) and (pointer:fine) {
+  .surface-card-interactive:hover {
+    border-color: rgba(98, 230, 255, .27) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.075), 0 22px 50px -30px rgba(0,0,0,.95), 0 0 26px rgba(48, 194, 222, .055) !important;
+    transform: translateY(-2px);
+  }
+}
+.surface-inset {
+  background: rgba(5, 10, 18, .72) !important;
+  border-color: rgba(126, 177, 205, .13) !important;
+  box-shadow: inset 0 2px 7px rgba(0,0,0,.32) !important;
+}
+
+/* Paleta de ações: ciano como assinatura, violeta como apoio. */
+.btn-primary {
+  background: linear-gradient(112deg, #1a9fbd 0%, #5365d8 100%) !important;
+  border-color: rgba(117, 233, 255, .34) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 8px 24px -9px rgba(52, 198, 230, .62) !important;
+}
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(112deg, #25b2ce 0%, #6574e8 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 10px 28px -8px rgba(52, 198, 230, .72) !important;
+}
+.btn-emerald {
+  background: linear-gradient(112deg, #0d9f8d, #168d79) !important;
+  border-color: rgba(107,245,196,.34) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 8px 22px -9px rgba(42, 220, 173, .5) !important;
+}
+.btn-ghost { background: rgba(132, 169, 198, .055) !important; border-color: rgba(132, 169, 198, .15) !important; }
+.btn-ghost:hover:not(:disabled) { background: rgba(98, 230, 255, .075) !important; border-color: rgba(98, 230, 255, .25) !important; }
+.btn-tactile:active:not(:disabled) { transform: scale(.975); }
+
+/* Campos: foco nítido, sem neon permanente. */
+.field-input {
+  background: rgba(5, 10, 18, .82) !important;
+  border-color: rgba(132, 176, 205, .16) !important;
+  border-radius: 11px !important;
+}
+.field-input:focus {
+  border-color: rgba(98, 230, 255, .62) !important;
+  box-shadow: 0 0 0 3px rgba(66, 205, 230, .12), 0 0 22px rgba(66,205,230,.07) !important;
+  background: #09121e !important;
+}
+
+/* Tipografia numérica e acentos sem competir com os dados. */
+.font-mono-num { letter-spacing: -.025em; }
+#totalGasto, #invTotalAportado { text-shadow: 0 0 24px rgba(98,230,255,.10); }
+.text-indigo-300, .text-indigo-400 { color: #78e7fa !important; }
+.text-emerald-300, .text-emerald-400 { color: #6bf5c4 !important; }
+.bg-indigo-500\/10 { background-color: rgba(98,230,255,.09) !important; }
+.border-indigo-500\/20, .border-indigo-400\/25 { border-color: rgba(98,230,255,.20) !important; }
+
+/* Tabelas: leitura mais limpa e linhas discretas. */
+thead { background: rgba(7, 13, 23, .92) !important; }
+tbody tr { transition: background-color .16s ease; }
+tbody tr:hover { background: rgba(98, 230, 255, .035) !important; }
+th { color: #7890a7 !important; letter-spacing: .10em; }
+
+/* Modal com entrada curta e contextual. */
+.modal-card-enter { animation-duration: .28s !important; }
+#telaSenha { background: rgba(4, 7, 13, .91) !important; }
+#telaSenha .surface-card { border-color: rgba(98,230,255,.20) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 25px 90px rgba(0,0,0,.58), 0 0 42px rgba(46,190,220,.08) !important; }
+
+/* Mobile: ritmo mais compacto, sem hover falso nem scroll lateral. */
+@media (max-width: 640px) {
+  header .max-w-5xl { padding-top: 12px !important; padding-bottom: 12px !important; }
+  header nav { width: 100%; justify-content: flex-start; }
+  header nav button { padding-left: 12px !important; padding-right: 12px !important; }
+  main { padding-top: 18px !important; }
+  .mara-intro { padding: 19px 18px 18px; border-radius: 18px; }
+  .surface-card { border-radius: 17px !important; }
+  .chart-box { height: 250px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+
+/* MaRa / identidade tipográfica e gráficos fluidos */
+.font-editorial {
+  font-family: 'Space Grotesk', 'Inter', sans-serif !important;
+  font-style: normal !important;
+  font-weight: 700 !important;
+  letter-spacing: -.065em !important;
+}
+header h1, #telaSenha h1 {
+  background: linear-gradient(100deg, #f4fbff 5%, #8cecff 54%, #b4a5ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+.chart-box {
+  isolation: isolate;
+}
+.chart-box canvas {
+  transform-origin: center;
+  animation: maraChartReveal .72s cubic-bezier(.22, 1, .36, 1) both;
+}
+@keyframes maraChartReveal {
+  from { opacity: 0; transform: translateY(7px) scale(.992); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.surface-card:has(.chart-box) {
+  transition: border-color .28s cubic-bezier(.22,1,.36,1), box-shadow .28s ease, transform .28s cubic-bezier(.22,1,.36,1);
+}
+.surface-card:has(.chart-box):hover {
+  border-color: rgba(98, 230, 255, .22);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.055), 0 24px 55px -34px rgba(34, 194, 225, .18);
+}
+@media (prefers-reduced-motion: reduce) {
+  .chart-box canvas { animation: none !important; }
+}
+
+
+
+/* =========================================================
+   MaRa 03 — MOTION / ELECTRIC CITRUS
+   Nova paleta: carvão ameixa + lima elétrica + coral + lavanda.
+   Movimento perceptível, mas sem atrapalhar leitura ou toque.
+   ========================================================= */
+:root {
+  --bg-canvas: #100D18;
+  --bg-surface: #191526;
+  --bg-elevated: #211C31;
+  --bg-input: #141120;
+  --border-subtle: rgba(225, 216, 255, .10);
+  --border-hover: rgba(215, 255, 82, .34);
+  --border-accent: rgba(215, 255, 82, .42);
+  --accent-primary: #6EA8FF;
+  --accent-emerald: #6DDFC9;
+  --accent-amber: #FFC477;
+  --accent-rose: #FF8B78;
+  --mara-lime: #6EA8FF;
+  --mara-coral: #FF8B78;
+  --mara-lavender: #B69CFF;
+}
+body {
+  background-color: #100D18 !important;
+  background-image:
+    radial-gradient(ellipse 42% 32% at 8% 0%, rgba(110,168,255,.12), transparent 72%),
+    radial-gradient(ellipse 46% 36% at 96% 8%, rgba(182,156,255,.19), transparent 72%),
+    radial-gradient(ellipse 42% 30% at 55% 100%, rgba(255,139,120,.10), transparent 72%),
+    linear-gradient(135deg, #100D18 0%, #151122 52%, #100D18 100%) !important;
+  background-attachment: fixed !important;
+  color: #F6F2FF !important;
+}
+body::after {
+  content: ""; position: fixed; inset: -35%; z-index: -1; pointer-events: none;
+  background: conic-gradient(from 0deg at 50% 50%, transparent 0 22%, rgba(110,168,255,.035) 28%, transparent 35% 58%, rgba(182,156,255,.055) 66%, transparent 74%);
+  filter: blur(55px); animation: maraAmbient 34s linear infinite;
+}
+@keyframes maraAmbient { to { transform: rotate(360deg) scale(1.08); } }
+::selection { background: rgba(110,168,255,.28); color: #fff; }
+header.sticky {
+  background: rgba(16,13,24,.78) !important;
+  border-bottom-color: rgba(110,168,255,.13) !important;
+  box-shadow: 0 14px 45px rgba(0,0,0,.25), 0 1px 0 rgba(110,168,255,.04) !important;
+}
+header .w-9.h-9 {
+  color: var(--mara-lime) !important;
+  background: linear-gradient(145deg,rgba(110,168,255,.18),rgba(182,156,255,.20)) !important;
+  border-color: rgba(110,168,255,.32) !important;
+  box-shadow: 0 0 28px rgba(110,168,255,.13), inset 0 1px 0 rgba(255,255,255,.15) !important;
+  animation: maraLogoFloat 5s ease-in-out infinite;
+}
+@keyframes maraLogoFloat { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-3px) rotate(-3deg); } }
+header h1, #telaSenha h1 {
+  background: linear-gradient(100deg,#fff 4%,#6EA8FF 48%,#FF9DB0 76%,#B9A7FF 100%) !important;
+  background-size: 220% auto !important; animation: maraWordGlow 7s ease-in-out infinite alternate;
+  -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important;
+}
+@keyframes maraWordGlow { from { background-position: 0% center; } to { background-position: 100% center; } }
+.mara-intro {
+  border-color: rgba(110,168,255,.19) !important;
+  background: linear-gradient(112deg,rgba(35,31,47,.96),rgba(27,22,43,.82)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07),0 24px 70px -38px rgba(0,0,0,.95),0 0 45px rgba(182,156,255,.07) !important;
+}
+.mara-intro::before {
+  content: ""; position:absolute; width:190px;height:190px;right:16%;bottom:-155px;border-radius:50%;
+  background:rgba(110,168,255,.22);filter:blur(48px);pointer-events:none;
+  animation:maraGlowDrift 9s ease-in-out infinite alternate;
+}
+.mara-intro::after { background:rgba(182,156,255,.24) !important; animation:maraGlowDrift 11s ease-in-out infinite alternate-reverse; }
+@keyframes maraGlowDrift { from { transform:translate3d(-12px,0,0) scale(.88); } to { transform:translate3d(22px,18px,0) scale(1.16); } }
+.mara-intro-kicker { color:var(--mara-lime) !important; }
+.mara-intro-kicker::before { background:var(--mara-lime) !important; box-shadow:0 0 13px rgba(110,168,255,.85) !important; }
+.surface-card {
+  background: linear-gradient(145deg,rgba(34,29,49,.94),rgba(22,18,34,.97)) !important;
+  border-color:rgba(220,211,255,.11) !important; border-radius:21px !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.065),0 20px 48px -30px rgba(0,0,0,.92) !important;
+  transition:transform .55s cubic-bezier(.2,.8,.2,1),border-color .35s ease,box-shadow .45s ease !important;
+}
+@media(hover:hover) and (pointer:fine) {
+ .surface-card-interactive:hover { transform:translateY(-5px) !important; border-color:rgba(110,168,255,.28) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 28px 60px -32px rgba(182,156,255,.28),0 0 26px rgba(110,168,255,.055) !important; }
+}
+.surface-inset { background:rgba(14,11,23,.72) !important; border-color:rgba(220,211,255,.10) !important; }
+.btn-primary {
+  color:#171A0C !important; font-weight:800 !important;
+  background:linear-gradient(105deg,#6EA8FF 0%,#BDF34A 55%,#A8E85B 100%) !important;
+  border-color:rgba(240,255,180,.58) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 9px 25px -10px rgba(110,168,255,.65) !important;
+}
+.btn-primary:hover:not(:disabled) { background:linear-gradient(105deg,#E5FF83,#CFFF5C) !important; box-shadow:0 13px 32px -9px rgba(110,168,255,.62) !important; transform:translateY(-2px); }
+.btn-emerald { background:linear-gradient(110deg,#FF8B78,#D95E9C) !important; border-color:rgba(255,160,181,.38) !important; box-shadow:0 8px 23px -10px rgba(255,139,120,.55) !important; }
+.btn-ghost { background:rgba(255,255,255,.035) !important; border-color:rgba(220,211,255,.13) !important; }
+.field-input { background:rgba(14,11,23,.88) !important; border-color:rgba(220,211,255,.15) !important; }
+.field-input:focus { border-color:rgba(110,168,255,.62) !important; box-shadow:0 0 0 3px rgba(110,168,255,.12),0 0 25px rgba(110,168,255,.07) !important; }
+.text-indigo-300,.text-indigo-400 { color:#C0B2FF !important; }
+.text-emerald-300,.text-emerald-400 { color:#75E6D4 !important; }
+.bg-indigo-500\/10 { background-color:rgba(182,156,255,.12) !important; }
+.border-indigo-500\/20,.border-indigo-400\/25 { border-color:rgba(182,156,255,.25) !important; }
+thead { background:rgba(18,14,29,.96) !important; }
+tbody tr:hover { background:rgba(110,168,255,.035) !important; }
+th { color:#A99FC0 !important; }
+.chart-box { overflow:visible; }
+.chart-box canvas { filter:drop-shadow(0 10px 18px rgba(182,156,255,.08)); animation:maraChartFloat 7s ease-in-out infinite alternate !important; }
+@keyframes maraChartFloat { from { transform:translateY(1px); } to { transform:translateY(-3px); } }
+/* Reveals em cascata ao entrar no viewport */
+.mara-reveal { opacity:0; transform:translateY(22px) scale(.985); filter:blur(5px); transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1),filter .8s ease; transition-delay:var(--mara-delay,0ms); }
+.mara-reveal.mara-visible { opacity:1; transform:translateY(0) scale(1); filter:blur(0); }
+.mara-reveal.mara-visible .chart-box canvas { animation:maraChartFloat 7s ease-in-out infinite alternate,maraChartPop 1.25s cubic-bezier(.16,1,.3,1) both !important; }
+@keyframes maraChartPop { from { opacity:.15; transform:translateY(16px) scale(.96); } to { opacity:1; transform:translateY(0) scale(1); } }
+/* brilho correndo discretamente na borda do painel de abertura */
+.mara-intro { background-size:180% 180% !important; animation:maraPanelShimmer 13s ease-in-out infinite alternate; }
+@keyframes maraPanelShimmer { from { background-position:0% 50%; } to { background-position:100% 50%; } }
+@media(max-width:640px) { .surface-card { border-radius:18px !important; } .chart-box { height:260px; } }
+@media(prefers-reduced-motion:reduce) {
+ *,*::before,*::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+ .mara-reveal { opacity:1 !important; transform:none !important; filter:none !important; }
+}
+
+
+
+/* =========================================================
+   MaRa 04 — CINEMATIC / APPLE-INSPIRED MOTION
+   Linguagem própria: palco cinematográfico, luz, profundidade,
+   tipografia expressiva e movimento guiado pela rolagem.
+   ========================================================= */
+:root {
+  --bg-canvas: #080A10;
+  --bg-surface: #111522;
+  --bg-elevated: #171D2D;
+  --bg-input: #0C101A;
+  --accent-primary: #6EA8FF;
+  --accent-emerald: #6DDFC9;
+  --accent-amber: #FFC477;
+  --accent-rose: #FF8B78;
+  --mara-blue: #6EA8FF;
+  --mara-violet: #B69CFF;
+  --mara-coral: #FF8B78;
+  --mara-ease: cubic-bezier(.19,1,.22,1);
+}
+html { scroll-behavior:smooth; scroll-padding-top:92px; }
+body {
+  background:#080A10 !important;
+  background-image:
+    radial-gradient(ellipse 70% 45% at 50% -12%,rgba(81,117,190,.22),transparent 70%),
+    radial-gradient(ellipse 40% 35% at 100% 24%,rgba(137,105,210,.12),transparent 72%),
+    linear-gradient(180deg,#080A10 0%,#0B0E17 48%,#080A10 100%) !important;
+  color:#F5F7FC !important;
+}
+body::after {
+  content:"";position:fixed;inset:-45%;z-index:-1;pointer-events:none;
+  background:conic-gradient(from 30deg at 50% 50%,transparent 0 20%,rgba(110,168,255,.055) 27%,transparent 34% 58%,rgba(182,156,255,.055) 66%,transparent 75%);
+  filter:blur(75px);animation:maraAtmosphere 48s linear infinite;
+}
+@keyframes maraAtmosphere { to { transform:rotate(360deg) scale(1.06); } }
+
+/* Barra de progresso da navegação */
+#maraScrollProgress { position:fixed;z-index:1000;left:0;top:0;height:2px;width:100%;pointer-events:none;background:rgba(255,255,255,.04); }
+#maraScrollProgress span { display:block;height:100%;width:0;background:linear-gradient(90deg,#6EA8FF,#B69CFF,#FF8B78);box-shadow:0 0 14px rgba(110,168,255,.7);transform-origin:left; }
+
+/* Header translúcido e com presença discreta */
+header.sticky { background:rgba(8,10,16,.68) !important;border-bottom:1px solid rgba(255,255,255,.09) !important;backdrop-filter:blur(28px) saturate(160%) !important;-webkit-backdrop-filter:blur(28px) saturate(160%) !important; }
+header h1,#telaSenha h1 { background:linear-gradient(100deg,#FFFFFF 8%,#AFCFFF 48%,#C6B5FF 78%,#FFFFFF 100%) !important;background-size:220% auto !important;animation:maraTitleShine 9s ease-in-out infinite alternate;-webkit-background-clip:text !important;background-clip:text !important;color:transparent !important; }
+@keyframes maraTitleShine { to { background-position:100% center; } }
+header .w-9.h-9 { background:linear-gradient(145deg,rgba(110,168,255,.24),rgba(182,156,255,.2)) !important;color:#C8DFFF !important;border-color:rgba(159,190,255,.28) !important;box-shadow:0 8px 28px rgba(76,126,220,.18),inset 0 1px 0 rgba(255,255,255,.2) !important; }
+header nav { background:rgba(255,255,255,.045) !important;border-color:rgba(255,255,255,.09) !important;backdrop-filter:blur(18px); }
+
+/* Hero com escala de campanha, não apenas um card */
+.mara-intro {
+  min-height:clamp(260px,34vw,390px);padding:clamp(30px,5vw,58px) clamp(22px,5vw,58px) !important;
+  display:flex;flex-direction:column;justify-content:center;isolation:isolate;
+  border:1px solid rgba(180,202,255,.16) !important;border-radius:30px !important;
+  background:
+    radial-gradient(ellipse 42% 65% at 82% 45%,rgba(110,168,255,.24),transparent 72%),
+    radial-gradient(ellipse 35% 70% at 100% 100%,rgba(182,156,255,.20),transparent 70%),
+    linear-gradient(115deg,rgba(22,29,47,.98),rgba(13,17,29,.96) 58%,rgba(23,20,42,.94)) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.11),0 35px 90px -52px rgba(71,112,200,.5) !important;
+  overflow:hidden;animation:maraHeroIn 1.15s var(--mara-ease) both !important;
+}
+@keyframes maraHeroIn { from { opacity:0;transform:translateY(26px) scale(.985);filter:blur(8px); } to { opacity:1;transform:none;filter:blur(0); } }
+.mara-intro::before {
+  content:"";position:absolute;z-index:-1;width:min(44vw,410px);aspect-ratio:1;right:4%;top:50%;transform:translateY(-50%);
+  border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.32),rgba(110,168,255,.22) 22%,rgba(182,156,255,.12) 48%,transparent 70%);
+  filter:blur(3px);animation:maraOrbFloat 9s ease-in-out infinite alternate;
+}
+.mara-intro::after {
+  content:"";position:absolute;z-index:-1;width:260px;height:260px;right:16%;top:12%;border-radius:50%;
+  border:1px solid rgba(190,211,255,.13);box-shadow:0 0 65px rgba(110,168,255,.13),inset 0 0 45px rgba(182,156,255,.08);
+  animation:maraOrbRing 24s linear infinite;
+}
+@keyframes maraOrbFloat { from { transform:translate3d(-14px,-48%,0) scale(.92); } to { transform:translate3d(18px,-53%,0) scale(1.08); } }
+@keyframes maraOrbRing { to { transform:rotate(360deg) scale(1.08); } }
+.mara-intro-kicker { color:#AFCFFF !important;font-size:10px !important;letter-spacing:.22em !important; }
+.mara-intro-kicker::before { width:25px !important;background:#8DBBFF !important;box-shadow:0 0 15px rgba(110,168,255,.9) !important; }
+.mara-intro h2 { max-width:760px;font-size:clamp(38px,7vw,76px) !important;line-height:.99 !important;letter-spacing:-.075em !important;font-weight:650 !important;margin-top:18px !important; }
+.mara-intro h2 span { background:linear-gradient(95deg,#8DBBFF 0%,#C2B2FF 48%,#FFB4A8 100%);-webkit-background-clip:text;background-clip:text;color:transparent !important; }
+.mara-intro p { max-width:520px;font-size:clamp(13px,1.5vw,16px) !important;line-height:1.7 !important;color:#A8B3C8 !important;margin-top:18px !important; }
+
+/* Cartões: superfície profunda, reflexo de luz que acompanha o cursor */
+.surface-card {
+  position:relative;isolation:isolate;overflow:hidden;
+  background:linear-gradient(145deg,rgba(24,30,46,.94),rgba(13,17,28,.97)) !important;
+  border:1px solid rgba(180,198,235,.12) !important;border-radius:24px !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.075),0 22px 65px -45px rgba(0,0,0,.95) !important;
+  transition:transform .65s var(--mara-ease),border-color .45s ease,box-shadow .65s var(--mara-ease) !important;
+}
+.surface-card::before {
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:0;
+  background:radial-gradient(440px circle at var(--mx,50%) var(--my,0%),rgba(132,176,255,.13),transparent 48%);
+  transition:opacity .45s ease;
+}
+.surface-card.mara-light-on::before { opacity:1; }
+@media(hover:hover) and (pointer:fine) {
+ .surface-card-interactive:hover { transform:translateY(-6px) scale(1.008) !important;border-color:rgba(151,190,255,.27) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 32px 75px -42px rgba(75,117,205,.32) !important; }
+}
+.surface-inset { background:rgba(7,11,19,.58) !important;border-color:rgba(174,194,230,.12) !important; }
+.btn-primary { background:linear-gradient(110deg,#8AB8FF,#8E8BFF) !important;color:#08101F !important;border:1px solid rgba(220,233,255,.45) !important;box-shadow:0 10px 30px -12px rgba(110,168,255,.72),inset 0 1px 0 rgba(255,255,255,.5) !important; }
+.btn-primary:hover:not(:disabled) { transform:translateY(-2px) scale(1.015);box-shadow:0 15px 38px -12px rgba(110,168,255,.8) !important; }
+.btn-emerald { background:linear-gradient(110deg,#FF9C8A,#DFA0D5) !important;color:#1B1020 !important; }
+.field-input { background:rgba(7,11,19,.78) !important;border-color:rgba(174,194,230,.16) !important; }
+.field-input:focus { border-color:rgba(125,177,255,.7) !important;box-shadow:0 0 0 4px rgba(110,168,255,.13),0 0 28px rgba(110,168,255,.08) !important; }
+
+/* Tipografia, respiro e números */
+.font-editorial { font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif !important;font-style:normal !important;font-weight:750 !important;letter-spacing:-.075em !important; }
+.font-mono-num { letter-spacing:-.045em; }
+#totalGasto,#invTotalAportado { text-shadow:0 0 34px rgba(110,168,255,.18); }
+.text-indigo-300,.text-indigo-400 { color:#AFCFFF !important; }
+.text-emerald-300,.text-emerald-400 { color:#8BE6D5 !important; }
+.text-rose-300,.text-rose-400 { color:#FFAA9B !important; }
+
+/* Gráficos: foco, suavidade e tooltip com aparência de produto */
+.chart-box { isolation:isolate; }
+.chart-box canvas { filter:drop-shadow(0 14px 25px rgba(92,133,220,.10));transform-origin:center; }
+.surface-card:has(.chart-box) { background:linear-gradient(145deg,rgba(21,28,44,.97),rgba(12,16,27,.98)) !important; }
+
+/* Revelação em profundidade: blur mínimo e cascata curta */
+.mara-reveal { opacity:0;transform:translateY(34px) scale(.985);filter:blur(7px);transition:opacity 1s var(--mara-ease),transform 1.15s var(--mara-ease),filter .9s ease;transition-delay:var(--mara-delay,0ms);will-change:opacity,transform; }
+.mara-reveal.mara-visible { opacity:1;transform:translateY(0) scale(1);filter:blur(0); }
+.mara-reveal.mara-visible .chart-box canvas { animation:maraChartEnter 1.45s var(--mara-ease) both; }
+@keyframes maraChartEnter { from { opacity:.15;transform:translateY(20px) scale(.965);filter:blur(3px); } to { opacity:1;transform:translateY(0) scale(1);filter:blur(0); } }
+
+/* Navegação e tabelas com feedback delicado */
+header nav button { transition:all .35s var(--mara-ease) !important; }
+header nav button:active { transform:scale(.96) !important; }
+tbody tr { transition:background .3s ease,transform .3s var(--mara-ease) !important; }
+tbody tr:hover { background:rgba(110,168,255,.055) !important; }
+thead { background:rgba(12,17,29,.96) !important; }
+th { color:#94A4C0 !important; }
+
+@media(max-width:640px) {
+ .mara-intro { min-height:285px;padding:30px 22px !important;border-radius:24px !important; }
+ .mara-intro h2 { font-size:clamp(38px,11vw,54px) !important; }
+ .mara-intro::before { width:78vw;right:-20%;top:72%;opacity:.8; }
+ .mara-intro::after { width:180px;height:180px;right:-2%;top:40%; }
+ .surface-card { border-radius:20px !important; }
+ .mara-reveal { transform:translateY(22px) scale(.99);filter:blur(3px); }
+}
+@media(prefers-reduced-motion:reduce) {
+ html { scroll-behavior:auto !important; }
+ *,*::before,*::after { animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important; }
+ .mara-reveal { opacity:1 !important;transform:none !important;filter:none !important; }
+}
+
+
+
+/* MaRa Christmas Mode — decoração leve, independente dos componentes financeiros */
+#maraSnowCanvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:55;opacity:1;transition:opacity .5s ease}
+#maraChristmasLights{position:fixed;top:0;left:0;width:100%;height:38px;z-index:56;pointer-events:none;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35));}
+#maraChristmasLights .wire{position:absolute;left:-2%;top:-13px;width:104%;height:42px;border-bottom:1px solid rgba(220,210,180,.55);border-radius:0 0 50% 50%;}
+#maraChristmasLights .bulb{position:absolute;top:15px;width:8px;height:12px;border-radius:50% 50% 45% 45%;background:var(--bulb);box-shadow:0 0 7px 2px var(--glow);animation:maraBulbGlow var(--speed,2.2s) ease-in-out infinite alternate;animation-delay:var(--delay,0s);}
+#maraChristmasLights .bulb:before{content:"";position:absolute;top:-3px;left:2px;width:4px;height:4px;border-radius:2px 2px 0 0;background:#b7b3a8;}
+@keyframes maraBulbGlow{0%{opacity:.48;filter:brightness(.75);box-shadow:0 0 3px 1px var(--glow)}100%{opacity:1;filter:brightness(1.35);box-shadow:0 0 12px 4px var(--glow)}}
+#maraChristmasToggle{position:fixed;right:16px;bottom:18px;z-index:65;display:flex;align-items:center;gap:8px;padding:10px 13px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(17,20,27,.82);color:#f5f3ed;font:600 11px Inter,sans-serif;letter-spacing:.02em;box-shadow:0 8px 30px rgba(0,0,0,.32);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);transition:transform .25s ease,border-color .25s ease,background .25s ease;cursor:pointer}
+#maraChristmasToggle:hover{transform:translateY(-2px);border-color:rgba(220,190,120,.55)}
+#maraChristmasToggle .mara-xmas-dot{width:7px;height:7px;border-radius:50%;background:#9ee6b0;box-shadow:0 0 9px #9ee6b0}
+#maraChristmasToggle[aria-pressed="false"] .mara-xmas-dot{background:#777;box-shadow:none}
+body.mara-christmas-off #maraSnowCanvas,body.mara-christmas-off #maraChristmasLights{opacity:0}
+@media(max-width:640px){#maraChristmasLights{height:30px}#maraChristmasLights .bulb{width:6px;height:9px;top:12px}#maraChristmasToggle{right:10px;bottom:12px;padding:9px 11px;font-size:10px}}
+@media(prefers-reduced-motion:reduce){#maraChristmasLights .bulb{animation:none;opacity:.8}#maraChristmasToggle{transition:none}}
+
 </style>
 </head>
 <body class="bg-atelier min-h-screen pb-16 selection:bg-indigo-500/30 selection:text-indigo-200">
+
+<!-- Decoração sazonal opcional: não intercepta cliques nem altera os gráficos -->
+<canvas id="maraSnowCanvas" aria-hidden="true"></canvas>
+<div id="maraChristmasLights" aria-hidden="true"><div class="wire"></div></div>
+<button id="maraChristmasToggle" type="button" aria-pressed="true" aria-label="Desativar decoração de Natal">
+  <span class="mara-xmas-dot"></span><span id="maraChristmasToggleLabel">Natal ligado</span><span aria-hidden="true">✦</span>
+</button>
+
 
 <!-- TELA DE AUTENTICAÇÃO -->
 <div id="telaSenha" class="fixed inset-0 z-[100] bg-[#050507]/95 backdrop-blur-xl flex items-center justify-center p-4">
@@ -310,7 +830,7 @@ body {
   </div>
 </header>
 
-<main class="max-w-5xl mx-auto px-4 sm:px-6 py-7 space-y-6">
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-7 space-y-6">
 
   <!-- BANNER DE ALERTA SONORO ATINGIDO -->
   <div id="bannerAlertaAtingido" class="hidden surface-card border-amber-500/40 rounded-2xl p-5 section-enter">
@@ -901,16 +1421,37 @@ let chartResizeTimer=null;
 // Configuração global refinada para Chart.js
 Chart.defaults.font.family = "'Inter', -apple-system, sans-serif";
 Chart.defaults.font.size = 11;
-Chart.defaults.color = '#71717a';
-Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(9, 10, 15, 0.96)';
+Chart.defaults.color = '#A5A0B3';
+Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(20, 17, 29, 0.97)';
 Chart.defaults.plugins.tooltip.titleColor = '#f4f4f6';
 Chart.defaults.plugins.tooltip.bodyColor = '#d4d4d8';
-Chart.defaults.plugins.tooltip.borderColor = 'rgba(255, 255, 255, 0.1)';
+Chart.defaults.plugins.tooltip.borderColor = 'rgba(215, 255, 82, 0.30)';
 Chart.defaults.plugins.tooltip.borderWidth = 1;
 Chart.defaults.plugins.tooltip.padding = 10;
 Chart.defaults.plugins.tooltip.cornerRadius = 10;
 Chart.defaults.plugins.tooltip.displayColors = true;
 Chart.defaults.plugins.tooltip.boxPadding = 4;
+// Movimento consistente: entrada suave, hover responsivo e curvas orgânicas.
+Chart.defaults.animation = { duration: 1550, easing: 'easeOutQuart', delay: context => context.type === 'data' && context.mode === 'default' ? context.dataIndex * 34 : 0 };
+Chart.defaults.animations = { numbers: { type: 'number', duration: 1500, easing: 'easeOutQuart' }, colors: { type: 'color', duration: 950 } };
+Chart.defaults.transitions = {
+  active: { animation: { duration: 220, easing: 'easeOutCubic' } },
+  resize: { animation: { duration: 260 } },
+  show: { animations: { colors: { duration: 420 }, visible: { duration: 420 } } },
+  hide: { animations: { colors: { duration: 220 }, visible: { duration: 220, easing: 'easeInCubic' } } }
+};
+Chart.defaults.interaction = { mode: 'nearest', intersect: false };
+Chart.defaults.elements.line.tension = 0.48;
+Chart.defaults.elements.line.borderWidth = 3;
+Chart.defaults.elements.line.borderCapStyle = 'round';
+Chart.defaults.elements.line.borderJoinStyle = 'round';
+Chart.defaults.elements.point.radius = 2.5;
+Chart.defaults.elements.point.hoverRadius = 7;
+Chart.defaults.elements.point.hitRadius = 14;
+Chart.defaults.elements.bar.borderRadius = 9;
+Chart.defaults.elements.bar.hoverBorderRadius = 11;
+Chart.defaults.elements.bar.borderSkipped = false;
+Chart.defaults.plugins.tooltip.animation = { duration: 180 };
 
 document.getElementById('dataInput').valueAsDate=new Date();
 
@@ -1175,16 +1716,18 @@ function renderizarInvestimentos(){
         labels:ativos.map(x=>x[0]),
         datasets:[{
           data:ativos.map(x=>x[1]),
-          backgroundColor:['#34d399','#818cf8','#fbbf24','#38bdf8','#c084fc','#fb7185'],
+          backgroundColor:['#6EA8FF','#FF8B78','#B69CFF','#FFC477','#6DDFC9','#F3F6FC'],
           borderColor:'#0b0c10',
           borderWidth:3,
-          hoverOffset:4
+          hoverOffset:8,
+          spacing:3
         }]
       },
       options:{
         responsive:true,
         maintainAspectRatio:false,
-        cutout:'68%',
+        cutout:'72%',
+        animation:{animateRotate:true,animateScale:true,duration:900,easing:'easeOutQuart'},
         plugins:{
           legend:{position:'bottom',labels:{color:'#a1a1aa',padding:16,usePointStyle:true,pointStyle:'circle'}}
         }
@@ -1364,8 +1907,9 @@ function renderGrafico(catTotals){
       labels:sorted.map(e=>e[0]),
       datasets:[{
         data:sorted.map(e=>e[1]),
-        backgroundColor:['#818cf8','#34d399','#fbbf24','#fb7185','#a78bfa','#38bdf8','#f472b6','#94a3b8','#2dd4bf','#c084fc','#60a5fa'],
-        borderRadius:6,
+        backgroundColor:['#6EA8FF','#FF8B78','#B69CFF','#FFC477','#6DDFC9','#F3F6FC','#FF9AC2','#9AA4B2','#72E0B5','#B7A5FF','#F3D36B'],
+        borderRadius:10,
+        hoverBorderRadius:12,
         barThickness:18
       }]
     },
@@ -1399,8 +1943,9 @@ function renderGraficoMeses(lista){
       datasets:[{
         label:catSel==='TODAS'?'Total Geral (R$)':`Total: ${catSel}`,
         data:chaves.map(k=>totaisPorMes[k].total),
-        backgroundColor:catSel==='TODAS'?'rgba(129,140,248,0.85)':'rgba(251,191,36,0.85)',
-        borderRadius:6,
+        backgroundColor:catSel==='TODAS'?'rgba(110,168,255,0.88)':'rgba(255,139,120,0.88)',
+        borderRadius:10,
+        hoverBorderRadius:12,
         maxBarThickness:36
       }]
     },
@@ -1449,8 +1994,8 @@ function renderGraficoComparativoDoisMeses(){
     data:{
       labels:ordenadas,
       datasets:[
-        {label:labelA,data:ordenadas.map(c=>totaisA[c]||0),backgroundColor:'rgba(129,140,248,0.88)',borderRadius:5},
-        {label:labelB,data:ordenadas.map(c=>totaisB[c]||0),backgroundColor:'rgba(52,211,153,0.78)',borderRadius:5}
+        {label:labelA,data:ordenadas.map(c=>totaisA[c]||0),backgroundColor:'rgba(110,168,255,0.88)',borderRadius:9,hoverBorderRadius:11},
+        {label:labelB,data:ordenadas.map(c=>totaisB[c]||0),backgroundColor:'rgba(255,139,120,0.82)',borderRadius:9,hoverBorderRadius:11}
       ]
     },
     options:{
@@ -1485,9 +2030,9 @@ function renderGraficoRitmoAcumulado(lista){
     data:{
       labels,
       datasets:[
-        {label:'Acumulado Este Mês',data:acumA,borderColor:'#818cf8',backgroundColor:'rgba(129,140,248,0.12)',borderWidth:2.5,fill:true,tension:0.3,pointRadius:2.5,pointHoverRadius:5},
-        {label:'Acumulado Mês Anterior',data:acumB,borderColor:'#52525b',borderWidth:1.75,tension:0.3,pointRadius:0},
-        {label:'Ritmo Ideal do Teto',data:linhaMeta,borderColor:'#fbbf24',borderDash:[5,5],borderWidth:1.75,pointRadius:0}
+        {label:'Acumulado Este Mês',data:acumA,borderColor:'#6EA8FF',backgroundColor:'rgba(110,168,255,0.13)',borderWidth:2.5,fill:true,tension:0.42,cubicInterpolationMode:'monotone',pointRadius:2,pointHoverRadius:5,pointHitRadius:12},
+        {label:'Acumulado Mês Anterior',data:acumB,borderColor:'#B69CFF',borderWidth:1.75,tension:0.42,cubicInterpolationMode:'monotone',pointRadius:0},
+        {label:'Ritmo Ideal do Teto',data:linhaMeta,borderColor:'#FF8B78',borderDash:[5,5],borderWidth:1.75,pointRadius:0}
       ]
     },
     options:{
@@ -1610,6 +2155,104 @@ window.addEventListener('resize',()=>{
     }
   },300);
 });
+
+
+
+// MaRa Christmas Mode: neve em canvas + luzes decorativas. Independente dos dados financeiros.
+(function setupMaRaChristmas(){
+  const canvas=document.getElementById('maraSnowCanvas');
+  const lights=document.getElementById('maraChristmasLights');
+  const toggle=document.getElementById('maraChristmasToggle');
+  const label=document.getElementById('maraChristmasToggleLabel');
+  if(!canvas||!lights||!toggle)return;
+  const ctx=canvas.getContext('2d');
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const colors=[['#f4f0df','rgba(244,240,223,.72)'],['#d9e8ff','rgba(217,232,255,.7)'],['#e9d7bd','rgba(233,215,189,.7)']];
+  const bulbs=['#ff6262','#ffd166','#72d6a0','#80b9ff'];
+  let flakes=[],raf=0,last=0,w=0,h=0,enabled=true;
+  try{enabled=localStorage.getItem('maraChristmasMode')!=='off'}catch(e){}
+  function makeLights(){
+    lights.querySelectorAll('.bulb').forEach(el=>el.remove());
+    const count=window.innerWidth<640?15:27;
+    for(let i=0;i<count;i++){
+      const el=document.createElement('span');el.className='bulb';
+      const color=bulbs[i%bulbs.length];el.style.left=(2+i*(96/(count-1)))+'%';
+      el.style.setProperty('--bulb',color);el.style.setProperty('--glow',color+'99');
+      el.style.setProperty('--delay',(-Math.random()*2.8)+'s');el.style.setProperty('--speed',(1.5+Math.random()*1.8)+'s');
+      lights.appendChild(el);
+    }
+  }
+  function resize(){
+    const dpr=Math.min(window.devicePixelRatio||1,1.5);w=window.innerWidth;h=window.innerHeight;
+    canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);canvas.style.width=w+'px';canvas.style.height=h+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const count=reduce?0:(w<640?24:58);
+    flakes=Array.from({length:count},()=>({x:Math.random()*w,y:Math.random()*h,r:.7+Math.random()*2.1,speed:22+Math.random()*45,drift:10+Math.random()*22,phase:Math.random()*Math.PI*2,alpha:.28+Math.random()*.55,color:colors[Math.floor(Math.random()*colors.length)][0]}));
+    makeLights();
+  }
+  function draw(time){
+    if(!enabled||document.hidden||reduce){raf=0;return;}
+    const dt=Math.min((time-last)/1000||0,.04);last=time;ctx.clearRect(0,0,w,h);
+    for(const f of flakes){
+      f.y+=f.speed*dt;f.x+=(Math.sin(time*.00045+f.phase)*f.drift)*dt;
+      if(f.y>h+6){f.y=-8;f.x=Math.random()*w;}
+      if(f.x>w+8)f.x=-8;if(f.x<-8)f.x=w+8;
+      ctx.beginPath();ctx.fillStyle=f.color;ctx.globalAlpha=f.alpha;ctx.shadowBlur=f.r>1.8?7:2;ctx.shadowColor=f.color;ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fill();
+    }
+    ctx.globalAlpha=1;ctx.shadowBlur=0;raf=requestAnimationFrame(draw);
+  }
+  function start(){if(!enabled||reduce||raf||document.hidden)return;last=0;raf=requestAnimationFrame(draw)}
+  function stop(){if(raf){cancelAnimationFrame(raf);raf=0}ctx.clearRect(0,0,w,h)}
+  function setEnabled(value){
+    enabled=value;document.body.classList.toggle('mara-christmas-off',!enabled);
+    toggle.setAttribute('aria-pressed',String(enabled));toggle.setAttribute('aria-label',enabled?'Desativar decoração de Natal':'Ativar decoração de Natal');
+    label.textContent=enabled?'Natal ligado':'Natal desligado';
+    try{localStorage.setItem('maraChristmasMode',enabled?'on':'off')}catch(e){}
+    if(enabled)start();else stop();
+  }
+  toggle.addEventListener('click',()=>setEnabled(!enabled));
+  window.addEventListener('resize',()=>{resize();if(enabled)start()},{passive:true});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else start()});
+  resize();setEnabled(enabled);
+})();
+
+// MaRa Cinematic Motion: rolagem, luz contextual e gráficos com entrada suave.
+(function setupMaRaMotion(){
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const progress=document.createElement('div');progress.id='maraScrollProgress';progress.innerHTML='<span></span>';document.body.appendChild(progress);
+  const bar=progress.firstElementChild;
+  let scrollQueued=false;
+  const updateProgress=()=>{const max=document.documentElement.scrollHeight-window.innerHeight;bar.style.width=(max>0?(window.scrollY/max)*100:0)+'%';scrollQueued=false};
+  window.addEventListener('scroll',()=>{if(!scrollQueued){requestAnimationFrame(updateProgress);scrollQueued=true}},{passive:true});updateProgress();
+  const targets=[...document.querySelectorAll('main .surface-card, main .mara-intro, main section')];
+  targets.forEach((el,i)=>{el.classList.add('mara-reveal');el.style.setProperty('--mara-delay',`${Math.min(i%4,3)*105}ms`)});
+  if(!('IntersectionObserver' in window)||reduce){targets.forEach(el=>el.classList.add('mara-visible'))}
+  else {
+    const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('mara-visible');observer.unobserve(entry.target)}}),{threshold:.10,rootMargin:'0px 0px -55px 0px'});
+    targets.forEach(el=>observer.observe(el));
+  }
+  // Reflexo acompanha o cursor nos painéis, sem tilt agressivo nem efeito em telas touch.
+  if(!reduce&&window.matchMedia('(hover:hover) and (pointer:fine)').matches){
+    document.querySelectorAll('main .surface-card').forEach(card=>{
+      card.addEventListener('pointermove',ev=>{const r=card.getBoundingClientRect();card.style.setProperty('--mx',(ev.clientX-r.left)+'px');card.style.setProperty('--my',(ev.clientY-r.top)+'px');card.classList.add('mara-light-on')},{passive:true});
+      card.addEventListener('pointerleave',()=>card.classList.remove('mara-light-on'),{passive:true});
+    });
+  }
+})();
+
+// Chart.js: animações mais longas e elegantes, mantendo os dados e cálculos intactos.
+if(window.Chart){
+  Chart.defaults.animation={duration:1350,easing:'easeOutQuart'};
+  Chart.defaults.transitions.active.animation.duration=420;
+  Chart.defaults.interaction={mode:'index',intersect:false};
+  Chart.defaults.plugins.tooltip.backgroundColor='rgba(13,18,30,.94)';
+  Chart.defaults.plugins.tooltip.borderColor='rgba(159,190,255,.24)';
+  Chart.defaults.plugins.tooltip.borderWidth=1;
+  Chart.defaults.plugins.tooltip.padding=12;
+  Chart.defaults.plugins.tooltip.cornerRadius=12;
+  Chart.defaults.plugins.tooltip.titleColor='#F5F7FC';
+  Chart.defaults.plugins.tooltip.bodyColor='#C4CEE0';
+}
 
 (function init(){
   const token=getToken();
